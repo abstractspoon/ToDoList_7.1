@@ -371,12 +371,17 @@ BOOL CFileComboBox::DeleteLBItem(int nItem)
 LRESULT CFileComboBox::OnEditboxMessage(UINT msg, WPARAM wp, LPARAM lp)
 {
 	// handle 'escape' to cancel deletions
-	if ((msg == WM_CHAR) && (wp == VK_ESCAPE))
+	switch (msg)
+	{
+	case WM_CHAR:
+		if (wp == VK_ESCAPE)
 	{
 		m_bEditChange = FALSE;
 		ShowDropDown(FALSE);
 
 		return 0L;
+	}
+		break;
 	}
 	
 	// default handling
@@ -388,5 +393,13 @@ void CFileComboBox::SetReadOnly(BOOL bReadOnly)
 	m_bReadOnly = bReadOnly;
 
 	ModifyFlags((bReadOnly ? ACBS_ALLOWDELETE : 0), (bReadOnly ? 0 : ACBS_ALLOWDELETE));
-	m_fileEdit.ModifyStyle((bReadOnly ? 0 : ES_READONLY), (bReadOnly ? ES_READONLY : 0));
+	m_fileEdit.SendMessage(EM_SETREADONLY, bReadOnly);
+}
+
+void CFileComboBox::HandleReturnKey()
+{
+	if (m_bReadOnly)
+		m_bEditChange = FALSE;
+	else
+		CAutoComboBox::HandleReturnKey();
 }
