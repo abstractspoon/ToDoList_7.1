@@ -1232,6 +1232,9 @@ void CXmlFile::CopyFrom(const CXmlFile& file)
 {
 	m_xiRoot.Reset();
 	m_xiRoot.Copy(file.m_xiRoot, TRUE);
+
+	m_sXmlHeader = file.m_sXmlHeader;
+	m_sXslHeader = file.m_sXslHeader;
 }
 
 BOOL CXmlFile::Export(CString& sOutput) const
@@ -1287,8 +1290,7 @@ BOOL CXmlFile::Transform(const CString& sTransformPath, CString& sOutput) const
 {
 	if (BuildDOM() && m_xslDoc.Load(sTransformPath))
 	{
-		sOutput = m_xmlDoc.Transform(m_xslDoc);
-		return TRUE;
+		return m_xmlDoc.Transform(m_xslDoc, sOutput);
 	}
 	
 	// else
