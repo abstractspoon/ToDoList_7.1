@@ -1557,13 +1557,17 @@ void CToDoListWnd::OnCancel()
 
 void CToDoListWnd::OnDeleteTask() 
 {
-	if (GetToDoCtrl().GetSelectedItem())
-		GetToDoCtrl().DeleteSelectedTask();
+	CFilteredToDoCtrl& tdc = GetToDoCtrl();
+
+	if (!tdc.IsReadOnly() && tdc.HasSelection())
+		tdc.DeleteSelectedTask();
 }
 
 void CToDoListWnd::OnDeleteAllTasks() 
 {
-	if (GetToDoCtrl().DeleteAllTasks())
+	CFilteredToDoCtrl& tdc = GetToDoCtrl();
+
+	if (!tdc.IsReadOnly() && tdc.DeleteAllTasks())
 		UpdateStatusbar();
 }
 
@@ -1659,14 +1663,14 @@ BOOL CToDoListWnd::HandleSaveTasklistError(TDC_FILE& nErr, LPCTSTR szTasklist)
 	return FALSE; // not handled
 }
 
-TDC_FILE CToDoListWnd::SaveTaskList(int nIndex, LPCTSTR szFilePath, BOOL bAuto)
+TDC_FILE CToDoListWnd::SaveTaskList(int nTDC, LPCTSTR szFilePath, BOOL bAuto)
 {
 	CAutoFlag af(m_bSaving, TRUE);
 	CPreferences prefs;
 	const CPreferencesDlg& userPrefs = Prefs();
 
 	// make sure we are up to date
-	CFilteredToDoCtrl& tdc = GetToDoCtrl(nIndex);
+	CFilteredToDoCtrl& tdc = GetToDoCtrl(nTDC);
 	tdc.Flush();
 
 	TDC_FILE nResult = TDCF_SUCCESS;
@@ -1674,7 +1678,7 @@ TDC_FILE CToDoListWnd::SaveTaskList(int nIndex, LPCTSTR szFilePath, BOOL bAuto)
 
 	// we can reduce the amount of work required if saving to storage
 	TSM_TASKLISTINFO storageInfo;
-	BOOL bUsesStorage = m_mgrToDoCtrls.GetStorageDetails(nIndex, storageInfo);
+	BOOL bUsesStorage = m_mgrToDoCtrls.GetStorageDetails(nTDC, storageInfo);
 
 	if (bUsesStorage)
 	{
@@ -1692,7 +1696,7 @@ TDC_FILE CToDoListWnd::SaveTaskList(int nIndex, LPCTSTR szFilePath, BOOL bAuto)
 	}
 	else // we're file-based
 	{
-		CString sFilePath = (szFilePath ? szFilePath : m_mgrToDoCtrls.GetFilePath(nIndex));
+		CString sFilePath = (szFilePath ? szFilePath : m_mgrToDoCtrls.GetFilePath(nTDC));
 
 		// conditions for saving
 		// 1. Save As... ie szFilePath != NULL and not empty
@@ -1705,13 +1709,13 @@ TDC_FILE CToDoListWnd::SaveTaskList(int nIndex, LPCTSTR szFilePath, BOOL bAuto)
 				if (sFilePath.IsEmpty()) // means first time save
 				{
 					// activate tasklist
-					if (!SelectToDoCtrl(nIndex, (nIndex != GetSelToDoCtrl())))
+					if (!SelectToDoCtrl(nTDC, (nTDC != GetSelToDoCtrl())))
 						return TDCF_CANCELLED;
 
 					// use 'friendly' name as user for user
 					CFileSaveDialog dialog(IDS_SAVETASKLIST_TITLE, 
 											GetDefaultFileExt(), 
-											m_mgrToDoCtrls.GetFileName(nIndex, FALSE), 
+											m_mgrToDoCtrls.GetFileName(nTDC, FALSE), 
 											EOFN_DEFAULTSAVE, 
 											GetFileFilter(), 
 											this);
@@ -1730,7 +1734,7 @@ TDC_FILE CToDoListWnd::SaveTaskList(int nIndex, LPCTSTR szFilePath, BOOL bAuto)
 				tdc.SetStyle(TDCS_CHECKOUTONLOAD, userPrefs.GetAutoCheckOut());
 
 				// do the save
-				nResult = DoSaveWithBackupAndProgress(tdc, nIndex, tasks, sFilePath);
+				nResult = DoSaveWithBackupAndProgress(tdc, nTDC, tasks, sFilePath);
 
 				if (nResult != TDCF_SUCCESS)
 				{
@@ -1754,9 +1758,9 @@ TDC_FILE CToDoListWnd::SaveTaskList(int nIndex, LPCTSTR szFilePath, BOOL bAuto)
 	// post-process success
 	if (nResult == TDCF_SUCCESS)
 	{
-		m_mgrToDoCtrls.RefreshFileLastModified(nIndex);
-		m_mgrToDoCtrls.RefreshReadOnlyStatus(nIndex);
-		m_mgrToDoCtrls.RefreshPathType(nIndex);
+		m_mgrToDoCtrls.RefreshFileLastModified(nTDC);
+		m_mgrToDoCtrls.RefreshReadOnlyStatus(nTDC);
+		m_mgrToDoCtrls.RefreshPathType(nTDC);
 
 		CString sFilePath = tdc.GetFilePath();
 
@@ -2756,7 +2760,7 @@ void CToDoListWnd::OnUpdateEditTaskdone(CCmdUI* pCmdUI)
 	if (nSelCount == 1)
 		pCmdUI->SetCheck(tdc.IsSelectedTaskDone() ? 1 : 0);
 	
-	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.GetSelectedItem());	
+	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.HasSelection());	
 }
 
 void CToDoListWnd::OnUpdateDeletealltasks(CCmdUI* pCmdUI) 
@@ -5528,10 +5532,7 @@ void CToDoListWnd::OnEditPasteSub()
 
 void CToDoListWnd::OnUpdateEditPasteSub(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-
-	pCmdUI->Enable(tdc.CanPasteTasks(TDCP_ONSELTASK, FALSE) || 
-					Misc::ClipboardHasText());	
+	pCmdUI->Enable(CanPasteTasks(TDCP_ONSELTASK, FALSE));	
 }
 
 BOOL CToDoListWnd::DoPasteFromClipboard(TDLID_IMPORTTO nWhere)
@@ -5564,7 +5565,7 @@ void CToDoListWnd::OnEditPasteAfter()
 	{
 		tdc.PasteTasks(nWhere, FALSE);
 	}
-	else if (Misc::ClipboardHasText())
+	else if (!tdc.IsReadOnly() && Misc::ClipboardHasText())
 	{
 		DoPasteFromClipboard(TDIT_BELOWSELECTEDTASK);
 	}
@@ -5574,15 +5575,14 @@ void CToDoListWnd::OnEditPasteAfter()
 
 void CToDoListWnd::OnUpdateEditPasteAfter(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
+	int nSelCount = GetToDoCtrl().GetSelectedCount();
 	
 	// modify the text appropriately if the tasklist is empty
 	if (nSelCount == 0)
 		pCmdUI->SetText(CEnString(IDS_PASTETOPLEVELTASK));
-	
-	pCmdUI->Enable(tdc.CanPasteTasks(((nSelCount == 0) ? TDCP_ATBOTTOM : TDCP_BELOWSELTASK), FALSE) || 
-					Misc::ClipboardHasText());	
+
+	TDC_PASTE nWhere = ((nSelCount == 0) ? TDCP_ATBOTTOM : TDCP_BELOWSELTASK);
+	pCmdUI->Enable(CanPasteTasks(nWhere, FALSE));	
 }
 
 void CToDoListWnd::OnEditPasteAsRef() 
@@ -5595,9 +5595,21 @@ void CToDoListWnd::OnEditPasteAsRef()
 
 void CToDoListWnd::OnUpdateEditPasteAsRef(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
+	pCmdUI->Enable(CanPasteTasks(TDCP_ONSELTASK, TRUE));
+}
 
-	pCmdUI->Enable(tdc.CanPasteTasks(TDCP_ONSELTASK, TRUE));
+BOOL CToDoListWnd::CanPasteTasks(TDC_PASTE nWhere, BOOL bAsRef) const
+{
+	const CFilteredToDoCtrl& tdc = GetToDoCtrl();
+
+	if (bAsRef)
+		return tdc.CanPasteTasks(nWhere, TRUE);
+
+	if (tdc.CanPasteTasks(nWhere, FALSE))
+		return TRUE;
+
+	// else try clipboard
+	return (!tdc.IsReadOnly() && Misc::ClipboardHasText());
 }
 
 void CToDoListWnd::OnEditCopyastext() 
