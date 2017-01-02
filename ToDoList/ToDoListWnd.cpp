@@ -36,6 +36,7 @@
 #include "TDLAboutDlg.h"
 #include "TDCWebUpdateScript.h"
 #include "TDCToDoCtrlPreferenceHelper.h"
+#include "TaskClipboard.h"
 
 #include "..\shared\aboutdlg.h"
 #include "..\shared\holdredraw.h"
@@ -5515,6 +5516,9 @@ void CToDoListWnd::OnUpdateEditCut(CCmdUI* pCmdUI)
 
 void CToDoListWnd::OnEditPasteSub() 
 {
+	if (!CanPasteTasks(TDCP_ONSELTASK, FALSE))
+		return;
+
 	CWaitCursor wait;
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 
@@ -5537,8 +5541,12 @@ void CToDoListWnd::OnUpdateEditPasteSub(CCmdUI* pCmdUI)
 
 BOOL CToDoListWnd::DoPasteFromClipboard(TDLID_IMPORTTO nWhere)
 {
-	if (!Misc::ClipboardHasText())
+	if (GetToDoCtrl().IsReadOnly() || 
+		!CTaskClipboard::IsEmpty() || 
+		Misc::ClipboardHasText())
+	{
 		return FALSE;
+	}
 
 	CTDLPasteFromClipboardDlg dialog(m_mgrImportExport);
 
@@ -5554,18 +5562,21 @@ BOOL CToDoListWnd::DoPasteFromClipboard(TDLID_IMPORTTO nWhere)
 
 void CToDoListWnd::OnEditPasteAfter() 
 {
-	CWaitCursor wait;
-
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 	int nSelCount = tdc.GetSelectedCount();
-
+	
 	TDC_PASTE nWhere = ((nSelCount == 0) ? TDCP_ATBOTTOM : TDCP_BELOWSELTASK);
+	
+	if (!CanPasteTasks(nWhere, FALSE))
+		return;
+	
+	CWaitCursor wait;
 
 	if (tdc.CanPasteTasks(nWhere, FALSE))
 	{
 		tdc.PasteTasks(nWhere, FALSE);
 	}
-	else if (!tdc.IsReadOnly() && Misc::ClipboardHasText())
+	else
 	{
 		DoPasteFromClipboard(TDIT_BELOWSELECTEDTASK);
 	}
@@ -5609,7 +5620,7 @@ BOOL CToDoListWnd::CanPasteTasks(TDC_PASTE nWhere, BOOL bAsRef) const
 		return TRUE;
 
 	// else try clipboard
-	return (!tdc.IsReadOnly() && Misc::ClipboardHasText());
+	return (!tdc.IsReadOnly() && CTaskClipboard::IsEmpty() && Misc::ClipboardHasText());
 }
 
 void CToDoListWnd::OnEditCopyastext() 
