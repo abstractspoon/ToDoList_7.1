@@ -805,8 +805,14 @@ BOOL FileMisc::CreateFolder(LPCTSTR szFolder)
 
 		// if the folder doesn't exist we try to create it
 		if (!FolderExists(sFolder) && (::CreateDirectory(sFolder, NULL) == FALSE))
+		{
+			LogText(_T("::CreateDirectory(%s) failed\n"), sFolder);
 			bResult = FALSE;
+		}
 	}
+
+	if (!bResult)
+		LogText(_T("FileMisc::CreateFolder(%s) failed\n"), szFolder);
 
 	return bResult;
 }

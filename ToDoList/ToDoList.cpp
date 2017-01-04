@@ -162,6 +162,9 @@ BOOL CToDoListApp::InitInstance()
 
 		// else strip off the restart switch and continue
 		cmdInfo.DeleteOption(SWITCH_RESTART);
+
+		// and turn on logging to capture the first run
+		FileMisc::EnableLogging(TRUE, _T("Abstractspoon"));
 	}
 
 	AfxOleInit(); // for initializing COM and handling drag and drop via explorer
@@ -363,12 +366,16 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 	}
 	else
 	{
+		FileMisc::LogText(_T("Exe folder '%s' is not writable\n"), sExeFolder);
+
 		// May already be in AppData/Roaming which is the fallback
 		CString sAppDataIniPath;
 		VERIFY (FileMisc::GetSpecialFilePath(CSIDL_APPDATA, APPDATAINI, sAppDataIniPath));
 
 		if (!FileMisc::FileExists(sAppDataIniPath))
 		{
+			FileMisc::LogText(_T("AppData ini '%s' does not exist\n"), sExeFolder);
+
 			// If NOT it may already have been virtualised
 			CString sVirtualisedIni, sExistingIni;
 			FileMisc::GetVirtualStorePath(sExeIniPath, sVirtualisedIni);
@@ -382,29 +389,38 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 				if (FileMisc::GetFileLastModified(sExeIniPath) > 
 					FileMisc::GetFileLastModified(sVirtualisedIni))
 				{
+					FileMisc::LogText(_T("Copying existing ini '%s' to '%s'\n"), sExeIniPath, sAppDataIniPath);
+
 					sExistingIni = sExeIniPath;
 				}
 				else
 				{
+					FileMisc::LogText(_T("Copying virtualised ini '%s' to '%s'\n"), sVirtualisedIni, sAppDataIniPath);
+
 					sExistingIni = sVirtualisedIni;
 				}
 			}
 			else if (bHasExeIni)
 			{
+				FileMisc::LogText(_T("Copying existing ini '%s' to '%s'\n"), sExeIniPath, sAppDataIniPath);
+
 				sExistingIni = sExeIniPath;
 			}
 			else if (bHasVirtualisedIni)
 			{
+				FileMisc::LogText(_T("Copying virtualised ini '%s' to '%s'\n"), sVirtualisedIni, sAppDataIniPath);
+
 				sExistingIni = sVirtualisedIni;
 			}
 
 			if (!sExistingIni.IsEmpty())
 			{
-				FileMisc::CreateFolderFromFilePath(sAppDataIniPath);
-				
-				if (FileMisc::CopyFile(sExistingIni, sAppDataIniPath, FALSE, TRUE))
+				if (FileMisc::CreateFolderFromFilePath(sAppDataIniPath))
 				{
-					FileMisc::DeleteFile(sExistingIni, TRUE);
+					if (FileMisc::CopyFile(sExistingIni, sAppDataIniPath, FALSE, TRUE))
+					{
+						FileMisc::DeleteFile(sExistingIni, TRUE);
+					}
 				}
 			}
 		}
