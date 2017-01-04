@@ -358,8 +358,62 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 	
 	// Preferred default location is app folder for portability
 	CString sExeIniPath = FileMisc::ReplaceExtension(sExePath, _T("ini"));
-	CString sTestIniPath;
 	
+	// However may already be in AppData/Roaming from previous version
+	CString sAppDataIniPath;
+	VERIFY (FileMisc::GetSpecialFilePath(CSIDL_APPDATA, APPDATAINI, sAppDataIniPath));
+
+	BOOL bHasAppDataIni = FileMisc::FileExists(sAppDataIniPath);
+	BOOL bHasExeIni = FileMisc::FileExists(sExeIniPath);
+	
+	// Prefer most recently modified file
+	CString sTestIni(sAppDataIniPath);
+
+	if (bHasExeIni && bHasAppDataIni)
+	{
+		if (FileMisc::GetFileLastModified(sExeIniPath) > 
+			FileMisc::GetFileLastModified(sAppDataIniPath))
+		{
+			sTestIni = sExeIniPath;
+		}
+		else
+		{
+			sTestIni = sAppDataIniPath;
+		}
+		
+		FileMisc::LogText(_T("Using newer ini '%s'\n"), sTestIni);
+	}
+	else if (bHasExeIni || bHasAppDataIni)
+	{
+		if (bHasExeIni)
+			sTestIni = sExeIniPath;
+		else
+			sTestIni = sAppDataIniPath;
+
+		FileMisc::LogText(_T("Using existing ini '%s'\n"), sTestIni);
+	}
+
+	if (ValidateIniPath(sTestIni, bCheckExists))
+	{
+
+		sIniPath = sTestIni;
+		return TRUE;
+	}
+	
+	// else
+	return FALSE;
+}
+
+/*
+BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
+{
+	CString sExePath = FileMisc::GetAppFilePath();
+	CString sExeFolder = FileMisc::GetAppFolder();
+	
+	// Preferred default location is app folder for portability
+	CString sExeIniPath = FileMisc::ReplaceExtension(sExePath, _T("ini"));
+	CString sTestIniPath;
+
 	if (FileMisc::IsFolderWritable(sExeFolder))
 	{
 		sTestIniPath = sExeIniPath;
@@ -367,6 +421,7 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 	else
 	{
 		FileMisc::LogText(_T("Exe folder '%s' is not writable\n"), sExeFolder);
+
 
 		// May already be in AppData/Roaming which is the fallback
 		CString sAppDataIniPath;
@@ -437,6 +492,7 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 	// else
 	return FALSE;
 }
+*/
 
 BOOL CToDoListApp::ValidateIniPath(CString& sFilePath, BOOL bCheckExists)
 {
@@ -464,7 +520,7 @@ BOOL CToDoListApp::ValidateIniPath(CString& sFilePath, BOOL bCheckExists)
 	FileMisc::CreateFolder(sIniFolder);
 	::SetFileAttributes(sIniFolder, FILE_ATTRIBUTE_NORMAL);
 		
-	if (FileMisc::IsFolderWritable(sIniFolder))
+//	if (FileMisc::IsFolderWritable(sIniFolder))
 	{
 		sFilePath = sIniPath;
 		return TRUE;
