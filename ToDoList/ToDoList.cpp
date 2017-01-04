@@ -366,11 +366,11 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 	BOOL bHasAppDataIni = FileMisc::FileExists(sAppDataIniPath);
 	BOOL bHasExeIni = FileMisc::FileExists(sExeIniPath);
 	
-	// Prefer most recently modified file
 	CString sTestIni(sAppDataIniPath);
 
 	if (bHasExeIni && bHasAppDataIni)
 	{
+		// Prefer most recently modified file
 		if (FileMisc::GetFileLastModified(sExeIniPath) > 
 			FileMisc::GetFileLastModified(sAppDataIniPath))
 		{
@@ -383,14 +383,13 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 		
 		FileMisc::LogText(_T("Using newer ini '%s'\n"), sTestIni);
 	}
-	else if (bHasExeIni || bHasAppDataIni)
+	else if (bHasExeIni)
 	{
-		if (bHasExeIni)
-			sTestIni = sExeIniPath;
-		else
-			sTestIni = sAppDataIniPath;
-
-		FileMisc::LogText(_T("Using existing ini '%s'\n"), sTestIni);
+		sTestIni = sExeIniPath;
+	}
+	else if (bHasAppDataIni)
+	{
+		sTestIni = sAppDataIniPath;
 	}
 
 	if (ValidateIniPath(sTestIni, bCheckExists))
@@ -520,7 +519,10 @@ BOOL CToDoListApp::ValidateIniPath(CString& sFilePath, BOOL bCheckExists)
 	FileMisc::CreateFolder(sIniFolder);
 	::SetFileAttributes(sIniFolder, FILE_ATTRIBUTE_NORMAL);
 		
-//	if (FileMisc::IsFolderWritable(sIniFolder))
+	// Note: If the ini file already exists in a non-writable folder
+	// (eg. Program Files) then Windows will allow us to carry on
+	// using it even though backing up the ini will fail.
+	if (bFileExists || FileMisc::IsFolderWritable(sIniFolder))
 	{
 		sFilePath = sIniPath;
 		return TRUE;
