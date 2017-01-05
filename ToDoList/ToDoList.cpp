@@ -366,7 +366,7 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 	BOOL bHasAppDataIni = FileMisc::FileExists(sAppDataIniPath);
 	BOOL bHasExeIni = FileMisc::FileExists(sExeIniPath);
 	
-	CString sTestIni(sAppDataIniPath);
+	CString sTestIni;
 
 	if (bHasExeIni && bHasAppDataIni)
 	{
@@ -388,6 +388,14 @@ BOOL CToDoListApp::GetDefaultIniPath(CString& sIniPath, BOOL bCheckExists)
 		sTestIni = sExeIniPath;
 	}
 	else if (bHasAppDataIni)
+	{
+		sTestIni = sAppDataIniPath;
+	}
+	else if (FileMisc::IsFolderWritable(sExeFolder))
+	{
+		sTestIni = sExeIniPath;
+	}
+	else
 	{
 		sTestIni = sAppDataIniPath;
 	}
