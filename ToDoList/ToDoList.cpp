@@ -206,7 +206,7 @@ BOOL CToDoListApp::InitInstance()
 	// commandline options
 	CTDCStartupOptions startup(cmdInfo);
 
-	if (ProcessStartupOptions(startup))
+	if (ProcessStartupOptions(startup, cmdInfo))
 		return FALSE; // quit
 
 	// if no one handled it simply create a new instance
@@ -222,7 +222,7 @@ BOOL CToDoListApp::InitInstance()
 	return FALSE; // quit app
 }
 
-BOOL CToDoListApp::ProcessStartupOptions(CTDCStartupOptions& startup)
+BOOL CToDoListApp::ProcessStartupOptions(CTDCStartupOptions& startup, const CEnCommandLineInfo& cmdInfo)
 {
 	// see if another instance can better handle this than us
 	HWND hwndOtherInst = NULL;
@@ -314,16 +314,41 @@ BOOL CToDoListApp::ProcessStartupOptions(CTDCStartupOptions& startup)
 
 		return TRUE; // to quit this instance
 	}
-
-	// Under multi-instance, if nothing has been provided on the 
-	// commandline then open the new instance 'empty'
-	// ie. if someone double-clicked in explorer
 	ASSERT(bMultiInstance);
 
-	if (startup.IsEmpty(TRUE))
-		startup.ModifyFlags(0, TLD_STARTEMPTY); 
+	// To prevent the unexpected consequences of opening the
+	// previously open tasklists in multiple instances we check:
+	//
+	// 1. Do we have our own ini file
+	if (FileMisc::FileExists(cmdInfo.GetOption(SWITCH_INIFILE)))
+	{
+		// All good
+	}
+	// 2. Do we have our own tasklist(s)
+	else if (startup.HasFilePath())
+	{
+		// All good
+	}
+	// 3. Do we have a unique filepath
+	else
+	{
+		CString sThisModulePath = FileMisc::GetAppFilePath();
 
-	return FALSE; // not handled
+		for (int nWnd = 0; nWnd < nNumWnds; nWnd++)
+		{
+			HWND hWnd = find.aResults[nWnd];
+			CString sOtherModulePath = FileMisc::GetWindowModuleFilePath(hWnd);
+
+			if (FileMisc::IsSamePath(sThisModulePath, sOtherModulePath))
+			{
+				// No, so we start this instance empty
+				startup.ModifyFlags(0, TLD_STARTEMPTY); 
+				break;
+			}
+		}
+	}
+
+	return FALSE; // no need to quit
 }
 
 BOOL CToDoListApp::SendStartupOptions(HWND hWnd, const CTDCStartupOptions& startup, TDL_COPYDATA nMsg)

@@ -1526,14 +1526,30 @@ CString FileMisc::GetModuleFilePath(HMODULE hMod)
 	CString sModulePath;
 
 	BOOL bSuccess = ::GetModuleFileName(hMod, sModulePath.GetBuffer(MAX_PATH+1), MAX_PATH);
-   sModulePath.ReleaseBuffer();
+	sModulePath.ReleaseBuffer();
 
-   ASSERT(bSuccess);
+	ASSERT(bSuccess);
 
-   if (!bSuccess || !CanonicalizePath(sModulePath))
-      return _T("");
+	if (!bSuccess || !CanonicalizePath(sModulePath))
+		return _T("");
 
 	return sModulePath;
+}
+
+CString FileMisc::GetWindowModuleFilePath(HWND hWnd)
+{
+	DWORD dwProcessID = 0;
+	::GetWindowThreadProcessId(hWnd, &dwProcessID);
+
+	if (dwProcessID == 0)
+		return _T("");
+
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE , dwProcessID);
+
+	if (hProcess == NULL)
+		return _T("");
+
+	return GetProcessFilePath(hProcess);
 }
 
 BOOL FileMisc::CanonicalizePath(CString& sFilePath)
