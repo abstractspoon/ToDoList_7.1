@@ -375,15 +375,15 @@ LRESULT CFileComboBox::OnEditboxMessage(UINT msg, WPARAM wp, LPARAM lp)
 	{
 	case WM_CHAR:
 		if (wp == VK_ESCAPE)
-	{
-		m_bEditChange = FALSE;
-		ShowDropDown(FALSE);
+		{
+			m_bEditChange = FALSE;
+			ShowDropDown(FALSE);
 
-		return 0L;
-	}
+			return 0L;
+		}
 		break;
 	}
-	
+
 	// default handling
 	return CAutoComboBox::OnEditboxMessage(msg, wp, lp);
 }

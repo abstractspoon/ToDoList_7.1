@@ -115,7 +115,7 @@ protected:
 	TDC_MAXSTATE m_nMaxState, m_nPrevMaxState;
 	TODOITEM m_tdiDefault;
 	CTDLTimeTrackerDlg m_dlgTimeTracker;
-	CSessionStatusWnd m_sessionWnd;
+	CSessionStatusWnd m_wndSessionStatus;
 
 	int m_nLastSelItem; // just for flicker-free todoctrl switching
 	int m_nNumDueTaskThreads;

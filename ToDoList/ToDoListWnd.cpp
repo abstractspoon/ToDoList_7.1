@@ -792,7 +792,7 @@ int CToDoListWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	LoadSettings();
 
 	// Session notifications
-	m_sessionWnd.Initialize(*this);
+	m_wndSessionStatus.Initialize(*this);
 
 	// add a barebones tasklist while we're still hidden
 	if (!CreateNewTaskList(FALSE))
@@ -4996,8 +4996,8 @@ void CToDoListWnd::UpdateGlobalHotkey()
 
 void CToDoListWnd::RefreshPauseTimeTracking()
 {
-	BOOL bPauseAll = (((m_sessionWnd.IsLocked() || m_sessionWnd.IsScreenSaverActive()) && !Prefs().GetTrackOnScreenSaver()) || 
-					  (m_sessionWnd.IsHibernated() && !Prefs().GetTrackHibernated()));
+	BOOL bPauseAll = (((m_wndSessionStatus.IsLocked() || m_wndSessionStatus.IsScreenSaverActive()) && !Prefs().GetTrackOnScreenSaver()) || 
+					       (m_wndSessionStatus.IsHibernated() && !Prefs().GetTrackHibernated()));
 
 	BOOL bTrackActiveOnly = !Prefs().GetTrackNonActiveTasklists();
 	int nCtrl = GetTDCCount();
