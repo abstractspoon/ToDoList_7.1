@@ -173,7 +173,7 @@ BOOL CToDoListApp::InitInstance()
 	// before anything else make sure we've got MSXML3 installed
 	if (!CXmlDocumentWrapper::IsVersion3orGreater())
 	{
-		AfxMessageBox(IDS_BADMSXML);
+		AfxMessageBox(CEnString(IDS_BADMSXML));
 		return FALSE; // quit app
 	}
 
@@ -1557,14 +1557,14 @@ DWORD CToDoListApp::RunHelperApp(const CString& sAppName, UINT nIDGenErrorMsg, U
 			// if this is windows 8 or above, assume 
 			// this was blocked by SmartScreen
 			if (COSVersion() >= OSV_WIN8)
-				AfxMessageBox(nIDSmartScreenErrorMsg);
+				AfxMessageBox(CEnString(nIDSmartScreenErrorMsg));
 
 			// else fall thru
 			break;
 		}
 
 		// all else
-		AfxMessageBox(nIDGenErrorMsg);
+		AfxMessageBox(CEnString(nIDGenErrorMsg));
 	}
 
 	return dwRes;

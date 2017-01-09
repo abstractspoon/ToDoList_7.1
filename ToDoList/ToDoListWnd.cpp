@@ -2475,7 +2475,7 @@ void CToDoListWnd::ProcessProtocolRegistrationFailure(BOOL bStartup, BOOL bExist
 	UNREFERENCED_PARAMETER(bExistingReg);
 #endif
 
-	AfxMessageBox(nMsgID);
+	AfxMessageBox(CEnString(nMsgID));
 
 	// Record that we've told them so that we don't
 	// tell them again unless they've switched to admin
@@ -11214,7 +11214,7 @@ LRESULT CToDoListWnd::OnTodoCtrlFailedLink(WPARAM wParam, LPARAM lParam)
 	{
 		if (!CMSOutlookHelper::IsOutlookInstalled())
 		{
-			AfxMessageBox(IDS_ERROROUTLOOKNOTINSTALLED);
+			AfxMessageBox(CEnString(IDS_ERROROUTLOOKNOTINSTALLED));
 			return TRUE; // we handled it
 		}
 		else if (CMSOutlookHelper::HandleUrl(*this, szLink))
