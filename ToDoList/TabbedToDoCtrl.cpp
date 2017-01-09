@@ -444,10 +444,11 @@ void CTabbedToDoCtrl::UpdateVisibleColumns()
 
 IUIExtensionWindow* CTabbedToDoCtrl::GetExtensionWnd(FTC_VIEW nView) const
 {
-	ASSERT(nView >= FTCV_FIRSTUIEXTENSION && nView <= FTCV_LASTUIEXTENSION);
-
-	if (nView < FTCV_FIRSTUIEXTENSION || nView > FTCV_LASTUIEXTENSION)
+	if (!IsExtensionView(nView))
+	{
+		ASSERT(0);
 		return NULL;
+	}
 
 	int nExtension = (nView - FTCV_FIRSTUIEXTENSION);
 	ASSERT(nExtension < m_aExtViews.GetSize());
@@ -478,6 +479,12 @@ BOOL CTabbedToDoCtrl::GetExtensionWnd(FTC_VIEW nView, IUIExtensionWindow*& pExtW
 
 IUIExtensionWindow* CTabbedToDoCtrl::GetCreateExtensionWnd(FTC_VIEW nView)
 {
+	if (!IsExtensionView(nView))
+	{
+		ASSERT(0);
+		return NULL;
+	}
+
 	// try for existing first
 	IUIExtensionWindow* pExtWnd = GetExtensionWnd(nView);
 

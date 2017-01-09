@@ -1877,8 +1877,8 @@ void CToDoCtrl::UpdateControls(BOOL bIncComments, HTREEITEM hti)
 		BOOL bEditTime = !bIsParent || HasStyle(TDCS_ALLOWPARENTTIMETRACKING);
 		BOOL bEditPercent = !HasStyle(TDCS_AUTOCALCPERCENTDONE) && (nSelCount > 1 || !bAveSubTaskCompletion);
 
-		m_nPriority = (int)GetSelectedTaskPriority();
-		m_nRisk = (int)GetSelectedTaskRisk();
+		m_nPriority = GetSelectedTaskPriority();
+		m_nRisk = GetSelectedTaskRisk();
 		m_sAllocBy = GetSelectedTaskAllocBy();
 		m_sStatus = GetSelectedTaskStatus();
 		m_sExternalID = GetSelectedTaskExtID();
@@ -4973,9 +4973,14 @@ HTREEITEM CToDoCtrl::InsertItem(const CString& sText, HTREEITEM htiParent, HTREE
 	return htiNew;
 }
 
+BOOL CToDoCtrl::CanSplitSelectedTask() const 
+{ 
+	return (!IsReadOnly() && m_taskTree.CanSplitSelectedTask()); 
+}
+
 BOOL CToDoCtrl::SplitSelectedTask(int nNumSubtasks)
 {
-	if (nNumSubtasks < 2)
+	if (!CanSplitSelectedTask() || (nNumSubtasks < 2))
 		return FALSE;
 	
 	if (!GetSelectedCount() || m_taskTree.SelectionHasReferences())
