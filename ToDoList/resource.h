@@ -19,6 +19,9 @@
 #define IDD_RECURRING_TASK_DIALOG_OLD   129
 #define IDS_BACKUPFILEFOUND             130
 #define IDS_SAMPLETEXT                  131
+#define IDS_COLOR_SAMPLETEXT            131
+#define IDS_COLOR_AUTOMATIC             132
+#define IDS_COLOR_MORECOLORS            133
 #define IDR_MISC                        135
 #define IDD_PREFTASK_PAGE               138
 #define IDD_PREFGEN_PAGE                139

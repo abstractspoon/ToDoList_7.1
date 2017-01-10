@@ -610,7 +610,9 @@ BOOL CToDoCtrl::OnInitDialog()
 
 	InitEditPrompts();
 
-	m_cpColour.SetWindowText(CString((LPCTSTR)IDS_SAMPLETEXT));
+	m_cpColour.SetWindowText(CEnString(IDS_COLOR_SAMPLETEXT));
+	m_cpColour.SetDefaultText(CEnString(IDS_COLOR_AUTOMATIC));
+	m_cpColour.SetCustomText(CEnString(IDS_COLOR_MORECOLORS));
 	
 	// tree drag drop
 	m_treeDragDrop.Initialize(this);
