@@ -5166,7 +5166,7 @@ BOOL CToDoCtrl::DeleteSelectedTask(BOOL bWarnUser, BOOL bResetSel)
 	DWORD dwDelTaskID = ((nSelCount == 1) ? GetTaskID(selection.GetHead()) : 0);
 
 	{
-		HOLD_REDRAW(NULL, m_taskTree.Tree());
+		HOLD_REDRAW(NULL, m_taskTree.GetSafeHwnd());
 		POSITION pos = selection.GetHeadPosition();
 
 		while (pos)
