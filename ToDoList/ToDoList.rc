@@ -4475,6 +4475,8 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_FIND_TITLE          "Find In Comments"
     IDS_REPLACE_TITLE       "Replace In Comments"
+    IDS_CAD_BROWSEIMAGES    "Images..."
+    IDS_CAD_INSERTSYMBOL    "Symbols..."
 END
 
 STRINGTABLE DISCARDABLE 
