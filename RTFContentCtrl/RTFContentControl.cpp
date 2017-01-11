@@ -23,6 +23,7 @@
 #include "..\shared\enmenu.h"
 #include "..\shared\toolbarhelper.h"
 #include "..\shared\clipboard.h"
+#include "..\shared\localizer.h"
 
 #include "..\Interfaces\uitheme.h"
 #include "..\Interfaces\itasklist.h"
@@ -82,6 +83,12 @@ CRTFContentControl::CRTFContentControl(CRtfHtmlConverter& rtfHtml)
 
 	// add custom protocol to comments field for linking to task IDs
 	m_rtf.AddProtocol(TDL_PROTOCOL, TRUE);
+
+	CString sTooltip;
+	sTooltip.LoadString(ID_HELP);
+	Misc::Trim(sTooltip);
+
+	CWinHelpButton::SetDefaultTooltip(CLocalizer::TranslateText((LPCTSTR)sTooltip));
 }
 
 CRTFContentControl::~CRTFContentControl()
