@@ -62,8 +62,10 @@ const UINT VIEWS[] = { LVS_SMALLICON, LVS_ICON, LVS_LIST, LVS_REPORT };
 FILERESULT::FILERESULT(LPCTSTR szFilePath, DWORD size) 
 	: 
 	dwSize(size),
-	sFilePath(FileMisc::GetFileNameFromPath(szFilePath))
+	sFilePath(szFilePath)
 { 
+	if (szFilePath && *szFilePath)
+		sFileName = FileMisc::GetFileNameFromPath(szFilePath);
 }
 
 /////////////////////////////////////////////////////////////////////////////
