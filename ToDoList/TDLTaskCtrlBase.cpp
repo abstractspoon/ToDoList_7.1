@@ -4099,7 +4099,15 @@ void CTDLTaskCtrlBase::SetModified(TDC_ATTRIBUTE nAttrib)
 		
 	case TDCA_TASKNAMEORCOMMENTS:
 	case TDCA_ANYTEXTATTRIBUTE:
+		ASSERT(0);
+		break;
+
 	default:
+		if (CTDCCustomAttributeHelper::IsCustomAttribute(nAttrib))
+		{
+			nRecalcColID = TDCC_ALL;
+			break;
+		}
 		ASSERT(0);
 		break;
 	}

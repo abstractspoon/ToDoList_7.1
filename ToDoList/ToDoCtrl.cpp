@@ -2374,7 +2374,8 @@ BOOL CToDoCtrl::SetSelectedTaskCustomAttributeData(const CString& sAttribID, con
 	
 	if (nRes == SET_CHANGE)
 	{
- 		SetModified(TRUE, TDCA_CUSTOMATTRIB, dwModTaskID);
+		TDC_ATTRIBUTE nAttrib = CTDCCustomAttributeHelper::GetAttributeID(sAttribID, m_aCustomAttribDefs);
+ 		SetModified(TRUE, nAttrib, dwModTaskID);
 
 		// update UI except if it's already up to date
 		CUSTOMATTRIBCTRLITEM ctrl;
