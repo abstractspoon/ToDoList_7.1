@@ -696,8 +696,6 @@ bool CRTFContentControl::ProcessMessage(MSG* pMsg)
 	if (!IsWindowEnabled())
 		return false;
 
-	// 
-
 	// process editing shortcuts
 	if (m_mgrShortcuts.ProcessMessage(pMsg))
 		return true;

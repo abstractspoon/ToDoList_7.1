@@ -1680,8 +1680,8 @@ void CToDoCtrl::EnableDisableControl(const CTRLITEM& ctrl, DWORD dwTaskID, BOOL 
 		}
 		else
 		{
-			m_cbFileRef.SetReadOnly(bReadOnly);
 			m_cbFileRef.EnableWindow(TRUE);
+			m_cbFileRef.SetReadOnly(bReadOnly);
 		}
 		return;
 

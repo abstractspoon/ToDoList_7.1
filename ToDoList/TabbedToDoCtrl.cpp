@@ -2079,6 +2079,9 @@ CString CTabbedToDoCtrl::GetControlDescription(const CWnd* pCtrl) const
 
 BOOL CTabbedToDoCtrl::DeleteSelectedTask(BOOL bWarnUser, BOOL bResetSel)
 {
+	if (IsReadOnly())
+		return FALSE;
+
 	// Work out what to select after the deletion
 	DWORD dwNextSelID = 0;
 

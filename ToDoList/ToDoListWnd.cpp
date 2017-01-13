@@ -4997,7 +4997,7 @@ void CToDoListWnd::UpdateGlobalHotkey()
 void CToDoListWnd::RefreshPauseTimeTracking()
 {
 	BOOL bPauseAll = (((m_wndSessionStatus.IsLocked() || m_wndSessionStatus.IsScreenSaverActive()) && !Prefs().GetTrackOnScreenSaver()) || 
-					       (m_wndSessionStatus.IsHibernated() && !Prefs().GetTrackHibernated()));
+					  (m_wndSessionStatus.IsHibernated() && !Prefs().GetTrackHibernated()));
 
 	BOOL bTrackActiveOnly = !Prefs().GetTrackNonActiveTasklists();
 	int nCtrl = GetTDCCount();

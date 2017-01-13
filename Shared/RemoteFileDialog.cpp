@@ -64,7 +64,7 @@ FILERESULT::FILERESULT(LPCTSTR szFilePath, DWORD size)
 	dwSize(size),
 	sFilePath(szFilePath)
 { 
-	if (szFilePath && *szFilePath)
+	if (!Misc::IsEmpty(szFilePath))
 		sFileName = FileMisc::GetFileNameFromPath(szFilePath);
 }
 
