@@ -532,8 +532,8 @@ BOOL CRTFContentControl::GetClipboardHtmlForPasting(CString& sHtml, CString& sSo
 		if (!sHtml.IsEmpty())
 		{
 #ifdef _UNICODE
-			// convert back to Ansi for translation
-			Misc::EncodeAsMultiByte(sHtml);
+			// convert back to UTF8 for translation
+			Misc::EncodeAsMultiByte(sHtml, CP_UTF8);
 #endif
 			return TRUE;
 		}
