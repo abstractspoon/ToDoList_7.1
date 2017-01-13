@@ -435,7 +435,7 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CRTFContentControl::InitShortcutManager()
 {
-	if (!m_mgrShortcuts.Initialize(this, NULL, 0))
+	if (!m_mgrShortcuts.Initialize(this, NULL, NULL, 0))
 		return;
 
 	m_mgrShortcuts.AddShortcut(ID_EDIT_COPYFORMATTING,	'C',		HOTKEYF_CONTROL | HOTKEYF_SHIFT);
@@ -695,6 +695,8 @@ bool CRTFContentControl::ProcessMessage(MSG* pMsg)
 {
 	if (!IsWindowEnabled())
 		return false;
+
+	// 
 
 	// process editing shortcuts
 	if (m_mgrShortcuts.ProcessMessage(pMsg))
