@@ -1339,6 +1339,10 @@ SOURCE=.\res\timetrack_toolbar_std.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\todolist.exe.xp.manifest
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\ToDoList.rc2
 # End Source File
 # Begin Source File

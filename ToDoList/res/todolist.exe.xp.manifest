@@ -3,7 +3,7 @@
 	<assemblyIdentity 
 		version="1.0.0.0" 
 		processorArchitecture="X86" 
-		name="AbstractSpoon.ToDoList"
+		name="AbstractSpoon.ToDoList.XP"
 		type="win32" 
 	/> 
 	<description>ToDoList (c) AbstractSpoon</description> 
@@ -19,15 +19,5 @@
 			/> 
 		</dependentAssembly> 
 	</dependency> 
-	<trustInfo>  
-		<security>  
-			<requestedPrivileges>  
-				<requestedExecutionLevel 
-					level="asInvoker" 
-					uiAccess="false"
-				/>  
-			</requestedPrivileges>  
-		</security>  
-	</trustInfo>  
 </assembly>
 
