@@ -8,6 +8,7 @@
 #include "..\shared\datehelper.h"
 #include "..\shared\misc.h"
 #include "..\shared\filemisc.h"
+#include "..\shared\webmisc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
