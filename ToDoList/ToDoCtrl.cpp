@@ -1944,29 +1944,8 @@ void CToDoCtrl::UpdateControls(BOOL bIncComments, HTREEITEM hti)
 		else
 			m_nPercentDone = m_data.CalcTaskPercentDone(dwTaskID);		
 		
-		// special handling for start date/time
-		COleDateTime dateStart = GetSelectedTaskDate(TDCD_START);
-		SetCtrlDate(m_dtcStart, dateStart);
-		m_cbTimeStart.SetOleTime(dateStart.m_dt);
-
-		// special handling for due date/time
-		COleDateTime dateDue = GetSelectedTaskDate(TDCD_DUE);
-		SetCtrlDate(m_dtcDue, dateDue, dateStart);
-		m_cbTimeDue.SetOleTime(dateDue.m_dt);
-
-		// special handling for done date/time
-		COleDateTime dateDone = GetSelectedTaskDate(TDCD_DONE);
-		SetCtrlDate(m_dtcDone, dateDone);
-		m_cbTimeDone.SetOleTime(dateDone.m_dt);
-
 		// recurrence
 		GetSelectedTaskRecurrence(m_tRecurrence);
-
-		// use due date if present else start date
-		if (CDateHelper::IsDateSet(dateDue))
-			m_eRecurrence.SetDefaultDate(dateDue);
-		else
-			m_eRecurrence.SetDefaultDate(dateStart);
 
 		// custom attributes
 		GetSelectedTaskCustomAttributeData(m_mapCustomCtrlData, FALSE);
@@ -1993,16 +1972,13 @@ void CToDoCtrl::UpdateControls(BOOL bIncComments, HTREEITEM hti)
 		m_aTags.RemoveAll();
 		m_aFileRefs.RemoveAll();
 
-		COleDateTime date;
-		SetCtrlDate(m_dtcDue, date);
-		SetCtrlDate(m_dtcDone, date);
-		SetCtrlDate(m_dtcStart, date);
-
 		m_eTimeSpent.EnableButton(ID_TIME_TRACK, FALSE);
 		m_eDependency.EnableButton(ID_DEPENDS_LINK, FALSE);
 
 		m_mapCustomCtrlData.RemoveAll();
 	}
+
+	UpdateDateTimeControls(hti != NULL);
 
 	// update data controls excluding comments
 	UpdateData(FALSE);
@@ -2031,6 +2007,41 @@ void CToDoCtrl::UpdateControls(BOOL bIncComments, HTREEITEM hti)
 	EnableDisableControls(hti);
 	
 	m_treeDragDrop.EnableDragDrop(!bReadOnly);
+}
+
+void CToDoCtrl::UpdateDateTimeControls(BOOL bHasSelection)
+{
+	if (bHasSelection)
+	{
+		COleDateTime dateStart = GetSelectedTaskDate(TDCD_START);
+		SetCtrlDate(m_dtcStart, dateStart);
+		m_cbTimeStart.SetOleTime(dateStart.m_dt);
+		
+		COleDateTime dateDue = GetSelectedTaskDate(TDCD_DUE);
+		SetCtrlDate(m_dtcDue, dateDue, dateStart);
+		m_cbTimeDue.SetOleTime(dateDue.m_dt);
+		
+		COleDateTime dateDone = GetSelectedTaskDate(TDCD_DONE);
+		SetCtrlDate(m_dtcDone, dateDone);
+		m_cbTimeDone.SetOleTime(dateDone.m_dt);
+
+		// use due date if present else start date
+		if (CDateHelper::IsDateSet(dateDue))
+			m_eRecurrence.SetDefaultDate(dateDue);
+		else
+			m_eRecurrence.SetDefaultDate(dateStart);
+	}
+	else
+	{
+		COleDateTime date;
+		SetCtrlDate(m_dtcDue, date);
+		SetCtrlDate(m_dtcDone, date);
+		SetCtrlDate(m_dtcStart, date);
+
+		m_cbTimeStart.SetOleTime(-1);
+		m_cbTimeDue.SetOleTime(-1);
+		m_cbTimeDone.SetOleTime(-1);
+	}
 }
 
 void CToDoCtrl::UpdateTasklistVisibility()
@@ -4581,15 +4592,15 @@ BOOL CToDoCtrl::SetSelectedTaskFileRefs(const CStringArray& aFilePaths, BOOL bAp
 
 BOOL CToDoCtrl::SetSelectedTaskDependencies(const CStringArray& aDepends)
 {
-	return SetSelectedTaskDependencies(aDepends, FALSE);
+	return SetSelectedTaskDependencies(aDepends, FALSE, FALSE);
 }
 
 BOOL CToDoCtrl::AppendSelectedTaskDependencies(const CStringArray& aDepends)
 {
-	return SetSelectedTaskDependencies(aDepends, TRUE);
+	return SetSelectedTaskDependencies(aDepends, TRUE, FALSE);
 }
 
-BOOL CToDoCtrl::SetSelectedTaskDependencies(const CStringArray& aDepends, BOOL bAppend)
+BOOL CToDoCtrl::SetSelectedTaskDependencies(const CStringArray& aDepends, BOOL bAppend, BOOL bEdit)
 {
 	DWORD dwRefTaskID = 0;
 	TDC_SET nRes = SetSelectedTaskArray(TDCA_DEPENDENCY, aDepends, bAppend, dwRefTaskID);
@@ -4599,10 +4610,14 @@ BOOL CToDoCtrl::SetSelectedTaskDependencies(const CStringArray& aDepends, BOOL b
 		// Start and due dates might also have changed
 		if (HasStyle(TDCS_AUTOADJUSTDEPENDENCYDATES))
 		{
-			UpdateControls(FALSE);
+			UpdateDateTimeControls(TRUE);
 		}
-		else
+		else if (!bEdit)
 		{
+			// We only update the control if not editing otherwise
+			// if the user is partially way thru typing a task ID
+			// and the partial ID does not exist then it gets 
+			// removed from the edit field. 
 			ASSERT(dwRefTaskID);
 			m_sDepends = Misc::FormatArray(aDepends);
 			UpdateDataEx(this, IDC_DEPENDS, m_sDepends, FALSE);
