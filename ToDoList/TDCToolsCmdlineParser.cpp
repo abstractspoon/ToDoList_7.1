@@ -274,6 +274,9 @@ BOOL CTDCToolsCmdlineParser::ReplaceArgument(int nArg, LPCTSTR szValue)
 	CString sValue(szValue);
 	Misc::Trim(sValue);
 
+	if (WebMisc::IsURL(m_sCmdLine))
+		sValue.Replace(_T(" "), _T("%20"));
+
 	if (m_sCmdLine.Replace(cla.sPlaceHolder, sValue))
 	{
 		// also check if there are any user references to this variable name
