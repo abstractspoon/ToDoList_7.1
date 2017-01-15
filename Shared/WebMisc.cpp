@@ -91,9 +91,6 @@ BOOL WebMisc::IsBrowser(LPCTSTR szFilePath)
 			(sFileName.CompareNoCase(_T("opera")) == 0));
 }
 
-
-
-
 int WebMisc::ExtractFirstHtmlLink(const CString& sHtml, CString& sLink, CString& sText)
 {
 	return ExtractNextHtmlLink(sHtml, 0, sLink, sText);
