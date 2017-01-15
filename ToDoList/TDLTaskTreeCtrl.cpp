@@ -1850,7 +1850,7 @@ BOOL CTDLTaskTreeCtrl::SelectTasksInHistory(BOOL bForward)
 	BOOL bSelected = (bForward ? TSH().NextSelection() : TSH().PrevSelection());
 
 	if (bSelected)
-		InvalidateAll();
+		SyncColumnSelectionToTasks();
 
 	return bSelected;
 }
