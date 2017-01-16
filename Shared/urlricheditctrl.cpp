@@ -767,7 +767,7 @@ void CUrlRichEditCtrl::Paste(BOOL bAppendSourceUrl)
 {
 	CString sClipText;
 	
-	// try pasting a file path unless it's an
+	// try pasting a file path
 	if (CClipboard().GetText(sClipText) && FileMisc::IsPath(sClipText))
 	{
 		PathReplaceSel(sClipText, TRUE);
