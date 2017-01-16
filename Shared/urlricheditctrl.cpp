@@ -627,7 +627,9 @@ CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIP
 		if (format && format == formats[nFmt])
 			return format;
 		
-		if (dataobj.IsDataAvailable(formats[nFmt]))
+		FORMATETC fmtEtc = { formats[nFmt], 0 };
+
+		if (dataobj.IsDataAvailable(formats[nFmt], &fmtEtc))
 			return formats[nFmt];
 	}
 	

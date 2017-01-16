@@ -266,12 +266,14 @@ CLIPFORMAT CRulerRichEdit::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFO
 		if (format && format == formats[nFmt])
 			return format;
 		
-		if (dataobj.IsDataAvailable(formats[nFmt]))
+		FORMATETC fmtEtc = { formats[nFmt], 0 };
+
+		if (dataobj.IsDataAvailable(formats[nFmt], &fmtEtc))
 			return formats[nFmt];
 	}
 	
 	// all else
-	return CF_HDROP; 
+	return format;
 }
 
 UINT CRulerRichEdit::OnGetDlgCode() 
