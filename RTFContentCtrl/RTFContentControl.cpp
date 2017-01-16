@@ -517,6 +517,8 @@ BOOL CRTFContentControl::GetClipboardHtmlForPasting(CString& sHtml, CString& sSo
 	if (!cb.HasFormat(CBF_RTF) && 
 		!cb.HasFormat(CBF_RETEXTOBJ) && 
 		!cb.HasFormat(CBF_EMBEDDEDOBJ) &&
+		!cb.HasFormat(CF_DIB) &&
+		!cb.HasFormat(CF_BITMAP) &&
 		cb.GetText(sHtml, CBF_HTML))
 	{
 #ifdef _UNICODE
@@ -561,8 +563,8 @@ BOOL CRTFContentControl::Paste(BOOL bSimple)
 		}
 		else // may need conversion
 		{
-			// if there is HTML but not RTF then convert the HTML to RTF
-			// and add it to the current clipboard contents
+			// if there is HTML but not RTF or an image then convert the 
+			// HTML to RTF and add it to the current clipboard contents
 			CClipboardBackup cbb(*this);
 			BOOL bClipboardSaved = FALSE;
 
