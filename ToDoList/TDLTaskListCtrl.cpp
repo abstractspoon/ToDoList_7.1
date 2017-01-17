@@ -450,16 +450,6 @@ LRESULT CTDLTaskListCtrl::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM 
 			{
 				switch (pNMHDR->code)
 				{
-// 				case NM_CLICK:
-// 				case NM_DBLCLK:
-// 					{
-// 						NMITEMACTIVATE* pNMIA = (NMITEMACTIVATE*)pNMHDR;
-// 
-// 						if (HandleClientColumnClick(pNMIA->ptAction, (pNMHDR->code == NM_DBLCLK)))
-// 							return 0L; // eat
-// 					}
-// 					break;
-
  				case LVN_BEGINLABELEDIT:
 					// always eat this because we handle it ourselves
  					return 1L;
