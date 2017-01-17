@@ -481,7 +481,6 @@ protected:
 	static BOOL InvalidateItem(CListCtrl& lc, int nItem, BOOL bUpdate = FALSE);
 	static CPoint CalcColumnIconTopLeft(const CRect& rSubItem, int nImage = 0, int nCount = 1);
 	static BOOL CalcColumnIconRect(const CRect& rSubItem, CRect& rIcon, int nImage = 0, int nCount = 1);
-	static void PrepareInfoTip(HWND hwndTooltip);
 	static BOOL PtInClientRect(POINT point, HWND hWnd, BOOL bScreenCoords);
 
 	static int CALLBACK SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort); 

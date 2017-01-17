@@ -5691,15 +5691,6 @@ BOOL CTDLTaskCtrlBase::InitCheckboxImageList()
 	return (NULL != m_ilCheckboxes.GetSafeHandle());
 }
 
-void CTDLTaskCtrlBase::PrepareInfoTip(HWND /*hwndTooltip*/)
-{	
-//	ASSERT(hwndTooltip);
-
-// 	::SendMessage(hwndTooltip, TTM_SETDELAYTIME, 30000, MAKELPARAM(TTDT_AUTOPOP, 0));
-// 	::SendMessage(hwndTooltip, TTM_SETDELAYTIME, 1000,  MAKELPARAM(TTDT_INITIAL, 0));
-// 	::SendMessage(hwndTooltip, TTM_SETDELAYTIME, 100,   MAKELPARAM(TTDT_RESHOW, 0));
-}
-
 CString CTDLTaskCtrlBase::FormatInfoTip(DWORD dwTaskID) const
 {
 	const TODOITEM* pTDI = m_data.GetTask(dwTaskID);

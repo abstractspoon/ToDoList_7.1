@@ -213,9 +213,6 @@ void CTDLTaskTreeCtrl::OnStyleUpdated(TDC_STYLE nStyle, BOOL bOn, BOOL bDoUpdate
 	{
 	case TDCS_SHOWINFOTIPS:
 		m_tcTasks.ModifyStyle(bOn ? 0 : TVS_INFOTIP, (bOn ? TVS_INFOTIP : 0));
-		
-		if (bOn)
-			PrepareInfoTip(TreeView_GetToolTips(m_tcTasks));
 		break;
 	}
 }

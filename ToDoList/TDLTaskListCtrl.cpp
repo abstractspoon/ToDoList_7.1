@@ -151,9 +151,6 @@ void CTDLTaskListCtrl::OnStyleUpdated(TDC_STYLE nStyle, BOOL bOn, BOOL bDoUpdate
 	{
 	case TDCS_SHOWINFOTIPS:
 		ListView_SetExtendedListViewStyleEx(m_lcTasks, LVS_EX_INFOTIP, (bOn ? LVS_EX_INFOTIP : 0));
-		
-		if (bOn)
-			PrepareInfoTip((HWND)m_lcTasks.SendMessage(LVM_GETTOOLTIPS));
 		break;
 	}
 
