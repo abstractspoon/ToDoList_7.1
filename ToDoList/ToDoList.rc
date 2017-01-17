@@ -2947,7 +2947,7 @@ BEGIN
     BEGIN
         MENUITEM "Show Project Name Fiel&d",    ID_VIEW_PROJECTNAME
         MENUITEM SEPARATOR
-        MENUITEM "&Maximise Tasklist",          ID_MAXTASKLIST
+        MENUITEM "&Maximise Task View",         ID_MAXTASKLIST
         MENUITEM "Ma&ximise Comments",          ID_MAXCOMMENTS
         MENUITEM SEPARATOR
         MENUITEM "T&oggle between Task Tree and List View", 
@@ -3894,7 +3894,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_MAXTASKLIST          "\nMaximise Tasklist"
+    ID_MAXTASKLIST          "\nMaximise Task View"
 END
 
 STRINGTABLE DISCARDABLE 
