@@ -634,9 +634,15 @@ void CTDLTaskCtrlBase::OnCustomAttributeChange()
 		m_hdrColumns.ShowItem(nItem, attribDef.bEnabled);
 
 		if (attribDef.bEnabled)
+		{
 			m_hdrColumns.SetItemText(nItem, attribDef.GetColumnTitle());
+			m_hdrColumns.SetItemToolTip(nItem, attribDef.GetToolTip());
+		}
 		else
+		{
 			m_hdrColumns.SetItemText(nItem, _T(""));
+			m_hdrColumns.SetItemToolTip(nItem, _T(""));
+		}
 	}
 
 	UpdateAttributePaneVisibility();

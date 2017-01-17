@@ -547,6 +547,11 @@ struct TDCCUSTOMATTRIBUTEDEFINITION
 		return (sColumnTitle.IsEmpty() ? sLabel : sColumnTitle);
 	}
 
+	CString GetToolTip() const
+	{
+		return (sColumnTitle.GetLength() > sLabel.GetLength() ? sColumnTitle : sLabel);
+	}
+
 	inline TDC_COLUMN GetColumnID() const { return nColID; }
 	inline TDC_ATTRIBUTE GetAttributeID() const { return nAttribID; }
 	inline DWORD GetAttributeType() const { return dwAttribType; }
