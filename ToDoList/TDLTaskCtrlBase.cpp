@@ -3927,7 +3927,7 @@ BOOL CTDLTaskCtrlBase::ItemColumnSupportsClickHandling(int nItem, TDC_COLUMN nCo
 		break;
 		
 	case TDCC_REMINDER:
-		bSupported = !m_data.IsTaskDone(dwTaskID);
+		bSupported = !m_data.IsTaskDone(dwTaskID, TDCCHECKALL);
 		break;
 
 	case TDCC_FILEREF:
