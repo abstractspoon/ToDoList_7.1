@@ -226,8 +226,145 @@ int CTDLTaskCtrlBase::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	RecalcColumnWidths();
 	OnColumnVisibilityChange();
 	PostResize();
-	
+
+	// Tooltips for columns
+	if (m_tooltipColumns.Create(this))
+	{
+		m_tooltipColumns.ModifyStyleEx(0, WS_EX_TRANSPARENT);
+		m_tooltipColumns.SetDelayTime(TTDT_INITIAL, 50);
+		m_tooltipColumns.SetDelayTime(TTDT_AUTOPOP, 10000);
+
+		// Disable columns own tooltips
+		m_lcColumns.GetToolTips()->Activate(FALSE);
+	}
+
 	return 0;
+}
+
+int CTDLTaskCtrlBase::OnToolHitTest(CPoint point, TOOLINFO * pTI) const
+{
+	CWnd::ClientToScreen(&point);
+
+	CString sTooltip;
+	int nHitTest = GetTaskColumnTooltip(point, sTooltip);
+	
+	if (nHitTest == -1)
+		return -1;
+
+	// Fill in the TOOLINFO structure
+	pTI->hwnd = m_lcColumns;
+	pTI->uId = (UINT)nHitTest;
+	pTI->lpszText = _tcsdup(sTooltip);
+	pTI->uFlags = 0;
+
+	CWnd::GetClientRect(&pTI->rect);
+
+	return nHitTest;
+}
+
+int CTDLTaskCtrlBase::GetUniqueToolTipID(DWORD dwTaskID, TDC_COLUMN nColID, int nIndex)
+{
+	ASSERT(nIndex < 100);
+	ASSERT(nColID < TDCC_COUNT);
+
+	return (int)((((dwTaskID * TDCC_COUNT) + nColID) * 100) + nIndex);
+}
+
+int CTDLTaskCtrlBase::GetTaskColumnTooltip(const CPoint& ptScreen, CString& sTooltip) const
+{
+	LVHITTESTINFO lvHit = { 0 };
+
+	lvHit.pt = ptScreen;
+	m_lcColumns.ScreenToClient(&lvHit.pt);
+
+	ListView_SubItemHitTest(m_lcColumns, &lvHit);
+
+	if ((lvHit.iItem < 0) || (lvHit.iSubItem < 0))
+		return -1;
+
+	TDC_COLUMN nColID = GetColumnID(lvHit.iSubItem);
+	ASSERT(nColID != TDCC_NONE);
+
+	DWORD dwTaskID = GetColumnItemTaskID(lvHit.iItem);
+	ASSERT(dwTaskID);
+
+	const TODOITEM* pTDI = m_data.GetTask(dwTaskID);
+
+	if (!pTDI)
+	{
+		ASSERT(0);
+		return -1;
+	}
+
+	switch (nColID)
+	{
+	case TDCC_RECURRENCE:
+		break;
+
+	case TDCC_RECENTEDIT:
+	case TDCC_LASTMOD:
+		break;
+
+	case TDCC_DEPENDENCY:
+		break;
+
+	case TDCC_DONE:
+		break;
+
+	case TDCC_TRACKTIME:
+		break;
+
+	case TDCC_REMINDER:
+		break;
+
+	case TDCC_FILEREF:
+		{
+			CRect rSubItem;
+			m_lcColumns.GetSubItemRect(lvHit.iItem, lvHit.iSubItem, LVIR_BOUNDS, rSubItem);
+
+			int nNumFiles = pTDI->aFileLinks.GetSize(), nIndex = -1;
+
+			if (nNumFiles == 1)
+			{
+				nIndex = 0;
+			}
+			else
+			{
+				for (int nFile = 0; nFile < nNumFiles; nFile++)
+				{
+					CRect rIcon;
+
+					if (!CalcColumnIconRect(rSubItem, rIcon, nFile, nNumFiles))
+					{
+						break;
+					}
+					else if (rIcon.PtInRect(lvHit.pt))
+					{
+						nIndex = nFile;
+						break;
+					}
+				}
+			}
+
+			if (nIndex != -1)
+			{
+				sTooltip = FileMisc::GetFullPath(pTDI->aFileLinks[nIndex], m_sTasklistFolder);
+				return GetUniqueToolTipID(dwTaskID, nColID, nIndex);
+			}
+		}
+		break;
+
+	case TDCC_ALL:
+	case TDCC_NONE:
+	case TDCC_CLIENT:
+		ASSERT(0);
+		return -1;
+
+	default:
+		break;
+	}
+	
+	return -1;
 }
 
 void CTDLTaskCtrlBase::UpdateSelectedTaskPath()
@@ -5848,6 +5985,8 @@ CString CTDLTaskCtrlBase::FormatInfoTip(DWORD dwTaskID) const
 
 BOOL CTDLTaskCtrlBase::PreTranslateMessage(MSG* pMsg)
 {
+	m_tooltipColumns.FilterToolTipMessage(pMsg);
+
 	switch (pMsg->message)
 	{
 	case WM_KEYDOWN:

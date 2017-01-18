@@ -26,6 +26,7 @@
 #include "..\shared\iconcache.h"
 #include "..\shared\fontcache.h"
 #include "..\shared\graphicsmisc.h"
+#include "..\shared\tooltipctrlex.h"
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -259,6 +260,7 @@ public:
 protected:
 	CListCtrl m_lcColumns;
 	CEnHeaderCtrl m_hdrColumns, m_hdrTasks;
+	CToolTipCtrlEx m_tooltipColumns;
 
 	const CToDoCtrlData& m_data;
 	const CToDoCtrlFind& m_find;
@@ -316,11 +318,12 @@ protected:
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg BOOL OnHelpInfo(HELPINFO* lpHelpInfo);
-		
+
 	DECLARE_MESSAGE_MAP()
 
 	// pseudo-handlers
 	void OnHeaderClick(TDC_COLUMN nColID);
+	virtual int OnToolHitTest(CPoint point, TOOLINFO * pTI) const;
 
 protected:
 	// base-class overrides
@@ -369,6 +372,7 @@ protected:
 	BOOL FormatDate(const COleDateTime& date, TDC_DATE nDate, CString& sDate, CString& sTime, CString& sDow, BOOL bCustomWantsTime = FALSE) const;
 	CString GetTaskColumnText(DWORD dwTaskID, const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, TDC_COLUMN nColID) const;
 	CString GetTaskCustomColumnText(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, TDC_COLUMN nColID) const;
+	int GetTaskColumnTooltip(const CPoint& ptScreen, CString& sTooltip) const;
 	BOOL TaskHasReminder(DWORD dwTaskID) const;
 	BOOL GetTaskReminder(DWORD dwTaskID, COleDateTime& dtRem) const;
 	time_t GetTaskReminder(DWORD dwTaskID) const;
@@ -482,6 +486,7 @@ protected:
 	static CPoint CalcColumnIconTopLeft(const CRect& rSubItem, int nImage = 0, int nCount = 1);
 	static BOOL CalcColumnIconRect(const CRect& rSubItem, CRect& rIcon, int nImage = 0, int nCount = 1);
 	static BOOL PtInClientRect(POINT point, HWND hWnd, BOOL bScreenCoords);
+	static int GetUniqueToolTipID(DWORD dwTaskID, TDC_COLUMN nColID, int nIndex = 0);
 
 	static int CALLBACK SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort); 
 	static int CALLBACK SortFuncMulti(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort); 

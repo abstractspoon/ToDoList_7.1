@@ -525,6 +525,7 @@ LRESULT CTDLTaskListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARA
 				break;
 				
 			case TTN_NEEDTEXT:
+				if (hwnd == m_hdrTasks)
 				{
 					// this has a nasty habit of redrawing the current item label
 					// even when a tooltip is not displayed which caused any
