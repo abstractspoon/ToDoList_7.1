@@ -624,7 +624,7 @@ CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIP
 
 	for (int nFmt = 0; nFmt < nNumFmts; nFmt++)
 	{
-		if (format && format == formats[nFmt])
+		if (format && (format == formats[nFmt]))
 			return format;
 		
 		FORMATETC fmtEtc = { formats[nFmt], 0 };
@@ -633,11 +633,7 @@ CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIP
 			return formats[nFmt];
 	}
 	
-#ifndef _UNICODE
-	return CF_TEXT;
-#else
-	return CF_UNICODETEXT;
-#endif
+	return format;
 }
 
 HRESULT CUrlRichEditCtrl::GetDragDropEffect(BOOL fDrag, DWORD grfKeyState, LPDWORD pdwEffect)
