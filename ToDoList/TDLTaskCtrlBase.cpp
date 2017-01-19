@@ -233,9 +233,13 @@ int CTDLTaskCtrlBase::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_tooltipColumns.ModifyStyleEx(0, WS_EX_TRANSPARENT);
 		m_tooltipColumns.SetDelayTime(TTDT_INITIAL, 50);
 		m_tooltipColumns.SetDelayTime(TTDT_AUTOPOP, 10000);
+		m_tooltipColumns.SetMaxTipWidth((UINT)(WORD)-1);
 
 		// Disable columns own tooltips
-		m_lcColumns.GetToolTips()->Activate(FALSE);
+		HWND hwndTooltips = (HWND)m_lcColumns.SendMessage(LVM_GETTOOLTIPS);
+
+		if (hwndTooltips)
+			::SendMessage(hwndTooltips, TTM_ACTIVATE, TRUE, 0);
 	}
 
 	return 0;
@@ -272,20 +276,13 @@ int CTDLTaskCtrlBase::GetUniqueToolTipID(DWORD dwTaskID, TDC_COLUMN nColID, int 
 
 int CTDLTaskCtrlBase::GetTaskColumnTooltip(const CPoint& ptScreen, CString& sTooltip) const
 {
-	LVHITTESTINFO lvHit = { 0 };
-
-	lvHit.pt = ptScreen;
-	m_lcColumns.ScreenToClient(&lvHit.pt);
-
-	ListView_SubItemHitTest(m_lcColumns, &lvHit);
-
-	if ((lvHit.iItem < 0) || (lvHit.iSubItem < 0))
+	TDC_COLUMN nColID = TDCC_NONE;
+	DWORD dwTaskID = 0;
+	
+	if (HitTestColumnsItem(ptScreen, FALSE, nColID, &dwTaskID) == -1)
 		return -1;
 
-	TDC_COLUMN nColID = GetColumnID(lvHit.iSubItem);
 	ASSERT(nColID != TDCC_NONE);
-
-	DWORD dwTaskID = GetColumnItemTaskID(lvHit.iItem);
 	ASSERT(dwTaskID);
 
 	const TODOITEM* pTDI = m_data.GetTask(dwTaskID);
@@ -302,49 +299,67 @@ int CTDLTaskCtrlBase::GetTaskColumnTooltip(const CPoint& ptScreen, CString& sToo
 		break;
 
 	case TDCC_RECENTEDIT:
-	case TDCC_LASTMOD:
+		if (pTDI->IsRecentlyEdited())
+		{
+			sTooltip = CDateHelper::FormatDate(pTDI->dateLastMod, (DHFD_DOW | DHFD_TIME | DHFD_NOSEC));
+			return GetUniqueToolTipID(dwTaskID, nColID);
+		}
 		break;
 
 	case TDCC_DEPENDENCY:
+		if (pTDI->aDependencies.GetSize())
+		{
+			// Build list of Names and IDs
+			for (int nDepend = 0; nDepend < pTDI->aDependencies.GetSize(); nDepend++)
+			{
+				if (nDepend > 0)
+					sTooltip += '\n';
+
+				const CString& sDepends = Misc::GetItem(pTDI->aDependencies, nDepend);
+				DWORD dwDependID = (DWORD)_ttol(sDepends);
+				
+				sTooltip += sDepends; // always
+
+				// If local, append task name
+				if (dwDependID > 0)
+				{
+					sTooltip += ' ';
+					sTooltip += '(';
+					sTooltip += m_data.GetTaskTitle(dwDependID);
+					sTooltip += ')';
+				}
+			}			
+			return GetUniqueToolTipID(dwTaskID, nColID);
+		}
 		break;
 
 	case TDCC_DONE:
+		if (pTDI->IsDone())
+		{
+			sTooltip = CDateHelper::FormatDate(pTDI->dateDone, (DHFD_DOW | DHFD_TIME | DHFD_NOSEC));
+			return GetUniqueToolTipID(dwTaskID, nColID);
+		}
 		break;
 
 	case TDCC_TRACKTIME:
 		break;
 
 	case TDCC_REMINDER:
+		if (!HasStyle(TDCS_SHOWREMINDERSASDATEANDTIME))
+		{
+			time_t tRem = GetTaskReminder(dwTaskID);
+			
+			if (tRem != 0)
+			{
+				sTooltip = CDateHelper::FormatDate(tRem, (DHFD_DOW | DHFD_TIME | DHFD_NOSEC));
+				return GetUniqueToolTipID(dwTaskID, nColID);
+			}
+		}
 		break;
 
 	case TDCC_FILEREF:
 		{
-			CRect rSubItem;
-			m_lcColumns.GetSubItemRect(lvHit.iItem, lvHit.iSubItem, LVIR_BOUNDS, rSubItem);
-
-			int nNumFiles = pTDI->aFileLinks.GetSize(), nIndex = -1;
-
-			if (nNumFiles == 1)
-			{
-				nIndex = 0;
-			}
-			else
-			{
-				for (int nFile = 0; nFile < nNumFiles; nFile++)
-				{
-					CRect rIcon;
-
-					if (!CalcColumnIconRect(rSubItem, rIcon, nFile, nNumFiles))
-					{
-						break;
-					}
-					else if (rIcon.PtInRect(lvHit.pt))
-					{
-						nIndex = nFile;
-						break;
-					}
-				}
-			}
+			int nIndex = HitTestFileLinkColumn(ptScreen);
 
 			if (nIndex != -1)
 			{
@@ -1289,7 +1304,7 @@ DWORD CTDLTaskCtrlBase::HitTestTask(const CPoint& ptScreen) const
 	return dwTaskID;
 }
 
-int CTDLTaskCtrlBase::HitTestColumnsItem(const CPoint& pt, BOOL bClient, TDC_COLUMN& nColID, DWORD* pTaskID) const
+int CTDLTaskCtrlBase::HitTestColumnsItem(const CPoint& pt, BOOL bClient, TDC_COLUMN& nColID, DWORD* pTaskID, LPRECT pRect) const
 {
 	LVHITTESTINFO lvHit = { 0 };
 	lvHit.pt = pt;
@@ -1310,8 +1325,60 @@ int CTDLTaskCtrlBase::HitTestColumnsItem(const CPoint& pt, BOOL bClient, TDC_COL
 		*pTaskID = GetColumnItemTaskID(lvHit.iItem);
 		ASSERT(*pTaskID);
 	}
+
+	if (pRect)
+	{
+		ListView_GetSubItemRect(m_lcColumns, lvHit.iItem, lvHit.iSubItem, LVIR_BOUNDS, pRect);
+	}
 		
 	return lvHit.iItem;
+}
+
+int CTDLTaskCtrlBase::HitTestFileLinkColumn(const CPoint& ptScreen) const
+{
+	TDC_COLUMN nColID = TDCC_NONE;
+	DWORD dwTaskID = 0;
+	CRect rSubItem;
+	
+	if (HitTestColumnsItem(ptScreen, FALSE, nColID, &dwTaskID, &rSubItem) == -1)
+	{
+		ASSERT(0);
+		return -1;
+	}
+	ASSERT(nColID == TDCC_FILEREF);
+
+	const TODOITEM* pTDI = m_data.GetTask(dwTaskID);
+	
+	if (!pTDI)
+	{
+		ASSERT(0);
+		return -1;
+	}
+	
+	int nNumFiles = pTDI->aFileLinks.GetSize();
+	
+	if (nNumFiles == 1)
+	{
+		return 0;
+	}
+	else
+	{
+		CPoint ptList(ptScreen);
+		m_lcColumns.ScreenToClient(&ptList);
+		
+		for (int nFile = 0; nFile < nNumFiles; nFile++)
+		{
+			CRect rIcon;
+			
+			if (!CalcColumnIconRect(rSubItem, rIcon, nFile, nNumFiles))
+				break;
+
+			if (rIcon.PtInRect(ptList))
+				return nFile;
+		}
+	}
+
+	return -1;
 }
 
 TDC_HITTEST CTDLTaskCtrlBase::HitTest(const CPoint& ptScreen) const
@@ -1365,18 +1432,6 @@ TDC_HITTEST CTDLTaskCtrlBase::HitTest(const CPoint& ptScreen) const
 	return TDCHT_NOWHERE;
 }
 
-BOOL CTDLTaskCtrlBase::PtInClientRect(POINT point, HWND hWnd, BOOL bScreenCoords)
-{
-	CRect rect;
-	
-	if (bScreenCoords)
-		::GetWindowRect(hWnd, rect);
-	else
-		::GetClientRect(hWnd, rect);
-	
-	return rect.PtInRect(point);
-}
-
 DWORD CTDLTaskCtrlBase::HitTestColumnsTask(const CPoint& ptScreen) const
 {
 	// see if we hit a task in the list
@@ -1419,6 +1474,18 @@ TDC_COLUMN CTDLTaskCtrlBase::HitTestColumn(const CPoint& ptScreen) const
 
 	// else
 	return TDCC_NONE;
+}
+
+BOOL CTDLTaskCtrlBase::PtInClientRect(POINT point, HWND hWnd, BOOL bScreenCoords)
+{
+	CRect rect;
+	
+	if (bScreenCoords)
+		::GetWindowRect(hWnd, rect);
+	else
+		::GetClientRect(hWnd, rect);
+	
+	return rect.PtInRect(point);
 }
 
 void CTDLTaskCtrlBase::Release() 
@@ -2071,9 +2138,11 @@ BOOL CTDLTaskCtrlBase::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		if (PtInClientRect(ptScreen, m_lcColumns, TRUE))
 		{
 			TDC_COLUMN nColID = TDCC_NONE;
-			int nHit = HitTestColumnsItem(::GetMessagePos(), FALSE, nColID);
+			CPoint ptCursor(::GetMessagePos());
+
+			int nHit = HitTestColumnsItem(ptCursor, FALSE, nColID);
 			
-			if (ItemColumnSupportsClickHandling(nHit, nColID))
+			if (ItemColumnSupportsClickHandling(nHit, nColID, &ptCursor))
 			{
 				::SetCursor(GraphicsMisc::HandCursor());
 				return TRUE;
@@ -4047,7 +4116,7 @@ void CTDLTaskCtrlBase::OnHeaderClick(TDC_COLUMN nColID)
 	}
 }
 
-BOOL CTDLTaskCtrlBase::ItemColumnSupportsClickHandling(int nItem, TDC_COLUMN nColID) const
+BOOL CTDLTaskCtrlBase::ItemColumnSupportsClickHandling(int nItem, TDC_COLUMN nColID, const CPoint* pCursor) const
 {
 	if ((nItem == -1) || !Misc::ModKeysArePressed(0))
 		return FALSE;
@@ -4074,7 +4143,10 @@ BOOL CTDLTaskCtrlBase::ItemColumnSupportsClickHandling(int nItem, TDC_COLUMN nCo
 		break;
 
 	case TDCC_FILEREF:
-		bSupported = m_data.TaskHasFileRef(dwTaskID);
+		if (pCursor)
+			bSupported = (HitTestFileLinkColumn(*pCursor) != -1);
+		else
+			bSupported = m_data.TaskHasFileRef(dwTaskID);
 		break;
 			
 	case TDCC_DEPENDENCY:

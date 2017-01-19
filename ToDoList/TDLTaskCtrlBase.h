@@ -201,7 +201,9 @@ public:
 	TDC_HITTEST HitTest(const CPoint& ptScreen) const;
 	TDC_COLUMN HitTestColumn(const CPoint& ptScreen) const;
 	DWORD HitTestTask(const CPoint& ptScreen) const;
-	int HitTestColumnsItem(const CPoint& pt, BOOL bClient, TDC_COLUMN& nColID, DWORD* pTaskID = NULL) const;
+	int HitTestColumnsItem(const CPoint& pt, BOOL bClient, TDC_COLUMN& nColID, DWORD* pTaskID = NULL, LPRECT pRect = NULL) const;
+	int HitTestFileLinkColumn(const CPoint& ptScreen) const;
+
 	void GetWindowRect(CRect& rWindow) const { CWnd::GetWindowRect(rWindow); }
 		
 	void SetFocus() { CTreeListSyncer::SetFocus(); }
@@ -457,7 +459,7 @@ protected:
 	void HandleFileLinkColumnClick(int nItem, DWORD dwTaskID, CPoint pt);
 	void ShowFileLink(LPCTSTR szFilePath) const;
 	BOOL HandleListLBtnDown(CListCtrl& lc, CPoint pt);
-	BOOL ItemColumnSupportsClickHandling(int nItem, TDC_COLUMN nColID) const;
+	BOOL ItemColumnSupportsClickHandling(int nItem, TDC_COLUMN nColID, const CPoint* pCursor = NULL) const;
 	BOOL AccumulateRecalcColumn(TDC_COLUMN nColID, TDC_COLUMN& nRecalcColID) const;
 
 	void DrawColumnsRowText(CDC* pDC, int nItem, DWORD dwTaskID, const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, 
