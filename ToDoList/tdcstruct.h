@@ -570,19 +570,47 @@ struct TDCCUSTOMATTRIBUTEDEFINITION
 		return HDF_LEFT;
 	}
 
+	static UINT GetDefaultTextAlignment(DWORD dwAttribType)
+	{
+		switch (dwAttribType & TDCCA_DATAMASK)
+		{
+		case TDCCA_DATE:
+		case TDCCA_INTEGER:
+		case TDCCA_DOUBLE:
+			return TA_RIGHT;
+		}
+
+		// All else
+		return TA_LEFT;
+	}
+
+	BOOL HasDefaultTextAlignment() const
+	{
+		return (nTextAlignment == GetDefaultTextAlignment(dwAttribType));
+	}
+
 	void SetAttributeType(DWORD dwType)
 	{
 		SetTypes((dwType & TDCCA_DATAMASK), (dwType & TDCCA_LISTMASK));
 	}
 
-	void SetDataType(DWORD dwDataType)
+	void SetDataType(DWORD dwDataType, BOOL bUpdateDefaultAlignment = TRUE)
 	{
-		SetTypes(dwDataType, GetListType());
+		DWORD dwPrevType = GetDataType();
+
+		SetTypes((dwDataType & TDCCA_DATAMASK), GetListType());
+
+		// Set default alignment if the previous also had the default
+		if (bUpdateDefaultAlignment)
+		{
+			if (nTextAlignment == GetDefaultTextAlignment(dwPrevType))
+				nTextAlignment = GetDefaultTextAlignment(dwAttribType);
+		}
 	}
 
 	void SetListType(DWORD dwListType)
 	{
-		SetTypes(GetDataType(), dwListType);
+		SetTypes(GetDataType(), (dwListType & TDCCA_LISTMASK));
 	}
 
 	inline DWORD GetDataType() const { return (dwAttribType & TDCCA_DATAMASK); }

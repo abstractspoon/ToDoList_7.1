@@ -471,7 +471,9 @@ void CTDLCustomAttributeDlg::EnableControls()
 		m_eUniqueID.SetReadOnly(m_lcAttributes.GetItemData(nSel) == 0);
 	}
 	else
+	{
 		m_eUniqueID.EnableWindow(FALSE);
+	}
 	
 	// certain data types cannot be lists
 	BOOL bEnableList = (nSel >= 0);
@@ -523,27 +525,34 @@ void CTDLCustomAttributeDlg::OnSelchangeDatatype()
 	UpdateData();
 	int nSel = GetCurSel();
 
-	// update attribute
+	// update data type
 	TDCCUSTOMATTRIBUTEDEFINITION& attrib = m_aAttrib[nSel];
 	attrib.SetDataType(m_dwDataType);
+
+	CString sDataType, sUnused;
+	GetTypeStrings(attrib, sDataType, sUnused);
+
+	m_lcAttributes.SetItemText(nSel, COL_DATATYPE, sDataType);
 
 	// update feature combo
 	m_cbFeatures.SetAttributeDefintion(attrib);
 
+	// Update alignment if it changed
+	if (m_nAlignment != (int)attrib.nTextAlignment)
+	{
+		m_nAlignment = (int)attrib.nTextAlignment;
+		UpdateData(FALSE);
+
+		m_lcAttributes.SetItemText(nSel, COL_ALIGNMENT, CEnString(ALIGNMENT[m_nAlignment]));
+	}
+
 	// update list type in case it has changed
 	m_dwListType = attrib.GetListType();
-
+	
 	BuildListTypeCombo(m_dwDataType);
-	EnableControls();
-
-	// and list
-	CString sDataType, sDummy;
-	GetTypeStrings(attrib, sDataType, sDummy);
-
-	m_lcAttributes.SetItemText(nSel, COL_DATATYPE, sDataType);
-
-	// set list data mask
 	UpdateListDataMask();
+
+	EnableControls();
 }
 
 void CTDLCustomAttributeDlg::UpdateListDataMask()
