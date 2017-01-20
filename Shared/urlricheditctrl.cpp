@@ -773,14 +773,7 @@ void CUrlRichEditCtrl::Paste(BOOL bAppendSourceUrl)
 	}
 
 	// Do the default paste
-	try
-	{
-		CRichEditBaseCtrl::Paste();
-	}
-	catch (...)
-	{
-		return;
-	}
+	CRichEditBaseCtrl::Paste();
 
 	// If there is an associated URL then paste that after
 	if (bAppendSourceUrl)
