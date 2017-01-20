@@ -2025,7 +2025,7 @@ HTASKITEM CTaskFile::NewTask(LPCTSTR szTitle, HTASKITEM hParent, DWORD dwID)
 			m_dwNextUniqueID = max(m_dwNextUniqueID, dwID + 1);
 
 		SetTaskID((HTASKITEM)pXINew, dwID);
-		SetTaskCreationDate64((HTASKITEM)pXINew, COleDateTime::GetCurrentTime());
+		SetTaskCreationDate((HTASKITEM)pXINew, COleDateTime::GetCurrentTime());
 	}
 
 	return (HTASKITEM)pXINew;
