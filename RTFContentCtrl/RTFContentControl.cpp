@@ -440,7 +440,6 @@ void CRTFContentControl::InitShortcutManager()
 
 	m_mgrShortcuts.AddShortcut(ID_EDIT_COPYFORMATTING,	'C',		HOTKEYF_CONTROL | HOTKEYF_SHIFT);
 	m_mgrShortcuts.AddShortcut(ID_EDIT_PASTEFORMATTING,	'V',		HOTKEYF_CONTROL | HOTKEYF_SHIFT);
-	m_mgrShortcuts.AddShortcut(ID_EDIT_PASTESIMPLE,		'P',		HOTKEYF_CONTROL | HOTKEYF_SHIFT);
 	m_mgrShortcuts.AddShortcut(ID_EDIT_OUTDENT,			'J',		HOTKEYF_CONTROL | HOTKEYF_SHIFT); 
 	m_mgrShortcuts.AddShortcut(ID_EDIT_COPY,			'C',		HOTKEYF_CONTROL); 
 	m_mgrShortcuts.AddShortcut(ID_EDIT_COPYASHTML,		'C',		HOTKEYF_CONTROL | HOTKEYF_ALT); 
