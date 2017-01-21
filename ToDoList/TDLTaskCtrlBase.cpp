@@ -789,6 +789,12 @@ void CTDLTaskCtrlBase::OnCustomAttributeChange()
 		{
 			m_hdrColumns.SetItemText(nItem, attribDef.GetColumnTitle());
 			m_hdrColumns.SetItemToolTip(nItem, attribDef.GetToolTip());
+
+			LVCOLUMN lvc = { 0 };
+			lvc.mask = LVCF_FMT;
+			lvc.fmt = attribDef.GetColumnHeaderAlignment();
+
+			m_lcColumns.SetColumn(nItem, &lvc);
 		}
 		else
 		{
