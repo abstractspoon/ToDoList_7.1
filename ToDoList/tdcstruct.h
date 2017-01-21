@@ -2227,11 +2227,19 @@ struct TDCCOLEDITFILTERVISIBILITY
 	
 	TDCCOLEDITFILTERVISIBILITY& operator=(const TDCCOLEDITFILTERVISIBILITY& vis)
 	{
-		mapVisibleColumns.CopyColumns(vis.mapVisibleColumns);
-		mapVisibleEdits.CopyAttributes(vis.mapVisibleEdits);
-		mapVisibleFilters.CopyAttributes(vis.mapVisibleFilters);
-
 		nShowEditsAndFilters = vis.nShowEditsAndFilters;
+
+		mapVisibleColumns.CopyColumns(vis.mapVisibleColumns);
+
+		if (nShowEditsAndFilters == TDLSA_ANY)
+		{
+			mapVisibleEdits.CopyAttributes(vis.mapVisibleEdits);
+			mapVisibleFilters.CopyAttributes(vis.mapVisibleFilters);
+		}
+		else
+		{
+			UpdateEditAndFilterVisibility();
+		}
 		
 		return *this;
 	}
@@ -2607,16 +2615,19 @@ struct TDCCOLEDITFILTERVISIBILITY
 		sKey.Format(_T("%s\\ColumnVisibility"), szKey);
 		mapVisibleColumns.SaveColumns(pPrefs, sKey, _T("Col%d"));
 
-		sKey.Format(_T("%s\\EditVisibility"), szKey);
-		mapVisibleEdits.SaveAttributes(pPrefs, sKey, _T("Edit%d"));
-
-		sKey.Format(_T("%s\\FilterVisibility"), szKey);
-		mapVisibleFilters.SaveAttributes(pPrefs, sKey, _T("Filter%d"));
+		if (nShowEditsAndFilters == TDLSA_ANY)
+		{
+			sKey.Format(_T("%s\\EditVisibility"), szKey);
+			mapVisibleEdits.SaveAttributes(pPrefs, sKey, _T("Edit%d"));
+			
+			sKey.Format(_T("%s\\FilterVisibility"), szKey);
+			mapVisibleFilters.SaveAttributes(pPrefs, sKey, _T("Filter%d"));
+		}
 	}
 
 	BOOL Load(const IPreferences* pPrefs, LPCTSTR szKey)
 	{
-		nShowEditsAndFilters = (TDL_SHOWATTRIB)pPrefs->GetProfileInt(szKey, _T("ShowAttributes"));
+		nShowEditsAndFilters = (TDL_SHOWATTRIB)pPrefs->GetProfileInt(szKey, _T("ShowAttributes"), TDLSA_ASCOLUMN);
 
 		// columns
 		CString sKey;
@@ -2630,11 +2641,18 @@ struct TDCCOLEDITFILTERVISIBILITY
 		// else
 		mapVisibleColumns.LoadColumns(pPrefs, sKey, _T("Col%d"));
 
-		sKey.Format(_T("%s\\EditVisibility"), szKey);
-		mapVisibleEdits.LoadAttributes(pPrefs, sKey, _T("Edit%d"));
-
-		sKey.Format(_T("%s\\FilterVisibility"), szKey);
-		mapVisibleFilters.LoadAttributes(pPrefs, sKey, _T("Filter%d"));
+		if (nShowEditsAndFilters == TDLSA_ANY)
+		{
+			sKey.Format(_T("%s\\EditVisibility"), szKey);
+			mapVisibleEdits.LoadAttributes(pPrefs, sKey, _T("Edit%d"));
+			
+			sKey.Format(_T("%s\\FilterVisibility"), szKey);
+			mapVisibleFilters.LoadAttributes(pPrefs, sKey, _T("Filter%d"));
+		}
+		else
+		{
+			UpdateEditAndFilterVisibility();
+		}
 
 		return TRUE;
 	}
