@@ -9,6 +9,8 @@
 
 #include "maskedit.h"
 #include "hottracker.h"
+#include "tooltipctrlex.h"
+
 #include <afxtempl.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -85,11 +87,11 @@ protected:
 	CArray<EDITBTN, EDITBTN&> m_aButtons;
 	BOOL m_bFirstShow;
 	BOOL m_nButtonDown;
-	CToolTipCtrl m_tooltip;
 	BOOL m_bComboStyle;
 	CHotTracker m_hotTrack;
 	int m_nTopBorder, m_nBottomBorder;
 	CImageList m_ilBtns, m_ilDisabledBtns;
+	CToolTipCtrlEx m_tooltip;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -101,8 +103,8 @@ protected:
 	//}}AFX_VIRTUAL
 	virtual void OnSetReadOnly(BOOL /*bReadOnly*/) {}
 	virtual void OnBtnClick(UINT /*nID*/) {}
+	virtual void RecalcBtnHotRects();
 	virtual void NcPaint(CDC* pDC, const CRect& rWindow);
-	virtual void RecalcBtnRects();
 
 // Implementation
 public:
@@ -116,8 +118,6 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnDestroy();
 	//}}AFX_MSG
 #if _MSC_VER >= 1400
 	afx_msg LRESULT OnNcHitTest(CPoint point);
@@ -129,20 +129,22 @@ protected:
 	afx_msg LRESULT OnHotChange(WPARAM /*wp*/, LPARAM /*lp*/);
 	afx_msg void OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct);
 	afx_msg void OnNcPaint();
-	//afx_msg LRESULT OnNcPaint(WPARAM wp, LPARAM lp);
 	DECLARE_MESSAGE_MAP()
 
 	CRect GetButtonRectByIndex(int nBtn) const; // screen coords
 	virtual void DrawButton(CDC* pDC, const CRect& rWindow, int nBtn, const CPoint& ptCursor);
 	int ButtonHitTest(CPoint ptScreen) const;
 	int ButtonHitTest(UINT nID) const;
-	int GetButtonWidth(int nBtn) const;
+	int GetButtonWidthByIndex(int nBtn) const;
+	int GetButtonTooltipID(UINT nID) const;
 	CRect GetButtonsRect() const;
 	int GetButtonsWidth() const;
 	BOOL InsertButton(int nPos, UINT nID, LPCTSTR szCaption, LPCTSTR szTip, int nWidth, 
 						LPCTSTR szFont, BOOL bSymbolFont);
-	void RedrawButton(int nBtn);
+	void RedrawButtonByIndex(int nBtn);
+
 	virtual BOOL InitializeTooltips();
+	virtual int OnToolHitTest(CPoint point, TOOLINFO* pTI) const;
 
 	static void DrawText(CDC* pDC, const CPoint& ptTopLeft, const CString& sText, 
 						const CRect& rect, BOOL bSymbol = FALSE);

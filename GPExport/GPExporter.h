@@ -27,28 +27,32 @@ public:
 	void SetLocalizer(ITransText* pTT);
 
 	// caller must copy only
-	LPCTSTR GetMenuText() const { return _T("GanttProject"); }
-	LPCTSTR GetFileFilter() const { return _T("GanttProject Files (*.gan)|*.gan||"); }
-	LPCTSTR GetFileExtension() const { return _T("gan"); }
+	LPCTSTR GetMenuText() const;
+	LPCTSTR GetFileFilter() const;
+	LPCTSTR GetFileExtension() const;
 	HICON GetIcon() const { return m_hIcon; }
 
-	bool Export(const ITaskList* pSrcTaskFile, LPCTSTR szDestFilePath, BOOL bSilent, IPreferences* pPrefs, LPCTSTR szKey);
-	bool Export(const IMultiTaskList* pSrcTaskFile, LPCTSTR szDestFilePath, BOOL bSilent, IPreferences* pPrefs, LPCTSTR szKey);
+	bool Export(const ITaskList* pSrcTaskFile, LPCTSTR szDestFilePath, bool bSilent, IPreferences* pPrefs, LPCTSTR szKey);
+	bool Export(const IMultiTaskList* pSrcTaskFile, LPCTSTR szDestFilePath, bool bSilent, IPreferences* pPrefs, LPCTSTR szKey);
 
 protected:
 	HICON m_hIcon;
 	CMap<CString, LPCTSTR, int, int&> m_mapResources;
 	CMap<int, int, CXmlItem*, CXmlItem*&> m_mapTasks;
 
+	// Pseudo-const
+	CString MILESTONETAG;
+
 protected:
-	bool ExportTask(const ITaskList7* pSrcTaskFile, HTASKITEM hTask, CXmlItem* pXIDestParent, CXmlItem* pXIAllocations, BOOL bAndSiblings);
-	void BuildResourceMap(const ITaskList7* pSrcTaskFile, HTASKITEM hTask, CXmlItem* pDestPrj, BOOL bAndSiblings);
-	void ExportResources(const ITaskList7* pSrcTaskFile, CXmlItem* pDestPrj);
+	bool ExportTask(const ITaskList9* pSrcTaskFile, HTASKITEM hTask, CXmlItem* pXIDestParent, CXmlItem* pXIAllocations, BOOL bAndSiblings);
+	void BuildResourceMap(const ITaskList9* pSrcTaskFile, HTASKITEM hTask, CXmlItem* pDestPrj, BOOL bAndSiblings);
+	void ExportResources(const ITaskList9* pSrcTaskFile, CXmlItem* pDestPrj);
 	void SetupDisplay(CXmlItem* pDestPrj);
 	void SetupCalendar(CXmlItem* pDestPrj);
-	void ExportDependencies(const ITaskList7* pSrcTaskFile, HTASKITEM hTask, CXmlItem* pDestPrj, BOOL bAndSiblings);
-	
-	static void GetTaskDates(const ITaskList7* pSrcTaskFile, HTASKITEM hTask, time_t& tEarliestStart, time_t& tLatestDue, time_t& tLatestDone);
+	void ExportDependencies(const ITaskList9* pSrcTaskFile, HTASKITEM hTask, CXmlItem* pDestPrj, BOOL bAndSiblings);
+	bool InitConsts(const ITaskList9* pTaskFile, bool bSilent, const IPreferences* pPrefs, LPCTSTR szKey);
+
+	static void GetTaskDates(const ITaskList9* pSrcTaskFile, HTASKITEM hTask, time_t& tEarliestStart, time_t& tLatestDue, time_t& tLatestDone);
 	static int GetGPTaskID(DWORD dwTDLTaskID);
 };
 
