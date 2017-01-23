@@ -4583,11 +4583,11 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 		switch (sp.GetAttribute())
 		{
 		case TDCA_TASKNAME:
-			bMatch = TaskMatches(pTDI->sTitle, sp, resTask, FALSE);
+			bMatch = TaskMatches(pTDI->sTitle, sp, resTask);
 			break;
 			
 		case TDCA_TASKNAMEORCOMMENTS:
-			bMatch = TaskMatches(pTDI->sTitle, sp, resTask, FALSE) ||
+			bMatch = TaskMatches(pTDI->sTitle, sp, resTask) ||
 					TaskCommentsMatch(pTDI, sp, resTask);
 			break;
 			
@@ -4596,11 +4596,11 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 			break;
 			
 		case TDCA_ALLOCTO:
-			bMatch = TaskMatches(pTDI->aAllocTo, sp, resTask);
+			bMatch = TaskMatches(pTDI->aAllocTo, sp, resTask, TRUE);
 			break;
 			
 		case TDCA_ALLOCBY:
-			bMatch = TaskMatches(pTDI->sAllocBy, sp, resTask, TRUE);
+			bMatch = TaskMatches(pTDI->sAllocBy, sp, resTask, TRUE, TRUE);
 			break;
 			
 		case TDCA_PATH:
@@ -4614,28 +4614,28 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 					FileMisc::TerminatePath(sPath, FileMisc::IsPathTerminated(sp.ValueAsString()));
 				}
 				
-				bMatch = TaskMatches(sPath, sp, resTask, FALSE);
+				bMatch = TaskMatches(sPath, sp, resTask);
 			}
 			break;
 			
 		case TDCA_CREATEDBY:
-			bMatch = TaskMatches(pTDI->sCreatedBy, sp, resTask, TRUE);
+			bMatch = TaskMatches(pTDI->sCreatedBy, sp, resTask, TRUE, FALSE);
 			break;
 			
 		case TDCA_STATUS:
-			bMatch = TaskMatches(pTDI->sStatus, sp, resTask, TRUE);
+			bMatch = TaskMatches(pTDI->sStatus, sp, resTask, TRUE, TRUE);
 			break;
 			
 		case TDCA_CATEGORY:
-			bMatch = TaskMatches(pTDI->aCategories, sp, resTask);
+			bMatch = TaskMatches(pTDI->aCategories, sp, resTask, TRUE);
 			break;
 			
 		case TDCA_TAGS:
-			bMatch = TaskMatches(pTDI->aTags, sp, resTask);
+			bMatch = TaskMatches(pTDI->aTags, sp, resTask, TRUE);
 			break;
 			
 		case TDCA_EXTERNALID:
-			bMatch = TaskMatches(pTDI->sExternalID, sp, resTask, TRUE);
+			bMatch = TaskMatches(pTDI->sExternalID, sp, resTask, TRUE, FALSE);
 			break;
 
 		case TDCA_RECENTMODIFIED:
@@ -4782,19 +4782,19 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 			break;
 			
 		case TDCA_VERSION:
-			bMatch = TaskMatches(pTDI->sVersion, sp, resTask, TRUE);
+			bMatch = TaskMatches(pTDI->sVersion, sp, resTask, TRUE, TRUE);
 			break;
 			
 		case TDCA_ICON:
-			bMatch = TaskMatches(pTDI->sIcon, sp, resTask, FALSE);
+			bMatch = TaskMatches(pTDI->sIcon, sp, resTask);
 			break;
 
 		case TDCA_FILEREF:
-			bMatch = TaskMatches(pTDI->aFileLinks, sp, resTask);
+			bMatch = TaskMatches(pTDI->aFileLinks, sp, resTask, FALSE);
 			break;
 
 		case TDCA_DEPENDENCY:
-			bMatch = TaskMatches(pTDI->aDependencies, sp, resTask);
+			bMatch = TaskMatches(pTDI->aDependencies, sp, resTask, TRUE);
 			break;
 
 		case TDCA_POSITION:
@@ -4809,17 +4809,17 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 			break;
 			
 		case TDCA_ANYTEXTATTRIBUTE:
-			bMatch = (TaskMatches(pTDI->sTitle, sp, resTask, FALSE) ||
-						TaskMatches(pTDI->sComments, sp, resTask, FALSE) ||
-						TaskMatches(pTDI->aAllocTo, sp, resTask) ||
-						TaskMatches(pTDI->sAllocBy, sp, resTask, TRUE) ||
-						TaskMatches(pTDI->aCategories, sp, resTask) ||
-						TaskMatches(pTDI->sStatus, sp, resTask, TRUE) ||
-						TaskMatches(pTDI->sVersion, sp, resTask, TRUE) ||
-						TaskMatches(pTDI->sExternalID, sp, resTask, TRUE) ||
-						TaskMatches(pTDI->aFileLinks, sp, resTask) ||
-						TaskMatches(pTDI->aTags, sp, resTask) ||
-						TaskMatches(pTDI->sCreatedBy, sp, resTask, TRUE));
+			bMatch = (TaskMatches(pTDI->sTitle, sp, resTask) ||
+						TaskMatches(pTDI->sComments, sp, resTask) ||
+						TaskMatches(pTDI->aAllocTo, sp, resTask, TRUE) ||
+						TaskMatches(pTDI->sAllocBy, sp, resTask, TRUE, TRUE) ||
+						TaskMatches(pTDI->aCategories, sp, resTask, TRUE) ||
+						TaskMatches(pTDI->sStatus, sp, resTask, TRUE, TRUE) ||
+						TaskMatches(pTDI->sVersion, sp, resTask, TRUE, TRUE) ||
+						TaskMatches(pTDI->sExternalID, sp, resTask, TRUE, FALSE) ||
+						TaskMatches(pTDI->aFileLinks, sp, resTask, FALSE) ||
+						TaskMatches(pTDI->aTags, sp, resTask, TRUE) ||
+						TaskMatches(pTDI->sCreatedBy, sp, resTask, TRUE, FALSE));
 			break;
 
 		case TDCA_SELECTION:
@@ -4948,7 +4948,7 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 
 BOOL CToDoCtrlData::TaskCommentsMatch(const TODOITEM* pTDI, const SEARCHPARAM& sp, SEARCHRESULT& result) const
 {
-	BOOL bMatch = TaskMatches(pTDI->sComments, sp, result, FALSE);
+	BOOL bMatch = TaskMatches(pTDI->sComments, sp, result);
 				
 	// handle custom comments for 'SET' and 'NOT SET'
 	if (!bMatch)
@@ -5069,7 +5069,12 @@ CString CToDoCtrlData::FormatResultDate(const COleDateTime& date) const
 	return sDate;
 }
 
-BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAM& sp, SEARCHRESULT& result, BOOL bMatchAsArray) const
+BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAM& sp, SEARCHRESULT& result) const
+{
+	return TaskMatches(sText, sp, result, FALSE, FALSE);
+}
+
+BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAM& sp, SEARCHRESULT& result, BOOL bMatchAsArray, BOOL bMatchWholeWordOnly) const
 {
 	// special case: search param may hold multiple delimited items
 	if (bMatchAsArray && (!sText.IsEmpty() || sp.HasString()))
@@ -5077,7 +5082,7 @@ BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAM& sp, SEA
 		CStringArray aText;
 		Misc::Split(sText, aText);
 
-		return TaskMatches(aText, sp, result);
+		return TaskMatches(aText, sp, result, bMatchWholeWordOnly);
 	}
 
 	// all else normal text search
@@ -5129,7 +5134,7 @@ BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAM& sp, SEA
 	return bMatch;
 }
 
-BOOL CToDoCtrlData::TaskMatches(const CStringArray& aItems, const SEARCHPARAM& sp, SEARCHRESULT& result) const
+BOOL CToDoCtrlData::TaskMatches(const CStringArray& aItems, const SEARCHPARAM& sp, SEARCHRESULT& result, BOOL bMatchWholeWordOnly) const
 {
 	// special cases
 	if (sp.OperatorIs(FOP_SET) && aItems.GetSize())
@@ -5159,11 +5164,9 @@ BOOL CToDoCtrlData::TaskMatches(const CStringArray& aItems, const SEARCHPARAM& s
 	}
 	else // only one match is required
 	{
-		BOOL bPartialOK = (sp.OperatorIs(FOP_INCLUDES) || sp.OperatorIs(FOP_NOT_INCLUDES));
-
 		if (aItems.GetSize())
 		{
-			bMatch = Misc::MatchAny(aSearchItems, aItems, FALSE, bPartialOK);
+			bMatch = Misc::MatchAny(aSearchItems, aItems, FALSE, !bMatchWholeWordOnly);
 		}
 		else
 		{
@@ -5193,7 +5196,7 @@ BOOL CToDoCtrlData::TaskMatches(const TDCCADATA& data, DWORD dwAttribType, const
 		CStringArray aData;
 		data.AsArray(aData);
 		
-		bMatch = TaskMatches(aData, sp, result);
+		bMatch = TaskMatches(aData, sp, result, FALSE);
 	}
 	else
 	{
@@ -5204,7 +5207,7 @@ BOOL CToDoCtrlData::TaskMatches(const TDCCADATA& data, DWORD dwAttribType, const
 		switch (dwdataType)
 		{
 		case TDCCA_STRING:	
-			bMatch = TaskMatches(data.AsString(), sp, result, FALSE);
+			bMatch = TaskMatches(data.AsString(), sp, result);
 			break;
 			
 		case TDCCA_INTEGER:	
