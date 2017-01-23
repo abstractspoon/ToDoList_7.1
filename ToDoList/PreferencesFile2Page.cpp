@@ -36,7 +36,7 @@ CPreferencesFile2Page::CPreferencesFile2Page(const CImportExportMgr* pExportMgr)
 		CPreferencesPageBase(CPreferencesFile2Page::IDD),
 		m_eExportFolderPath(FES_FOLDERS | FES_COMBOSTYLEBTN | FES_RELATIVEPATHS),
 		m_eSaveExportStylesheet(FES_COMBOSTYLEBTN | FES_RELATIVEPATHS, CEnString(IDS_XSLFILEFILTER)),
-		m_pExportMgr(pExportMgr),
+		m_cbOtherExporters(*pExportMgr, FALSE, TRUE),
 		m_eBackupLocation(FES_FOLDERS | FES_COMBOSTYLEBTN)
 {
 //	m_psp.dwFlags &= ~PSP_HASHELP;
@@ -86,7 +86,6 @@ void CPreferencesFile2Page::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_AUTOSAVEONSWITCHTASKLIST, m_bAutoSaveOnSwitchTasklist);
 	DDX_Check(pDX, IDC_AUTOSAVEONSWITCHAPP, m_bAutoSaveOnSwitchApp);
 	DDX_Radio(pDX, IDC_HTMLEXPORT, m_bOtherExport);
-	DDX_CBIndex(pDX, IDC_OTHEREXPORTERS, m_nOtherExporter);
 	DDX_Check(pDX, IDC_AUTOEXPORT, m_bAutoExport);
 	DDX_Check(pDX, IDC_AUTOSAVE, m_bAutoSave);
 	DDX_Text(pDX, IDC_AUTOSAVEFREQUENCY, m_nAutoSaveFrequency);
@@ -94,10 +93,13 @@ void CPreferencesFile2Page::DoDataExchange(CDataExchange* pDX)
 	// custom
 	if (pDX->m_bSaveAndValidate)
 	{
+		m_nOtherExporter = (int)CDialogHelper::GetSelectedItemData(m_cbOtherExporters);
 		m_nKeepBackups = CDialogHelper::GetSelectedItemAsValue(m_cbKeepBackups);
 	}
 	else if (!CDialogHelper::SelectItemByValue(m_cbKeepBackups, m_nKeepBackups))
 	{
+		CDialogHelper::SelectItemByData(m_cbOtherExporters, m_nOtherExporter);
+
 		if (m_nKeepBackups == 0) // all
 		{
 			// select last string in listbox
@@ -158,23 +160,7 @@ BOOL CPreferencesFile2Page::OnInitDialog()
 	GetDlgItem(IDC_OTHEREXPORTERS)->EnableWindow(m_bAutoExport && m_bOtherExport);
 	GetDlgItem(IDC_EXPORTFILTERED)->EnableWindow(m_bAutoExport);
 
-	// build the exporter format comboxbox
-	ASSERT(m_pExportMgr);
-
-	for (int nExp = 0; nExp < m_pExportMgr->GetNumExporters(); nExp++)
-	{
-		CString sExt = m_pExportMgr->GetExporterFileExtension(nExp);
-		
-		if (!sExt.IsEmpty())
-		{
-			CString sItem;
-			sItem.Format(_T("%s (.%s)"), m_pExportMgr->GetExporterMenuText(nExp), sExt);
-
-			m_cbOtherExporters.AddString(sItem);
-		}
-	}
-
-	m_cbOtherExporters.SetCurSel(m_nOtherExporter);
+	CDialogHelper::SelectItemByData(m_cbOtherExporters, m_nOtherExporter);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
