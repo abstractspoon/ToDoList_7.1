@@ -565,7 +565,7 @@ BOOL CEnEdit::SetButtonTip(UINT nID, LPCTSTR szTip)
 	if (nBtn < 0)
 		return FALSE;
 
-		m_aButtons[nBtn].sTip = szTip;
+	m_aButtons[nBtn].sTip = szTip;
 	return TRUE;
 }
 
@@ -961,15 +961,15 @@ void CEnEdit::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
 int CEnEdit::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 {
 	ClientToScreen(&point);
-	
+
 	int nBtn = ButtonHitTest(point);
 
 	if (nBtn != -1)
-{
+	{
 		const EDITBTN& btn = m_aButtons[nBtn];
 
 		if (!btn.sTip.IsEmpty())
-	{
+		{
 			int nTool = GetButtonTooltipID(btn.nID);
 
 			pTI->hwnd = m_hWnd;
@@ -981,8 +981,8 @@ int CEnEdit::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 			CWnd::ScreenToClient(&pTI->rect);
 
 			return nTool;
+		}
 	}
-}
 
 	// else
 	return CMaskEdit::OnToolHitTest(point, pTI);

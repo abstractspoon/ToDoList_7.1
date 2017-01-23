@@ -39,8 +39,6 @@ CPreferencesFile2Page::CPreferencesFile2Page(const CImportExportMgr* pExportMgr)
 		m_cbOtherExporters(*pExportMgr, FALSE, TRUE),
 		m_eBackupLocation(FES_FOLDERS | FES_COMBOSTYLEBTN)
 {
-//	m_psp.dwFlags &= ~PSP_HASHELP;
-
 	//{{AFX_DATA_INIT(CPreferencesFile2Page)
 	//}}AFX_DATA_INIT
 	m_bAutoSaveOnRunTools = TRUE;

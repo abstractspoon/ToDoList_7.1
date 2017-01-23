@@ -97,7 +97,7 @@ int CFileComboBox::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 
 	if (nTool != -1)
 	{
-			pTI->hwnd = m_hWnd;
+		pTI->hwnd = m_hWnd;
 
 		m_fileEdit.ClientToScreen(&pTI->rect);
 		ScreenToClient(&pTI->rect);
