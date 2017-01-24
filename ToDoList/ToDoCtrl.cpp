@@ -8787,7 +8787,7 @@ BOOL CToDoCtrl::AddTaskToTaskFile(const TODOITEM* pTDI, const TODOSTRUCTURE* pTD
 	CString sTitle = pTDI->sTitle;
 	DWORD dwTaskID = pTDS->GetTaskID();
 	
-	HTASKITEM hTask = tasks.NewTask(sTitle, hParentTask, dwTaskID);
+	HTASKITEM hTask = tasks.NewTask(sTitle, hParentTask, dwTaskID, 0);
 	ASSERT(hTask);
 	
 	if (!hTask)

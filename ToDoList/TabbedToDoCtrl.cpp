@@ -551,7 +551,7 @@ IUIExtensionWindow* CTabbedToDoCtrl::GetCreateExtensionWnd(FTC_VIEW nView)
 	if (pData->bCanPrepareNewTask == -1)
 	{
 		CTaskFile task;
-		task.NewTask(_T("Test Task"));
+		task.NewTask(_T("Test Task"), NULL, 0, 0);
 
 		pData->bCanPrepareNewTask = pExtWnd->PrepareNewTask(&task);
 	}
@@ -814,7 +814,7 @@ BOOL CTabbedToDoCtrl::AddTreeItemToTaskFile(HTREEITEM hti, CTaskFile& file, HTAS
 	if (!m_data.GetTask(dwTaskID, pTDI, pTDS, FALSE))
 		return FALSE;
 
-	HTASKITEM hTask = file.NewTask(pTDI->sTitle, hParentTask, dwTaskID);
+	HTASKITEM hTask = file.NewTask(pTDI->sTitle, hParentTask, dwTaskID, 0);
 
 	if (!hTask)
 	{
@@ -2317,7 +2317,7 @@ TODOITEM* CTabbedToDoCtrl::CreateNewTask(HTREEITEM htiParent)
 			if (pExtWnd)
 			{
 				CTaskFile task;
-				HTASKITEM hTask = task.NewTask(pTDI->sTitle);
+				HTASKITEM hTask = task.NewTask(pTDI->sTitle, NULL, 0, 0);
 
 				task.SetTaskAttributes(hTask, pTDI);
 
