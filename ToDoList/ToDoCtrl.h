@@ -378,7 +378,7 @@ public:
 	BOOL HasDueTodayTasks() const;
 
 	// undo/redo
-	virtual BOOL UndoLastAction(BOOL bUndo);
+	BOOL UndoLastAction(BOOL bUndo);
 	BOOL CanUndoLastAction(BOOL bUndo) const;
 
 	// misc
