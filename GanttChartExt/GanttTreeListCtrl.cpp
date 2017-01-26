@@ -315,7 +315,7 @@ BOOL CGanttTreeListCtrl::SelectTask(DWORD dwTaskID)
 
 	BOOL bWasVisible = IsTreeItemVisible(m_hwndTree, hti);
 
-	SelectTreeItem(m_hwndTree, hti);
+	SelectTreeItem(hti, FALSE);
 
 	if (!bWasVisible)
 		ExpandList();
