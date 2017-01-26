@@ -24,7 +24,8 @@
 #	define DLL_DECLSPEC __declspec(dllimport)
 #endif 
 
-#define IUIEXTENSION_VERSION 0x0001
+// Change this value when new interface methods get added
+#define IUIEXTENSION_VERSION 0x0002
 
 //////////////////////////////////////////////////////////////////////
 
@@ -147,6 +148,7 @@ enum IUI_APPCOMMAND
 	IUI_SORT,					// dwExtra is column ID
 	IUI_TOGGLABLESORT,			// dwExtra is column ID
 	IUI_SETFOCUS,
+	IUI_SELECTTASK,				// dwExtra is task ID
 	IUI_RESIZEATTRIBCOLUMNS,
 	IUI_GETNEXTTASK,			// dwExtra is DWORD* 
 	IUI_GETNEXTTOPLEVELTASK,	// dwExtra is DWORD*
