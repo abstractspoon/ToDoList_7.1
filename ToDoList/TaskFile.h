@@ -361,7 +361,6 @@ public:
 	bool SetProjectName(LPCTSTR szName);
 	bool SetFileVersion(unsigned long nVersion);
 
-
 	HTASKITEM GetFirstTask(HTASKITEM hParent = NULL) const;
 	HTASKITEM GetNextTask(HTASKITEM hTask) const;
 
@@ -443,7 +442,7 @@ protected:
 	BOOL m_bHideParentID; // special case
 	CString m_sHtmlImgFolder;
 
-	mutable CMap <HTASKITEM, HTASKITEM, CXmlItem*, CXmlItem*&> m_mapHandles;
+	mutable CMap <DWORD, DWORD, HTASKITEM, HTASKITEM&> m_mapHandles;
 
 protected:
 	void BuildHandleMap() const;

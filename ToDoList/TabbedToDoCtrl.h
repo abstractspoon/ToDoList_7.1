@@ -236,7 +236,6 @@ protected:
 
 	void ResyncListSelection();
 	void ResyncExtensionSelection(FTC_VIEW nView);
-	BOOL IsItemSelected(int nItem) const;
 	BOOL HasSingleSelectionChanged(DWORD dwSelID) const;
 	DWORD GetSingleSelectedTaskID() const;
 	int CacheListSelection(TDCSELECTIONCACHE& cache, BOOL bIncBreadcrumbs = TRUE) const;
@@ -268,6 +267,7 @@ protected:
 		TTCNT_PREVTOPLEVEL,
 	};
 	DWORD GetNextTaskID(DWORD dwTaskID, TTC_NEXTTASK nNext, BOOL bExcludeSelected) const;
+	DWORD GetNextNonSelectedTaskID() const;
 
 	BOOL InListView() const;
 	BOOL InTreeView() const;
