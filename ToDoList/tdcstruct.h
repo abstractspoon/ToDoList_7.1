@@ -2571,6 +2571,10 @@ struct TDCCOLEDITFILTERVISIBILITY
 			case TDCC_STARTTIME:
 				bVisible &= IsColumnVisible(TDCC_STARTDATE);
 				break;
+
+			case TDCC_CREATIONTIME:
+				bVisible &= IsColumnVisible(TDCC_CREATIONDATE);
+				break;
 			}
 		}
 		else // !bVisible
@@ -2588,6 +2592,10 @@ struct TDCCOLEDITFILTERVISIBILITY
 				
 			case TDCC_STARTDATE:
 				SetColumnVisible(TDCC_STARTTIME, FALSE);
+				break;
+
+			case TDCC_CREATIONDATE:
+				SetColumnVisible(TDCC_CREATIONTIME, FALSE);
 				break;
 			}
 		}
@@ -2753,6 +2761,7 @@ struct TDCCOLEDITFILTERVISIBILITY
 		case TDCC_STARTTIME:
 		case TDCC_DUETIME:
 		case TDCC_DONETIME:
+		case TDCC_CREATIONTIME:
 			return TRUE;
 		}
 
