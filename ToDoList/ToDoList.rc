@@ -4994,7 +4994,7 @@ BEGIN
     IDS_OA_STARTDATE        "Start Date"
     IDS_OA_STATUS           "Status"
     IDS_OA_TOTALWORK        "Total Work"
-    IDS_GEN_RELEASE         "Latest Release"
+    IDS_GEN_RELEASE         "Stable Release"
     IDS_DEV_RELEASE         "Development Preview"
     IDS_ALPHA_RELEASE       "Alpha Release"
     IDS_BETA_RELEASE        "Beta Release"
