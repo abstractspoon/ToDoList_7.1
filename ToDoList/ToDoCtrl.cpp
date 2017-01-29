@@ -9909,6 +9909,7 @@ CString CToDoCtrl::GetPreferencesKey(const CString& sSubKey) const
 	{
 		sKeyPath = _T("Default");
 	}
+	ASSERT(!sKeyPath.IsEmpty());
 
 	CString sKey;
 	
@@ -9927,11 +9928,8 @@ void CToDoCtrl::SaveDefaultRecurrence(CPreferences& prefs) const
 	
 	CString sKey = GetPreferencesKey(); // no subkey
 	
-	if (!sKey.IsEmpty())
-	{
-		prefs.WriteProfileInt(_T("DefaultRecurrence"), _T("RecurFrom"), m_nDefRecurFrom);
-		prefs.WriteProfileInt(_T("DefaultRecurrence"), _T("RecurReuse"), m_nDefRecurReuse);
-	}
+	prefs.WriteProfileInt(_T("DefaultRecurrence"), _T("RecurFrom"), m_nDefRecurFrom);
+	prefs.WriteProfileInt(_T("DefaultRecurrence"), _T("RecurReuse"), m_nDefRecurReuse);
 }
 
 void CToDoCtrl::LoadDefaultRecurrence(const CPreferences& prefs)
@@ -9940,11 +9938,8 @@ void CToDoCtrl::LoadDefaultRecurrence(const CPreferences& prefs)
 	
 	CString sKey = GetPreferencesKey(); // no subkey
 	
-	if (!sKey.IsEmpty())
-	{
-		m_nDefRecurFrom = (TDI_RECURFROMOPTION)prefs.GetProfileInt(_T("DefaultRecurrence"), _T("RecurFrom"), TDIRO_DUEDATE);
-		m_nDefRecurReuse = (TDI_RECURREUSEOPTION)prefs.GetProfileInt(_T("DefaultRecurrence"), _T("RecurReuse"), TDIRO_REUSE);
-	}
+	m_nDefRecurFrom = (TDI_RECURFROMOPTION)prefs.GetProfileInt(_T("DefaultRecurrence"), _T("RecurFrom"), TDIRO_DUEDATE);
+	m_nDefRecurReuse = (TDI_RECURREUSEOPTION)prefs.GetProfileInt(_T("DefaultRecurrence"), _T("RecurReuse"), TDIRO_REUSE);
 }
 
 void CToDoCtrl::SaveSplitPos(CPreferences& prefs) const
@@ -9952,9 +9947,7 @@ void CToDoCtrl::SaveSplitPos(CPreferences& prefs) const
 	ASSERT (GetSafeHwnd());
 	
 	CString sKey = GetPreferencesKey(); // no subkey
-	
-	if (!sKey.IsEmpty())
-		prefs.WriteProfileInt(sKey, _T("SplitPos"), m_nCommentsSize);
+	prefs.WriteProfileInt(sKey, _T("SplitPos"), m_nCommentsSize);
 
 	if (HasStyle(TDCS_SHAREDCOMMENTSHEIGHT))
 		prefs.WriteProfileInt(_T("FileStates"), _T("SharedSplitPos"), s_nCommentsSize);
@@ -9966,7 +9959,7 @@ void CToDoCtrl::LoadSplitPos(const CPreferences& prefs)
 
 	CString sKey = GetPreferencesKey(); // no subkey
 	
-	if (!sKey.IsEmpty() && !HasStyle(TDCS_SHAREDCOMMENTSHEIGHT))
+	if (!HasStyle(TDCS_SHAREDCOMMENTSHEIGHT))
 		m_nCommentsSize = prefs.GetProfileInt(sKey, _T("SplitPos"), DEFCOMMENTSIZE);
 	else
 		m_nCommentsSize = s_nCommentsSize;

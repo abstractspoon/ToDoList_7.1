@@ -111,7 +111,7 @@ BOOL CFilteredToDoCtrl::LoadTasks(const CTaskFile& file)
 	if (!CTabbedToDoCtrl::LoadTasks(file))
 		return FALSE;
 
-	FTC_VIEW nView = GetView();
+	FTC_VIEW nView = GetTaskView();
 
 	// save visible state
 	BOOL bHidden = !IsWindowVisible();
@@ -505,7 +505,7 @@ void CFilteredToDoCtrl::GetCompletedTasks(const TODOSTRUCTURE* pTDS, CTaskFile& 
 int CFilteredToDoCtrl::GetFilteredTasks(CTaskFile& tasks, const TDCGETTASKS& filter) const
 {
 	// synonym for GetTasks which always returns the filtered tasks
-	return GetTasks(tasks, GetView(), filter);
+	return GetTasks(tasks, GetTaskView(), filter);
 }
 
 FILTER_SHOW CFilteredToDoCtrl::GetFilter(FTDCFILTER& filter) const
@@ -515,7 +515,7 @@ FILTER_SHOW CFilteredToDoCtrl::GetFilter(FTDCFILTER& filter) const
 
 void CFilteredToDoCtrl::SetFilter(const FTDCFILTER& filter)
 {
-	FTC_VIEW nView = GetView();
+	FTC_VIEW nView = GetTaskView();
 
 	if (m_bDelayLoaded)
 	{
@@ -706,7 +706,7 @@ void CFilteredToDoCtrl::RefreshFilter()
 
 	RefreshTreeFilter(); // always
 
-	FTC_VIEW nView = GetView();
+	FTC_VIEW nView = GetTaskView();
 
 	switch (nView)
 	{
@@ -1208,7 +1208,7 @@ BOOL CFilteredToDoCtrl::CreateNewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere, BO
 	if (CTabbedToDoCtrl::CreateNewTask(szText, nWhere, bEditText, dwDependency))
 	{
 		SetListNeedRefilter(!InListView());
-		SetExtensionsNeedRefilter(TRUE, GetView());
+		SetExtensionsNeedRefilter(TRUE, GetTaskView());
 
 		return TRUE;
 	}
@@ -1234,7 +1234,7 @@ void CFilteredToDoCtrl::SetModified(BOOL bMod, TDC_ATTRIBUTE nAttrib, DWORD dwMo
 			SendMessage(WM_TDC_REFRESHFILTER, FTCV_TASKTREE, (nAttrib == TDCA_UNDO));
 
 			// Note: This will also have refreshed the list filter if active
-			bListRefiltered = (GetView() == FTCV_TASKLIST);
+			bListRefiltered = (GetTaskView() == FTCV_TASKLIST);
 			bTreeRefiltered = TRUE;
 		}
 		else if (ModNeedsRefilter(nAttrib, FTCV_TASKLIST, dwModTaskID))
@@ -1367,7 +1367,7 @@ VIEWDATA2* CFilteredToDoCtrl::GetViewData2(FTC_VIEW nView) const
 
 VIEWDATA2* CFilteredToDoCtrl::GetActiveViewData2() const
 {
-	return GetViewData2(GetView());
+	return GetViewData2(GetTaskView());
 }
 
 void CFilteredToDoCtrl::OnTimerMidnight()
