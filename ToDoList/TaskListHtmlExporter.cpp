@@ -96,7 +96,20 @@ bool CTaskListHtmlExporter::InitConsts(const ITASKLISTBASE* pTasks, LPCTSTR szDe
 	
 	STRIKETHRUDONE = pPrefs->GetProfileInt(szKey, _T("StrikethroughDone"), TRUE);
 	EXPORTSTYLE = _ttoi(pTasks->GetMetaData(TDL_EXPORTSTYLE));
+	INDENT.Empty();
 
+	if (pPrefs->GetProfileInt(szKey, _T("UseSpaceIndents"), TRUE))
+	{
+		int nSpace = pPrefs->GetProfileInt(szKey, _T("TextIndent"), 2);
+
+		while (nSpace--)
+			INDENT += _T("&nbsp;");
+	}
+	else
+	{
+		INDENT = TAB;
+	}
+	
 	// charset
 #ifdef _UNICODE
 	CString sCS = "UTF-16"; 
@@ -358,7 +371,7 @@ CString CTaskListHtmlExporter::FormatAttribute(const ITASKLISTBASE* pTasks, HTAS
 			if ((nAttrib == TDCA_POSITION) || !WANTPOS)
 			{
 				while (--nDepth)
-					sItem = (TAB + sItem);
+					sItem = (INDENT + sItem);
 			}
 		}
 		break;
