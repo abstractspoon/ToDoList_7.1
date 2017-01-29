@@ -9212,9 +9212,10 @@ void CToDoListWnd::OnExport()
 		}
 		
 		CFilteredToDoCtrl& tdc = GetToDoCtrl(nSelTDC);
-		CTaskFile tasks;
+		tdc.SaveAllTaskViewPreferences();
 
 		// Note: don't need to verify password if encrypted tasklist is active
+		CTaskFile tasks;
 		GetTasks(tdc, bHtmlComments, FALSE, dialog.GetTaskSelection(), tasks, sImgFolder);
 
 		// add project name as report title
