@@ -4583,7 +4583,7 @@ CString CToDoListWnd::GetTitle(BOOL bExtended)
 
 CString CToDoListWnd::GetVersion(BOOL bExtended)
 {
-	static CString sVersion("7.1");
+	static CString sVersion("7.1.0.11");
 	CLocalizer::IgnoreString(sVersion);
 
 	if (!bExtended)
