@@ -103,7 +103,7 @@ bool CTaskListHtmlExporter::InitConsts(const ITASKLISTBASE* pTasks, LPCTSTR szDe
 		int nSpace = pPrefs->GetProfileInt(szKey, _T("TextIndent"), 2);
 
 		while (nSpace--)
-			INDENT += _T("&nbsp;");
+			INDENT += SPACE;
 	}
 	else
 	{
@@ -212,7 +212,7 @@ CString CTaskListHtmlExporter::ExportTask(const ITASKLISTBASE* pTasks, HTASKITEM
 		}
 		else
 		{
-			if (!ROOT/*nDepth > 0*/)
+			if (!ROOT)
 				sTask = _T("<li>") + sTask;
 			
 			// handle subtasks
@@ -283,15 +283,11 @@ CString CTaskListHtmlExporter::FormatAttribute(TDC_ATTRIBUTE nAttrib, const CStr
 		switch (nAttrib)
 		{
 		case TDCA_POSITION:
-			sFmtAttrib.Format(_T("%s "), sAttribVal);
+			sFmtAttrib.Format(_T("%s%s"), sAttribVal, SPACE);
 			break;
 
 		case TDCA_TASKNAME:
 			{
-				// special case: task title following pos
-				if ((EXPORTSTYLE != STYLE_TABLE) && WANTPOS)
-					sFmtAttrib = TAB;
-				
 				// embolden top-level tasks only
 				if (ROOT)
 					sFmtAttrib += _T("<b>") + sAttribVal + _T("</b>");
