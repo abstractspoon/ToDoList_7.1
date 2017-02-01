@@ -538,41 +538,6 @@ void CDateHelper::ClearDate(COleDateTime& date)
 	date.m_status = COleDateTime::null;
 }
 
-/*
-int CDateHelper::CalcWeekdaysFromTo(const COleDateTime& dateFrom, const COleDateTime& dateTo, BOOL bInclusive)
-{
-	ASSERT(IsDateSet(dateFrom) && IsDateSet(dateTo));
-
-	int nWeekdays = 0;
-	
-	if (IsDateSet(dateFrom) && IsDateSet(dateTo))
-	{
-		COleDateTime dFrom = GetDateOnly(dateFrom);
-		COleDateTime dTo = GetDateOnly(dateTo);
-
-		if (bInclusive)
-			dTo += 1;
-
-		int nDiff = (int)(double)(dTo - dFrom);
-
-		if (nDiff > 0)
-		{
-			while (dFrom < dTo)
-			{
-				int nDOW = dFrom.GetDayOfWeek();
-
-				if (!IsWeekend(nDOW))
-					nWeekdays++;
-
-				dFrom += 1;
-			}
-		}
-	}
-
-	return nWeekdays;
-}
-*/
-
 int CDateHelper::GetISODayOfWeek(const COleDateTime& date) 
 {
 	int nDOW = date.GetDayOfWeek(); // 1=Sun, 2=Mon, ..., 7=Sat

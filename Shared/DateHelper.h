@@ -72,7 +72,6 @@ public:
 	static int CalcDaysFromTo(const COleDateTime& dateFrom, const COleDateTime& dateTo, BOOL bInclusive, BOOL bWeekdays);
 	static int CalcDaysFromTo(const COleDateTime& dateFrom, DH_DATE nTo, BOOL bInclusive, BOOL bWeekdays);
 	static int CalcDaysFromTo(DH_DATE nFrom, DH_DATE nTo, BOOL bInclusive, BOOL bWeekdays);
-	//static int CalcWeekdaysFromTo(const COleDateTime& dateFrom, const COleDateTime& dateTo, BOOL bInclusive);
 
 	static double GetDate(DH_DATE nDate); // 12am
 	static BOOL OffsetDate(COleDateTime& date, int nAmount, DH_UNITS nUnits);
