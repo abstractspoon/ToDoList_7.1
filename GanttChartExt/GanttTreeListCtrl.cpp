@@ -3088,9 +3088,17 @@ void CGanttTreeListCtrl::DrawListHeaderItem(CDC* pDC, int nCol)
 			int nNumDays = CDateHelper::GetDaysInMonth(nMonth, nYear);
 			double dMonthWidth = rMonth.Width();
 
-			// first week starts at 'First week of first DOW'
+			// first week starts at 'First DOW of month'
 			int nFirstDOW = CDateHelper::GetFirstDayOfWeek();
 			int nDay = CDateHelper::CalcDayOfMonth(nFirstDOW, 1, nMonth, nYear);
+
+			// If this is column 1 (column 0 is hidden) then we might need
+			// to draw part of the preceding week
+			if ((nCol == 1) && (nDay != -1))
+			{
+				rWeek.right = (rWeek.left + (int)((nDay - 1) * dMonthWidth / nNumDays) - 1);
+				DrawListHeaderRect(pDC, rWeek, _T(""), bThemed ? &th :NULL);
+			}
 
 			// calc number of first week
 			COleDateTime dtWeek(nYear, nMonth, nDay, 0, 0, 0);
