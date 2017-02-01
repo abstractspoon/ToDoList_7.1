@@ -540,22 +540,13 @@ void CDateHelper::ClearDate(COleDateTime& date)
 
 int CDateHelper::GetISODayOfWeek(const COleDateTime& date) 
 {
-	int nDOW = date.GetDayOfWeek(); // 1=Sun, 2=Mon, ..., 7=Sat
+	int nDOW = date.GetDayOfWeek(); // 1-7 = Sun-Sat
 
 	// ISO DOWs: 1=Mon, 2=Tue, ..., 7=Sun
-	switch (nDOW)
-	{
-	case 1: /* sun */ return 7;
-	case 2: /* mon */ return 1;
-	case 3: /* tue */ return 2;
-	case 4: /* wed */ return 3;
-	case 5: /* thu */ return 4;
-	case 6: /* fri */ return 5;
-	case 7: /* sat */ return 6;
-	}
+	if (--nDOW == 0)
+		nDOW = 7;
 
-	ASSERT (0);
-	return 1;
+	return nDOW;
 }
 
 int CDateHelper::GetFirstDayOfWeek()

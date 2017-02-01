@@ -78,9 +78,7 @@ public:
 
 	static CString FormatDate(const COleDateTime& date, DWORD dwFlags = 0);
 	static CString FormatCurrentDate(DWORD dwFlags = 0);
-
-	static int GetISODayOfWeek(const COleDateTime& date);   // 1=Mon, 2=Tue, ..., 7=Sun
-
+	
 	// DOW = 'day of week'
 	static BOOL FormatDate(const COleDateTime& date, DWORD dwFlags, CString& sDate, CString& sTime, CString& sDow);
 	static BOOL FormatCurrentDate(DWORD dwFlags, CString& sDate, CString& sTime, CString& sDow);
@@ -167,6 +165,7 @@ protected:
 	static DWORD s_dwWeekend; 
 
 protected:
+	static int GetISODayOfWeek(const COleDateTime& date); // 1-7 Mon-Sun
 	static BOOL DecodeISODate(const CString& sDate, COleDateTime& date, BOOL bAndTime = FALSE);
 	static BOOL DecodeLocalShortDate(const CString& sDate, COleDateTime& date);
 	static BOOL GetTimeT(time64_t date, time_t& timeT);
