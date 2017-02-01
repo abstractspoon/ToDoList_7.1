@@ -41,7 +41,7 @@ enum
 	DHFD_NOSEC	= 0x0008,
 };
 
-enum // SetWeekendDays, GetWeekdays, ...
+enum // Days of week bit flags
 {
 	DHW_SUNDAY		= 0X01,
 	DHW_MONDAY		= 0X02,
@@ -54,6 +54,17 @@ enum // SetWeekendDays, GetWeekdays, ...
 	DHW_EVERYDAY	= 0x7F
 };
 
+enum // OLE Days of week
+{
+	DHO_UNDEF	= -1,
+	DHO_SUNDAY	= 1,
+	DHO_MONDAY,
+	DHO_TUESDAY,
+	DHO_WEDNESDAY,
+	DHO_THURSDAY,
+	DHO_FRIDAY,
+	DHO_SATURDAY,
+};
 // Note: 
 // 1 <= nMonth <= 12
 // 1 <= nDay <= 31

@@ -551,8 +551,7 @@ int CDateHelper::GetISODayOfWeek(const COleDateTime& date)
 
 int CDateHelper::GetFirstDayOfWeek()
 {
-	TCHAR szFDW[3]; // 2 + NULL
-
+	TCHAR szFDW[3] = { 0 }; // 2 + NULL
 	::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IFIRSTDAYOFWEEK, szFDW, 2);
 
 	int nFirstDOW = _ttoi(szFDW);
@@ -561,51 +560,51 @@ int CDateHelper::GetFirstDayOfWeek()
 	// which is 1 (sun) - 7 (sat)
 	switch (nFirstDOW)
 	{
-	case 0: /* mon */ return 2;
-	case 1: /* tue */ return 3;
-	case 2: /* wed */ return 4;
-	case 3: /* thu */ return 5;
-	case 4: /* fri */ return 6;
-	case 5: /* sat */ return 7;
-	case 6: /* sun */ return 1;
+	case 0: /* mon */ return DHO_MONDAY;
+	case 1: /* tue */ return DHO_TUESDAY;
+	case 2: /* wed */ return DHO_WEDNESDAY;
+	case 3: /* thu */ return DHO_THURSDAY;
+	case 4: /* fri */ return DHO_FRIDAY;
+	case 5: /* sat */ return DHO_SATURDAY;
+	case 6: /* sun */ return DHO_SUNDAY;
 	}
 
 	ASSERT (0);
-	return 1;
+	return DHO_UNDEF;
 }
 
 int CDateHelper::GetLastDayOfWeek()
 {
 	switch (GetFirstDayOfWeek())
 	{
-	case 2: /* mon */ return 1; // sun
-	case 3: /* tue */ return 2; // mon
-	case 4: /* wed */ return 3; // tue
-	case 5: /* thu */ return 4; // wed
-	case 6: /* fri */ return 5; // thu
-	case 7: /* sat */ return 6; // fri
-	case 1: /* sun */ return 7; // sat
+	case DHO_MONDAY:	return DHO_SUNDAY;
+	case DHO_TUESDAY:	return DHO_MONDAY;
+	case DHO_WEDNESDAY:	return DHO_TUESDAY;
+	case DHO_THURSDAY:	return DHO_WEDNESDAY;
+	case DHO_FRIDAY:	return DHO_THURSDAY;
+	case DHO_SATURDAY:	return DHO_FRIDAY;
+	case DHO_SUNDAY:	return DHO_SATURDAY;
 	}
 
 	ASSERT (0);
-	return 1;
+	return DHO_UNDEF;
 }
 
 int CDateHelper::GetNextDayOfWeek(int nDOW)
 {
 	switch (nDOW)
 	{
-	case 2: /* mon */ return 3; // tue
-	case 3: /* tue */ return 4; // wed
-	case 4: /* wed */ return 5; // thu
-	case 5: /* thu */ return 6; // fri
-	case 6: /* fri */ return 7; // sat
-	case 7: /* sat */ return 1; // sun
-	case 1: /* sun */ return 2; // mon
+	case DHO_MONDAY:	return DHO_TUESDAY;
+	case DHO_TUESDAY:	return DHO_WEDNESDAY;
+	case DHO_WEDNESDAY:	return DHO_THURSDAY;
+	case DHO_THURSDAY:	return DHO_FRIDAY;
+	case DHO_FRIDAY:	return DHO_SATURDAY;
+	case DHO_SATURDAY:	return DHO_SUNDAY;
+	case DHO_SUNDAY:	return DHO_MONDAY;
 	}
 
 	ASSERT (0);
-	return 1;
+	return DHO_UNDEF;
 }
 
 COleDateTime CDateHelper::ToWeekday(const COleDateTime& date, BOOL bForwards)
@@ -719,13 +718,13 @@ BOOL CDateHelper::IsWeekend(int nDOW)
 {
 	switch (nDOW)
 	{
-	case 1:	return (s_dwWeekend & DHW_SUNDAY);
-	case 2: return (s_dwWeekend & DHW_MONDAY);
-	case 3: return (s_dwWeekend & DHW_TUESDAY);
-	case 4: return (s_dwWeekend & DHW_WEDNESDAY);
-	case 5: return (s_dwWeekend & DHW_THURSDAY);
-	case 6: return (s_dwWeekend & DHW_FRIDAY);
-	case 7: return (s_dwWeekend & DHW_SATURDAY);
+	case DHO_SUNDAY:	return (s_dwWeekend & DHW_SUNDAY);
+	case DHO_MONDAY:	return (s_dwWeekend & DHW_MONDAY);
+	case DHO_TUESDAY:	return (s_dwWeekend & DHW_TUESDAY);
+	case DHO_WEDNESDAY:	return (s_dwWeekend & DHW_WEDNESDAY);
+	case DHO_THURSDAY:	return (s_dwWeekend & DHW_THURSDAY);
+	case DHO_FRIDAY:	return (s_dwWeekend & DHW_FRIDAY);
+	case DHO_SATURDAY:	return (s_dwWeekend & DHW_SATURDAY);
 	}
 
 	ASSERT (0);
@@ -824,7 +823,7 @@ BOOL CDateHelper::FormatDate(const COleDateTime& date, DWORD dwFlags, CString& s
 
 	// Day of week
 	if (dwFlags & DHFD_DOW)
-		sDow = GetDayOfWeekName(st.wDayOfWeek + 1, TRUE);
+		sDow = GetDayOfWeekName((st.wDayOfWeek + 1), TRUE);
 
 	// Time
 	if (dwFlags & DHFD_TIME)
@@ -846,18 +845,18 @@ CString CDateHelper::GetDayOfWeekName(int nWeekday, BOOL bShort)
 	CString sWeekday;
 
 	// data check
-	if (nWeekday < 1 || nWeekday> 7)
+	if (nWeekday < 1 || nWeekday > 7)
 		return "";
 
 	switch (nWeekday)
 	{
-	case 1: lct = bShort ? LOCALE_SABBREVDAYNAME7 : LOCALE_SDAYNAME7; break; // sun
-	case 2:	lct = bShort ? LOCALE_SABBREVDAYNAME1 : LOCALE_SDAYNAME1; break; // mon
-	case 3:	lct = bShort ? LOCALE_SABBREVDAYNAME2 : LOCALE_SDAYNAME2; break; // tue
-	case 4:	lct = bShort ? LOCALE_SABBREVDAYNAME3 : LOCALE_SDAYNAME3; break; // wed
-	case 5:	lct = bShort ? LOCALE_SABBREVDAYNAME4 : LOCALE_SDAYNAME4; break; // thu
-	case 6:	lct = bShort ? LOCALE_SABBREVDAYNAME5 : LOCALE_SDAYNAME5; break; // fri
-	case 7:	lct = bShort ? LOCALE_SABBREVDAYNAME6 : LOCALE_SDAYNAME6; break; // sat
+	case DHO_SUNDAY:	lct = (bShort ? LOCALE_SABBREVDAYNAME7 : LOCALE_SDAYNAME7); break;
+	case DHO_MONDAY:	lct = (bShort ? LOCALE_SABBREVDAYNAME1 : LOCALE_SDAYNAME1); break;
+	case DHO_TUESDAY:	lct = (bShort ? LOCALE_SABBREVDAYNAME2 : LOCALE_SDAYNAME2); break;
+	case DHO_WEDNESDAY:	lct = (bShort ? LOCALE_SABBREVDAYNAME3 : LOCALE_SDAYNAME3); break;
+	case DHO_THURSDAY:	lct = (bShort ? LOCALE_SABBREVDAYNAME4 : LOCALE_SDAYNAME4); break;
+	case DHO_FRIDAY:	lct = (bShort ? LOCALE_SABBREVDAYNAME5 : LOCALE_SDAYNAME5); break;
+	case DHO_SATURDAY:	lct = (bShort ? LOCALE_SABBREVDAYNAME6 : LOCALE_SDAYNAME6); break;
 	}
 	
 	GetLocaleInfo(LOCALE_USER_DEFAULT, lct, sWeekday.GetBuffer(30),	29);
@@ -871,9 +870,9 @@ int CDateHelper::CalcLongestDayOfWeekName(CDC* pDC, BOOL bShort)
 	int nLongestWDWidth = 0;
 		
 	// figure out the longest day in pixels
-	for (int nWD = 1; nWD <= 7; nWD++)
+	for (int nDOW = 1; nDOW <= 7; nDOW++)
 	{
-		int nWDWidth = pDC->GetTextExtent(GetDayOfWeekName(nWD, bShort)).cx;
+		int nWDWidth = pDC->GetTextExtent(GetDayOfWeekName(nDOW, bShort)).cx;
 		nLongestWDWidth = max(nLongestWDWidth, nWDWidth);
 	}
 	
@@ -1002,7 +1001,7 @@ int CDateHelper::GetDaysInMonth(int nMonth, int nYear)
 	switch (nMonth)
 	{
 	case 1:  return 31; // jan
-	case 2:  return IsLeapYear(nYear) ? 29 : 28; // feb
+	case 2:  return (IsLeapYear(nYear) ? 29 : 28); // feb
 	case 3:  return 31; // mar
 	case 4:  return 30; // apr
 	case 5:  return 31; // may
@@ -1057,18 +1056,18 @@ CString CDateHelper::GetMonthName(int nMonth, BOOL bShort)
 
 	switch (nMonth)
 	{
-	case 1:  lct = bShort ? LOCALE_SABBREVMONTHNAME1  : LOCALE_SMONTHNAME1;  break; // jan
-	case 2:  lct = bShort ? LOCALE_SABBREVMONTHNAME2  : LOCALE_SMONTHNAME2;  break; // feb
-	case 3:  lct = bShort ? LOCALE_SABBREVMONTHNAME3  : LOCALE_SMONTHNAME3;  break; // mar
-	case 4:  lct = bShort ? LOCALE_SABBREVMONTHNAME4  : LOCALE_SMONTHNAME4;  break; // apr
-	case 5:  lct = bShort ? LOCALE_SABBREVMONTHNAME5  : LOCALE_SMONTHNAME5;  break; // may
-	case 6:  lct = bShort ? LOCALE_SABBREVMONTHNAME6  : LOCALE_SMONTHNAME6;  break; // jun
-	case 7:  lct = bShort ? LOCALE_SABBREVMONTHNAME7  : LOCALE_SMONTHNAME7;  break; // jul
-	case 8:  lct = bShort ? LOCALE_SABBREVMONTHNAME8  : LOCALE_SMONTHNAME8;  break; // aug
-	case 9:  lct = bShort ? LOCALE_SABBREVMONTHNAME9  : LOCALE_SMONTHNAME9;  break; // sep
-	case 10: lct = bShort ? LOCALE_SABBREVMONTHNAME10 : LOCALE_SMONTHNAME10; break; // oct
-	case 11: lct = bShort ? LOCALE_SABBREVMONTHNAME11 : LOCALE_SMONTHNAME11; break; // nov
-	case 12: lct = bShort ? LOCALE_SABBREVMONTHNAME12 : LOCALE_SMONTHNAME12; break; // dec
+	case 1:  lct = (bShort ? LOCALE_SABBREVMONTHNAME1  : LOCALE_SMONTHNAME1);  break; // jan
+	case 2:  lct = (bShort ? LOCALE_SABBREVMONTHNAME2  : LOCALE_SMONTHNAME2);  break; // feb
+	case 3:  lct = (bShort ? LOCALE_SABBREVMONTHNAME3  : LOCALE_SMONTHNAME3);  break; // mar
+	case 4:  lct = (bShort ? LOCALE_SABBREVMONTHNAME4  : LOCALE_SMONTHNAME4);  break; // apr
+	case 5:  lct = (bShort ? LOCALE_SABBREVMONTHNAME5  : LOCALE_SMONTHNAME5);  break; // may
+	case 6:  lct = (bShort ? LOCALE_SABBREVMONTHNAME6  : LOCALE_SMONTHNAME6);  break; // jun
+	case 7:  lct = (bShort ? LOCALE_SABBREVMONTHNAME7  : LOCALE_SMONTHNAME7);  break; // jul
+	case 8:  lct = (bShort ? LOCALE_SABBREVMONTHNAME8  : LOCALE_SMONTHNAME8);  break; // aug
+	case 9:  lct = (bShort ? LOCALE_SABBREVMONTHNAME9  : LOCALE_SMONTHNAME9);  break; // sep
+	case 10: lct = (bShort ? LOCALE_SABBREVMONTHNAME10 : LOCALE_SMONTHNAME10); break; // oct
+	case 11: lct = (bShort ? LOCALE_SABBREVMONTHNAME11 : LOCALE_SMONTHNAME11); break; // nov
+	case 12: lct = (bShort ? LOCALE_SABBREVMONTHNAME12 : LOCALE_SMONTHNAME12); break; // dec
 	}
 
 	GetLocaleInfo(LOCALE_USER_DEFAULT, lct, sMonth.GetBuffer(30),	29);
@@ -1168,7 +1167,7 @@ int CDateHelper::GetWeekofYear(const COleDateTime& date)
 	int nDayOfYear = date.GetDayOfYear();
 
 	// ISO weeks can only begin on Mondays 
-	if (GetFirstDayOfWeek() == 2)
+	if (GetFirstDayOfWeek() == DHO_MONDAY)
 	{
 		// http://en.wikipedia.org/wiki/ISO_week_date#Calculating_the_week_number_of_a_given_date
 		//
