@@ -62,6 +62,7 @@ LRESULT CDayOfWeekCheckListBox::OnInitListbox(WPARAM /*wp*/, LPARAM /*lp*/)
 	CLocalizer::EnableTranslation(*this, FALSE);
 
 	ResetContent();
+	ModifyStyle(CBS_SORT, 0); // Unsorted
 
 	// init weekdays
 	for (int nDay = 1; nDay <= 7; nDay++)
