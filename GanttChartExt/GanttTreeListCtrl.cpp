@@ -3094,7 +3094,7 @@ void CGanttTreeListCtrl::DrawListHeaderItem(CDC* pDC, int nCol)
 
 			// calc number of first week
 			COleDateTime dtWeek(nYear, nMonth, nDay, 0, 0, 0);
-			int nWeek = CDateHelper::GetISOWeekofYear(dtWeek);
+			int nWeek = CDateHelper::GetWeekofYear(dtWeek);
 			BOOL bDone = FALSE;
 
 			while (!bDone)
@@ -3131,7 +3131,7 @@ void CGanttTreeListCtrl::DrawListHeaderItem(CDC* pDC, int nCol)
 						ASSERT(nMonth == 1);
 
 						COleDateTime dtWeek(nYear, nMonth, nDay, 0, 0, 0);
-						nWeek = CDateHelper::GetISOWeekofYear(dtWeek);
+						nWeek = CDateHelper::GetWeekofYear(dtWeek);
 					}
 
 					bDone = TRUE;

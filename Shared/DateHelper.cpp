@@ -1206,27 +1206,48 @@ COleDateTime CDateHelper::CalcDate(int nDOW, int nWhich, int nMonth, int nYear)
 	return COleDateTime(nYear, nMonth, nDay, 0, 0, 0);
 }
 
-int CDateHelper::GetISOWeekofYear(const COleDateTime& date)
+int CDateHelper::GetWeekofYear(const COleDateTime& date)
 {
-	// http://en.wikipedia.org/wiki/ISO_week_date#Calculating_the_week_number_of_a_given_date
-	//
-	// Using ISO weekday numbers (running from 1 for Monday to 7 for Sunday), 
-	// subtract the weekday from the ordinal date, then add 10. Divide the result by 7. 
-	// Ignore the remainder; the quotient equals the week number.
-
+	int nWeek = 0;
 	int nDayOfYear = date.GetDayOfYear();
-	int nISODOW = GetISODayOfWeek(date);
 
-	int nWeek = ((nDayOfYear - nISODOW + 10) / 7);
-
-	if (nWeek == 53)
+	// ISO weeks can only begin on Mondays 
+	if (GetFirstDayOfWeek() == 2)
 	{
-		// Since week 53 could be week 1 of the next year
-		// we check the week number a week later
-		if (GetISOWeekofYear(date.m_dt + 7) == 2)
-			nWeek = 1;
+		// http://en.wikipedia.org/wiki/ISO_week_date#Calculating_the_week_number_of_a_given_date
+		//
+		// Using ISO weekday numbers (running from 1 for Monday to 7 for Sunday), 
+		// subtract the weekday from the ordinal date, then add 10. Divide the result by 7. 
+		// Ignore the remainder; the quotient equals the week number.
+		int nISODOW = GetISODayOfWeek(date);
+
+		nWeek = ((nDayOfYear - nISODOW + 10) / 7);
+
+		switch (nWeek)
+		{
+		case 0:
+			// Could be week 52 or 53 of the previous year
+			nWeek = (GetWeekofYear(date.m_dt - 7) + 1);
+			ASSERT((nWeek == 52) || (nWeek == 53));
+			break;
+
+		case 53:
+			// Since week 53 could be week 1 of the next year
+			// we check the week number a week later
+			if (GetWeekofYear(date.m_dt + 7) == 2)
+				nWeek = 1;
+			break;
+		}
 	}
-	
+	else // defer to US - Week 1 contains 1st Jan
+	{
+		COleDateTime dtJan1(date.GetYear(), 1, 1, 0, 0, 0);
+		int nJan1DOW = dtJan1.GetDayOfWeek();
+
+		nWeek = (((nDayOfYear + nJan1DOW - 1) / 7) + 1);
+	}
+	ASSERT((nWeek >= 1) && (nWeek <= 53));
+
 	return nWeek;
 }
 
@@ -1506,13 +1527,13 @@ COleDateTime CDateHelper::GetNearestWeek(const COleDateTime& date, BOOL bEnd)
 	COleDateTime dtWeek = GetDateOnly(date);
 
 	// work forward until the week changes
-	int nWeek = GetISOWeekofYear(date);
+	int nWeek = GetWeekofYear(date);
 
 	do 
 	{
 		dtWeek.m_dt += 1.0;
 	}
-	while (GetISOWeekofYear(dtWeek) == nWeek);
+	while (GetWeekofYear(dtWeek) == nWeek);
 
 	// if the number of days added >= 4 then subtract a week
 	if (CalcDaysFromTo(date, dtWeek, TRUE, FALSE) >= 4)

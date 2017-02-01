@@ -81,7 +81,6 @@ public:
 	static CString FormatCurrentDate(DWORD dwFlags = 0);
 
 	static int GetISODayOfWeek(const COleDateTime& date);   // 1=Mon, 2=Tue, ..., 7=Sun
-	static int GetISOWeekofYear(const COleDateTime& date);
 
 	// DOW = 'day of week'
 	static BOOL FormatDate(const COleDateTime& date, DWORD dwFlags, CString& sDate, CString& sTime, CString& sDow);
@@ -102,6 +101,7 @@ public:
 	static int GetNextDayOfWeek(int nDOW);
 	static int GetDaysInMonth(int nMonth, int nYear); 
 	static int GetDaysInMonth(const COleDateTime& date); 
+	static int GetWeekofYear(const COleDateTime& date);
 	static COleDateTime GetEndOfPreviousDay(const COleDateTime& date);
 	static COleDateTime GetEndOfDay(const COleDateTime& date);
 

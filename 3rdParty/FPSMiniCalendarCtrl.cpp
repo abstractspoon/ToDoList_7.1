@@ -858,7 +858,7 @@ int CFPSMiniCalendarCtrl::DrawDays(CDC &dc, int iY, int iLeftX, int iMonthRow, i
 		// Draw week number
 		if (nWeekWidth)
 		{
-			int nWeek = CDateHelper::GetISOWeekofYear(dt);
+			int nWeek = CDateHelper::GetWeekofYear(dt);
 
 			CRect rect((iX - nWeekWidth), iY, (iX - WEEKNUMBERPADDING),iY+m_iDaysHeight);
 
