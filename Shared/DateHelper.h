@@ -17,7 +17,7 @@ enum DH_DATE
 	DHD_ENDTHISWEEK,   
 	DHD_ENDNEXTWEEK,   // DHD_ENDTHISWEEK + 7
 	DHD_ENDTHISMONTH,  // beginning of next month - 1
-	DHD_ENDNEXTMONTH,  // get's trickier :)
+	DHD_ENDNEXTMONTH,  // gets trickier :)
 	DHD_ENDTHISYEAR,
 	DHD_ENDNEXTYEAR,
 	DHD_YESTERDAY,
@@ -41,7 +41,7 @@ enum
 	DHFD_NOSEC	= 0x0008,
 };
 
-enum // days of week
+enum // SetWeekendDays, GetWeekdays, ...
 {
 	DHW_SUNDAY		= 0X01,
 	DHW_MONDAY		= 0X02,
@@ -57,6 +57,7 @@ enum // days of week
 // Note: 
 // 1 <= nMonth <= 12
 // 1 <= nDay <= 31
+// 1 <= nDOW <= 7
 
 typedef __int64 time64_t;
 
