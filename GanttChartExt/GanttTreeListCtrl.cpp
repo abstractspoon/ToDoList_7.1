@@ -2237,12 +2237,7 @@ LRESULT CGanttTreeListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPA
 
 					if (dwToTaskID && (nHit != GTLCHT_NOWHERE))
 					{
-						if (m_pDependEdit->SetToTask(dwToTaskID))
-						{
-							// cancel tracking
-// 							TRACKMOUSEEVENT tme = { sizeof(tme), TME_LEAVE | TME_CANCEL, hRealWnd, 0 };
-// 							TrackMouseEvent(&tme);
-						}
+						m_pDependEdit->SetToTask(dwToTaskID);
 					}
 
 					return 0; // eat
