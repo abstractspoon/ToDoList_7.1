@@ -2310,6 +2310,18 @@ LRESULT CGanttTreeListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPA
 		case WM_SETFOCUS:
 			::SetFocus(m_hwndTree);
 			break;
+
+		case WM_HSCROLL:
+		case WM_VSCROLL:
+			{
+				LRESULT lr = CTreeListSyncer::ScWindowProc(hRealWnd, msg, wp, lp);
+				
+				::InvalidateRect(hRealWnd, NULL, FALSE);
+				::UpdateWindow(hRealWnd);
+				
+				return lr;
+			}
+			break;
 		}
 	}
 	else if (hRealWnd == m_hwndTree)
@@ -2334,8 +2346,8 @@ LRESULT CGanttTreeListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPA
 			{
 				LRESULT lr = CTreeListSyncer::ScWindowProc(hRealWnd, msg, wp, lp);
 
-				::InvalidateRect(m_hwndTree, NULL, FALSE);
-				::UpdateWindow(m_hwndTree);
+				::InvalidateRect(hRealWnd, NULL, FALSE);
+				::UpdateWindow(hRealWnd);
 
 				return lr;
 			}
@@ -2343,7 +2355,7 @@ LRESULT CGanttTreeListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPA
 
 		case WM_VSCROLL:
 			{
-				CHoldHScroll hhs(m_hwndTree);
+				CHoldHScroll hhs(hRealWnd);
 				
 				return CTreeListSyncer::ScWindowProc(hRealWnd, msg, wp, lp);
 			}
