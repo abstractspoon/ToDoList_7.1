@@ -4479,6 +4479,7 @@ BEGIN
     IDS_CAD_BROWSEIMAGES    "Images..."
     IDS_CAD_INSERTSYMBOL    "Symbols..."
     IDS_TDLBC_CREATETIME    "Creation Time"
+    IDS_3RDPARTYSTORAGE     "3rd Party Storage"
 END
 
 STRINGTABLE DISCARDABLE 

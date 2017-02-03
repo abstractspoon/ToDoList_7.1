@@ -6969,7 +6969,7 @@ void CToDoListWnd::AddUserStorageToMenu(CMenu* pMenu)
 		}
 		else // if nothing to add just re-add placeholder
 		{
-			pMenu->InsertMenu(0, MF_BYPOSITION | MF_STRING | MF_GRAYED, MENUSTARTID, _T("3rd Party Storage"));
+			pMenu->InsertMenu(0, MF_BYPOSITION | MF_STRING | MF_GRAYED, MENUSTARTID, CEnString(IDS_3RDPARTYSTORAGE));
 		}
 	}
 }
