@@ -262,10 +262,16 @@ protected:
 		}
 	};
 	
+protected:
 	CArray<TDCITEM, TDCITEM&> m_aToDoCtrls;
 	CTabCtrlEx& m_tabCtrl;
 	const CPreferencesDlg* m_pPrefs;
 	CMap<CFilteredToDoCtrl*, CFilteredToDoCtrl*, CBrowserDlg*, CBrowserDlg*> m_mapBrowsers;
+
+#ifndef _DEBUG
+	static CFilteredToDoCtrl s_tdcError;
+	static CToDoCtrlMgr::TDCITEM s_tdciError;
+#endif
 
 protected:
 	TDCITEM& GetTDCItem(int nIndex);
