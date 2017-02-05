@@ -58,9 +58,10 @@ BOOL CTDLCsvImportExportDlg::DoInit(const CString& sFilePath,
 	CTDCAttributeMapping aMapping;
 
 	if (pExportAttributes)
+	{
 		m_aExportAttributes.Copy(*pExportAttributes);
-
-	BuildExportColumnMapping(aMapping);
+		BuildExportColumnMapping(aMapping);
+	}
 
 	m_lcColumnSetup.SetColumnMapping(aMapping);
 
