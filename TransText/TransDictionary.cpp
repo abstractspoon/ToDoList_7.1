@@ -1248,28 +1248,39 @@ BOOL CTransDictionary::TranslateMenuShortcut(CString& sShortcut)
 			
 BOOL CTransDictionary::Translate(CString& sItem, HMENU hMenu, int nMenuID)
 {
-	// trim off trailing shortcut
-	CString sShortcut;
-	int nTab = sItem.Find('\t');
-				
-	// remove it
-	if (nTab >= 0)
-	{
-		sShortcut = sItem.Mid(nTab+1);
-		sItem = sItem.Left(nTab);
-	}
+	if (WantIgnore(sItem))
+		return FALSE;
 
+	// Trim off trailing shortcut but first
+	// check tabs are not part of the string itself
 	DICTITEM* pDI = GetDictItem(sItem);
+	CString sShortcut;
+
+	if (pDI == NULL)
+	{
+		int nTab = sItem.Find('\t');
+					
+		// remove it
+		if (nTab >= 0)
+		{
+			sShortcut = sItem.Mid(nTab+1);
+			sItem = sItem.Left(nTab);
+			
+			pDI = GetDictItem(sItem);
+		}
+	}
 	
 	if (pDI && pDI->Translate(sItem, hMenu, nMenuID))
 	{
 		// translate and reattach any shortcut
-		if (TranslateMenuShortcut(sShortcut))
+		if (!sShortcut.IsEmpty())
 		{
+			TranslateMenuShortcut(sShortcut);
+
 			sItem += '\t';
 			sItem += sShortcut;
 		}
-		
+
 		// mark text out as being not-translatable
 		// else the translated text can itself be translated!
 		IgnoreString(sItem, FALSE);
