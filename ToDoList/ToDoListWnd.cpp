@@ -11708,12 +11708,12 @@ void CToDoListWnd::OnUpdateCloseallbutthis(CCmdUI* pCmdUI)
 
 void CToDoListWnd::DoSendTasks(BOOL bSelected)
 {
-	CTDLSendTasksDlg dialog(bSelected, GetToDoCtrl().GetTaskView());
+	CFilteredToDoCtrl& tdc = GetToDoCtrl();
+	CTDLSendTasksDlg dialog(bSelected, tdc.GetTaskView());
 
 	if (dialog.DoModal() == IDOK)
 	{
 		// get tasks
-		CFilteredToDoCtrl& tdc = GetToDoCtrl();
 		CTaskFile tasks;
 
 		GetTasks(tdc, FALSE, FALSE, dialog.GetTaskSelection(), tasks, NULL);
