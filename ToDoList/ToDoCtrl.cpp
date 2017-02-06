@@ -8420,6 +8420,7 @@ BOOL CToDoCtrl::DoAddTimeToLogFile(DWORD dwTaskID, double dHours, BOOL bShowDial
 	COleDateTime dtWhen = COleDateTime::GetCurrentTime();
 	BOOL bAddToTimeSpent = FALSE;
 	BOOL bTracked = (dHours != 0.0);
+	double dOrgHours = dHours;
 
 	if (bShowDialog)
 	{
@@ -8434,10 +8435,27 @@ BOOL CToDoCtrl::DoAddTimeToLogFile(DWORD dwTaskID, double dHours, BOOL bShowDial
 		dHours = dialog.GetLoggedHours();
 		dtWhen = dialog.GetWhen();
 		sComment = dialog.GetComment();
-		bAddToTimeSpent = dialog.GetAddToTimeSpent();
+
+		if (!bTracked)
+			bAddToTimeSpent = dialog.GetAddToTimeSpent();
 	}
 
-	return AddTimeToTaskLogFile(dwTaskID, dHours, dtWhen, sComment, bTracked, bAddToTimeSpent);
+	if (!AddTimeToTaskLogFile(dwTaskID, dHours, dtWhen, sComment, bTracked))
+		return FALSE;
+
+	// If the user changed the tracked hours then manually adjust the task's
+	// time because it will have already been updated during time-tracking
+	if (bTracked && (dHours != dOrgHours))
+	{
+		return AdjustTaskTimeSpent(dwTaskID, (dHours - dOrgHours));
+	}
+	else if (bAddToTimeSpent)
+	{
+		return AdjustTaskTimeSpent(dwTaskID, dHours);
+	}
+
+	// else
+	return TRUE;
 }
 
 LRESULT CToDoCtrl::OnApplyAddLoggedTime(WPARAM wParam, LPARAM lParam)
@@ -8450,31 +8468,37 @@ LRESULT CToDoCtrl::OnApplyAddLoggedTime(WPARAM wParam, LPARAM lParam)
 	const CTDLAddLoggedTimeDlg* pDialog = (const CTDLAddLoggedTimeDlg*)lParam;
 	DWORD dwTaskID = wParam;
 
-	return AddTimeToTaskLogFile(dwTaskID, 
-								pDialog->GetLoggedHours(), 
-								pDialog->GetWhen(), 
-								pDialog->GetComment(), 
-								pDialog->IsTracked(), 
-								pDialog->GetAddToTimeSpent());
+	if (AddTimeToTaskLogFile(dwTaskID, 
+							pDialog->GetLoggedHours(), 
+							pDialog->GetWhen(), 
+							pDialog->GetComment(), 
+							pDialog->IsTracked()))
+	{
+		if (pDialog->GetAddToTimeSpent())
+			return AdjustTaskTimeSpent(dwTaskID, pDialog->GetLoggedHours());
+	}
+
+	// else
+	return 0L;
 }
 
 BOOL CToDoCtrl::AddTimeToTaskLogFile(DWORD dwTaskID, double dHours, const COleDateTime& dtWhen, 
-									 const CString& sComment, BOOL bTracked, BOOL bAddToTimeSpent)
+									const CString& sComment, BOOL bTracked)
 {
 	// sanity check
 	if ((dHours == 0.0) && sComment.IsEmpty())
 		return FALSE; // sanity check
 
 	CTDCTaskTimeLog log(GetFilePath());
-	
+
 	if (!log.LogTime(dwTaskID, 
-					GetTaskTitle(dwTaskID), 
-					GetTaskPath(dwTaskID), 
-					dHours,
-					dtWhen, 
-					sComment, 
-					bTracked, 
-					HasStyle(TDCS_LOGTASKTIMESEPARATELY)))
+						GetTaskTitle(dwTaskID), 
+						GetTaskPath(dwTaskID), 
+						dHours,
+						dtWhen, 
+						sComment, 
+						bTracked, 
+						HasStyle(TDCS_LOGTASKTIMESEPARATELY)))
 	{
 		UpdateWindow();
 		AfxMessageBox(CEnString(IDS_LOGFILELOCKED));
@@ -8483,23 +8507,26 @@ BOOL CToDoCtrl::AddTimeToTaskLogFile(DWORD dwTaskID, double dHours, const COleDa
 	}
 
 	// else
-	if (bAddToTimeSpent && (dHours != 0.0))
+	return TRUE;
+}
+
+BOOL CToDoCtrl::AdjustTaskTimeSpent(DWORD dwTaskID, double dHours)
+{
+	ASSERT(dwTaskID && (dHours != 0.0));
+
+	TDC_UNITS nUnits = TDCU_NULL;
+	double dTime = m_data.GetTaskTimeSpent(dwTaskID, nUnits);
+
+	dTime += CTimeHelper().GetTime(dHours, THU_HOURS, TDC::MapUnitsToTHUnits(nUnits));
+
+	if ((GetSelectedCount() == 1) && (GetSelectedTaskID() == dwTaskID))
 	{
-		TDC_UNITS nUnits = TDCU_NULL;
-		double dTime = m_data.GetTaskTimeSpent(dwTaskID, nUnits);
-
-		dTime += CTimeHelper().GetTime(dHours, THU_HOURS, TDC::MapUnitsToTHUnits(nUnits));
-
-		if (GetSelectedCount() == 1 && GetSelectedTaskID() == dwTaskID)
-		{
-			SetSelectedTaskTimeSpent(dTime, nUnits);
-		}
-		else
-		{
-			m_data.SetTaskTimeSpent(dwTaskID, dTime, nUnits);
-			SetModified(TRUE, TDCA_TIMESPENT, dwTaskID);
-		}
+		return SetSelectedTaskTimeSpent(dTime, nUnits);
 	}
+
+	// else
+	m_data.SetTaskTimeSpent(dwTaskID, dTime, nUnits);
+	SetModified(TRUE, TDCA_TIMESPENT, dwTaskID);
 
 	return TRUE;
 }
