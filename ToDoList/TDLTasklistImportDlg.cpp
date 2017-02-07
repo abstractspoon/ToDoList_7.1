@@ -113,7 +113,6 @@ BOOL CTDLTasklistImportDlg::OnInitDialog()
 
 			// Select All
 			PostMessage(WM_COMMAND, MAKEWPARAM(IDC_SELECTALL, BN_CLICKED), (LPARAM)::GetDlgItem(*this, IDC_SELECTALL));
-
 		}
 
 	}
@@ -197,7 +196,7 @@ void CTDLTasklistImportDlg::ResetSelectedTaskCreationDate(HTASKITEM hTask, BOOL 
 			while (hSibling)
 			{
 				// FALSE == don't recurse on siblings
-				ResetSelectedTaskCreationDate(hTask, FALSE);
+				ResetSelectedTaskCreationDate(hSibling, FALSE);
 				
 				hSibling = m_tasksSelected.GetNextTask(hSibling);
 			}
