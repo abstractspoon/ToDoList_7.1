@@ -242,7 +242,7 @@ public:
 	void ResetRecurringSubtaskOcurrences(DWORD dwTaskID);
 	
 	int CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, TDC_COLUMN nSortBy, BOOL bAscending, 
-					BOOL bSortDueTodayHigh, BOOL bIncStartTime = FALSE, BOOL bIncDueTime = FALSE, BOOL bIncDoneTime = FALSE) const;
+					BOOL bSortDueTodayHigh, BOOL bIncTime = FALSE) const;
 	int CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, const TDCCUSTOMATTRIBUTEDEFINITION& attribDef, BOOL bAscending) const;
 
 	int FindTasks(const SEARCHPARAMS& params, CResultArray& aResults) const;
