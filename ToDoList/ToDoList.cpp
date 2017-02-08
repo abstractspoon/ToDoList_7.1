@@ -2025,10 +2025,17 @@ void CToDoListApp::CleanupAppFolder()
 	FileMisc::DeleteFile(sFolder + _T("OutlookImpExp.dll"), TRUE);
 
 	// gif translation 'flags' replaced with pngs
-	FileMisc::DeleteFolderContents(sFolder + _T("Resources\\Translations"), 
-									FMDF_ALLOWDELETEONREBOOT | FMDF_HIDDENREADONLY,
-									_T("*.gif"));
+	CString sTranslations = FileMisc::GetAppResourceFolder(_T("Resources\\Translations"));
+	FileMisc::DeleteFolderContents(sTranslations, FMDF_ALLOWDELETEONREBOOT | FMDF_HIDDENREADONLY, _T("*.gif"));
 
+	// Wrongly installed resource files
+	CString sTasklists = FileMisc::TerminatePath(FileMisc::GetAppResourceFolder(_T("Resources\\Tasklists")));
+
+	FileMisc::DeleteFileBySize((sTasklists + _T("Introduction.txt")), 395, TRUE);
+	FileMisc::DeleteFileBySize((sTasklists + _T("Introduction.csv")), 10602, TRUE);
+	FileMisc::DeleteFileBySize((sTasklists + _T("Introduction.xml")), 177520, TRUE);
+
+	
 /*
 	// remove old RTF to HTML converter
 	FileMisc::DeleteFile(sFolder + _T("Itenso.Rtf.Converter.Html.dll"), TRUE);
