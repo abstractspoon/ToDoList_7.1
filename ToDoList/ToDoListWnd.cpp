@@ -2605,18 +2605,22 @@ void CToDoListWnd::RestoreVisibility()
 						(bMinimized ? SW_SHOWMINIMIZED : SW_SHOW));
 		
  		ShowWindow(nShowCmd);
-		SetForegroundWindow();
 
-		// Startup redraw problem
-		if (COSVersion() == OSV_LINUX)
+		if (!bMinimized)
 		{
-			m_toolbar.Invalidate(TRUE);
-			m_filterBar.Invalidate(TRUE);
-			m_cbQuickFind.Invalidate(TRUE);
-		}
+			SetForegroundWindow();
 
-		Invalidate();
-		UpdateWindow();
+			// Startup redraw problem
+			if (COSVersion() == OSV_LINUX)
+			{
+				m_toolbar.Invalidate(TRUE);
+				m_filterBar.Invalidate(TRUE);
+				m_cbQuickFind.Invalidate(TRUE);
+			}
+
+			Invalidate();
+			UpdateWindow();
+		}
 	}
 	else
 	{
@@ -7314,10 +7318,12 @@ const CFilteredToDoCtrl& CToDoListWnd::GetToDoCtrl(int nIndex) const
 
 CFilteredToDoCtrl* CToDoListWnd::NewToDoCtrl(BOOL bVisible, BOOL bEnabled)
 {
-	CHoldRedraw hr(*this);
-	BOOL bFirstTDC = (GetTDCCount() == 0);
+	BOOL bWantHoldRedraw = ((m_bVisible > 0) && !IsIconic());
+	CHoldRedraw hr(bWantHoldRedraw ? GetSafeHwnd() : NULL);
 	
 	// if the active tasklist is unsaved and unmodified then delete it
+	BOOL bFirstTDC = (GetTDCCount() == 0);
+
 	if (!bFirstTDC)
 	{
 		// make sure that we don't accidentally delete a just edited tasklist
