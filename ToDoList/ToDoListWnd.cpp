@@ -7196,10 +7196,6 @@ void CToDoListWnd::OnSort()
 void CToDoListWnd::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos) 
 {
 	CFrameWnd::OnWindowPosChanged(lpwndpos);
-
-// 	// Keep time tracker in front of us 
-// 	if (IsWindowVisible() && !IsIconic() && m_dlgTimeTracker.IsWindowVisible())
-// 		m_dlgTimeTracker.SetWindowPos(this, 0, 0, 0, 0, (SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE));
 }
 
 void CToDoListWnd::OnArchiveCompletedtasks() 
@@ -10424,7 +10420,7 @@ void CToDoListWnd::OnActivateApp(BOOL bActive, HTASK hTask)
     if (m_bClosing)
         return; 
 
-	// Don't any further processing if the Reminder dialog is active
+	// Don't do any further processing if the Reminder dialog is active
 	// because the two windows get into a fight for activation!
 	if (m_reminders.IsForegroundWindow())
 		return;
