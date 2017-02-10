@@ -8564,51 +8564,19 @@ void CToDoListWnd::PrepareSortMenu(CMenu* pMenu)
 			BOOL bIsSeparator = FALSE;
 
 			UINT nMenuID = pMenu->GetMenuItemID(nItem);
-			
-			switch (nMenuID)
+
+			if (nMenuID == ID_SEPARATOR)
 			{
-			case ID_SORT_BYALLOCBY:		bDelete = !tdc.IsColumnShowing(TDCC_ALLOCBY);		break; 
-			case ID_SORT_BYALLOCTO:		bDelete = !tdc.IsColumnShowing(TDCC_ALLOCTO);		break; 
-			case ID_SORT_BYCATEGORY:	bDelete = !tdc.IsColumnShowing(TDCC_CATEGORY);		break; 
-			case ID_SORT_BYCOST:		bDelete = !tdc.IsColumnShowing(TDCC_COST);			break;
-			case ID_SORT_BYCREATEDBY:	bDelete = !tdc.IsColumnShowing(TDCC_CREATEDBY);		break; 
-			case ID_SORT_BYCREATIONDATE:bDelete = !tdc.IsColumnShowing(TDCC_CREATIONDATE);	break; 
-			case ID_SORT_BYDEPENDENCY:	bDelete = !tdc.IsColumnShowing(TDCC_DEPENDENCY);	break; 
-			case ID_SORT_BYDONE:		bDelete = !tdc.IsColumnShowing(TDCC_DONE);			break; 
-			case ID_SORT_BYDONEDATE:	bDelete = !tdc.IsColumnShowing(TDCC_DONEDATE);		break; 
-			case ID_SORT_BYDUEDATE:		bDelete = !tdc.IsColumnShowing(TDCC_DUEDATE);		break; 
-			case ID_SORT_BYEXTERNALID:	bDelete = !tdc.IsColumnShowing(TDCC_EXTERNALID);	break; 
-			case ID_SORT_BYFILEREF:		bDelete = !tdc.IsColumnShowing(TDCC_FILEREF);		break; 
-			case ID_SORT_BYFLAG:		bDelete = !tdc.IsColumnShowing(TDCC_FLAG);			break; 
-			case ID_SORT_BYICON:		bDelete = !tdc.IsColumnShowing(TDCC_ICON);			break; 
-			case ID_SORT_BYID:			bDelete = !tdc.IsColumnShowing(TDCC_ID);			break; 
-			case ID_SORT_BYMODIFYDATE:	bDelete = !tdc.IsColumnShowing(TDCC_LASTMOD);		break; 
-			case ID_SORT_BYPATH:		bDelete = !tdc.IsColumnShowing(TDCC_PATH);			break; 
-			case ID_SORT_BYPERCENT:		bDelete = !tdc.IsColumnShowing(TDCC_PERCENT);		break; 
-			case ID_SORT_BYPOSITION:	bDelete = !tdc.IsColumnShowing(TDCC_POSITION);		break; 
-			case ID_SORT_BYPRIORITY:	bDelete = !tdc.IsColumnShowing(TDCC_PRIORITY);		break; 
-			case ID_SORT_BYRECENTEDIT:	bDelete = !tdc.IsColumnShowing(TDCC_RECENTEDIT);	break; 
-			case ID_SORT_BYRECURRENCE:	bDelete = !tdc.IsColumnShowing(TDCC_RECURRENCE);	break; 
-			case ID_SORT_BYREMAINING:	bDelete = !tdc.IsColumnShowing(TDCC_REMAINING);		break; 
-			case ID_SORT_BYRISK:		bDelete = !tdc.IsColumnShowing(TDCC_RISK);			break; 
-			case ID_SORT_BYSTARTDATE:	bDelete = !tdc.IsColumnShowing(TDCC_STARTDATE);		break; 
-			case ID_SORT_BYSTATUS:		bDelete = !tdc.IsColumnShowing(TDCC_STATUS);		break; 
-			case ID_SORT_BYSUBTASKDONE:	bDelete = !tdc.IsColumnShowing(TDCC_SUBTASKDONE);	break; 
-			case ID_SORT_BYTAG:			bDelete = !tdc.IsColumnShowing(TDCC_TAGS);			break; 
-			case ID_SORT_BYTIMEEST:		bDelete = !tdc.IsColumnShowing(TDCC_TIMEEST);		break; 
-			case ID_SORT_BYTIMESPENT:	bDelete = !tdc.IsColumnShowing(TDCC_TIMESPENT);		break; 
-			case ID_SORT_BYTIMETRACKING:bDelete = !tdc.IsColumnShowing(TDCC_TRACKTIME);		break; 
-			case ID_SORT_BYVERSION:		bDelete = !tdc.IsColumnShowing(TDCC_VERSION);		break; 
-	//		case ID_SORT_BYCOLOR: bDelete = (Prefs().GetTextColorOption() != COLOROPT_DEFAULT); break; 
-
-
-			case ID_SEPARATOR: 
 				bIsSeparator = TRUE;
 				bDelete = (nCountLastSep == 0);
 				nCountLastSep = 0;
-				break;
+			}
+			else
+			{
+				TDC_COLUMN nColID = TDC::MapSortIDToColumn(nMenuID);
 
-			default: bDelete = FALSE; break; 
+				if (nColID != TDCC_NONE)
+					bDelete = !tdc.IsColumnShowing(nColID);
 			}
 
 			// delete the item else increment the count since the last separator
@@ -8618,7 +8586,9 @@ void CToDoListWnd::PrepareSortMenu(CMenu* pMenu)
 				nItem--;
 			}
 			else if (!bIsSeparator)
+			{
 				nCountLastSep++;
+			}
 		}
 	}
 
