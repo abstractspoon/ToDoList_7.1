@@ -2797,6 +2797,23 @@ BOOL CToDoCtrlData::GetTaskSubtaskTotals(const TODOITEM* pTDI, const TODOSTRUCTU
 	return (nSubtasksCount > 0);
 }
 
+double CToDoCtrlData::CalcTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const
+{
+	ASSERT (pTDS && pTDI);
+
+	if (!pTDS || !pTDS->HasSubTasks() || !pTDI)
+		return 0.0;
+
+	int nSubtasksDone = 0, nSubtasksCount = 0;
+
+	if (!GetTaskSubtaskTotals(pTDI, pTDS, nSubtasksCount, nSubtasksDone))
+		return 0;
+
+	// else
+	ASSERT(nSubtasksCount);
+	return ((double)nSubtasksDone / (double)nSubtasksCount);
+}
+
 CString CToDoCtrlData::GetTaskPositionString(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const
 {
 	ASSERT (pTDI && pTDS && pTDS->GetParentTask());
@@ -3625,6 +3642,15 @@ BOOL CToDoCtrlData::GetTaskSubtaskTotals(DWORD dwTaskID, int& nSubtasksTotal, in
 	GET_TDI_TDS(dwTaskID, pTDI, pTDS, FALSE);
 
 	return GetTaskSubtaskTotals(pTDI, pTDS, nSubtasksTotal, nSubtasksDone);
+}
+
+double CToDoCtrlData::CalcTaskSubtaskCompletion(DWORD dwTaskID) const
+{
+	const TODOITEM* pTDI = NULL;
+	const TODOSTRUCTURE* pTDS = NULL;
+	GET_TDI_TDS(dwTaskID, pTDI, pTDS, 0.0);
+
+	return CalcTaskSubtaskCompletion(pTDI, pTDS);
 }
 
 BOOL CToDoCtrlData::IsTaskDone(DWORD dwTaskID, DWORD dwExtraCheck) const
@@ -4759,6 +4785,13 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 			{
 				double dCost = CalcTaskCost(pTDI, pTDS);
 				bMatch = TaskMatches(dCost, sp, resTask);
+			}
+			break;
+
+		case TDCA_SUBTASKDONE:
+			{
+				double dCompletion = CalcTaskSubtaskCompletion(pTDI, pTDS);
+				bMatch = TaskMatches(dCompletion, sp, resTask);
 			}
 			break;
 			

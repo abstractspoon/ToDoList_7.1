@@ -1198,6 +1198,7 @@ struct SEARCHPARAM
 			return FT_TIME;
 
 		case TDCA_COST:
+		case TDCA_SUBTASKDONE:
 			return FT_DOUBLE;
 
 		case TDCA_FLAG:
