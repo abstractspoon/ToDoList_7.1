@@ -4789,9 +4789,14 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 			break;
 
 		case TDCA_SUBTASKDONE:
+			if (pTDS->HasSubTasks())
 			{
 				double dCompletion = CalcTaskSubtaskCompletion(pTDI, pTDS);
 				bMatch = TaskMatches(dCompletion, sp, resTask);
+			}
+			else
+			{
+				bMatch = FALSE;
 			}
 			break;
 			
