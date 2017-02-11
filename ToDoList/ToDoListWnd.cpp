@@ -9696,6 +9696,8 @@ LRESULT CToDoListWnd::OnFindDlgFind(WPARAM /*wp*/, LPARAM /*lp*/)
 
 	if (m_findDlg.GetSearchParams(params))
 	{
+		CWaitCursor cursor;
+
 		int nSel = GetSelToDoCtrl();
 		
 		for (int nCtrl = nFrom; nCtrl <= nTo; nCtrl++)
