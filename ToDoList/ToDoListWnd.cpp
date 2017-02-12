@@ -11689,7 +11689,6 @@ void CToDoListWnd::DoSendTasks(BOOL bSelected)
 	{
 		// get tasks
 		CTaskFile tasks;
-
 		GetTasks(tdc, FALSE, FALSE, dialog.GetTaskSelection(), tasks, NULL);
 
 		// package them up

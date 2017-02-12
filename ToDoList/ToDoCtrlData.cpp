@@ -2797,6 +2797,19 @@ BOOL CToDoCtrlData::GetTaskSubtaskTotals(const TODOITEM* pTDI, const TODOSTRUCTU
 	return (nSubtasksCount > 0);
 }
 
+CString CToDoCtrlData::FormatTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const
+{
+	int nSubtaskCount = 0, nSubtaskDone = 0;
+	CString sSubtasksDone;
+	
+	if (GetTaskSubtaskTotals(pTDI, pTDS, nSubtaskCount, nSubtaskDone))
+	{
+		sSubtasksDone.Format(_T("%d/%d"), nSubtaskDone, nSubtaskCount);
+	}
+	
+	return sSubtasksDone;
+}
+
 double CToDoCtrlData::CalcTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const
 {
 	ASSERT (pTDS && pTDI);
@@ -2856,7 +2869,7 @@ CString CToDoCtrlData::GetTaskPath(const TODOITEM* pTDI, const TODOSTRUCTURE* pT
 	
 	const TODOSTRUCTURE* pTDSParent = pTDS->GetParentTask();
 	
-	if (!pTDSParent)
+	if (!pTDSParent || pTDSParent->IsRoot())
 		return EMPTY_STR;
 
 	CString sPath;
@@ -3642,6 +3655,15 @@ BOOL CToDoCtrlData::GetTaskSubtaskTotals(DWORD dwTaskID, int& nSubtasksTotal, in
 	GET_TDI_TDS(dwTaskID, pTDI, pTDS, FALSE);
 
 	return GetTaskSubtaskTotals(pTDI, pTDS, nSubtasksTotal, nSubtasksDone);
+}
+
+CString CToDoCtrlData::FormatTaskSubtaskCompletion(DWORD dwTaskID) const
+{
+	const TODOITEM* pTDI = NULL;
+	const TODOSTRUCTURE* pTDS = NULL;
+	GET_TDI_TDS(dwTaskID, pTDI, pTDS, EMPTY_STR);
+
+	return FormatTaskSubtaskCompletion(pTDI, pTDS);
 }
 
 double CToDoCtrlData::CalcTaskSubtaskCompletion(DWORD dwTaskID) const

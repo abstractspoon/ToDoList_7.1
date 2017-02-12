@@ -161,6 +161,7 @@ public:
 	CString FormatTaskTags(DWORD dwTaskID) const;
 	BOOL CalcTaskCustomAttributeData(DWORD dwTaskID, const TDCCUSTOMATTRIBUTEDEFINITION& attribDef, double& dValue) const;
 	BOOL GetTaskSubtaskTotals(DWORD dwTaskID, int& nSubtasksTotal, int& nSubtasksDone) const;
+	CString FormatTaskSubtaskCompletion(DWORD dwTaskID) const;
 	double CalcTaskSubtaskCompletion(DWORD dwTaskID) const;
 	BOOL TaskHasIncompleteSubtasks(DWORD dwTaskID, BOOL bExcludeRecurring) const;
 	BOOL TaskHasRecurringParent(DWORD dwTaskID) const;
@@ -184,6 +185,7 @@ public:
 	int CalcPercentFromTime(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const; // spent / estimate
 	BOOL GetTaskSubtaskTotals(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, 
 							int& nSubtasksTotal, int& nSubtasksDone) const;
+	CString FormatTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	double CalcTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	BOOL TaskHasIncompleteSubtasks(const TODOSTRUCTURE* pTDS, BOOL bExcludeRecurring) const;
 	BOOL TaskHasRecurringParent(const TODOSTRUCTURE* pTDS) const;

@@ -3440,8 +3440,7 @@ CString CTDLTaskCtrlBase::GetTaskColumnText(DWORD dwTaskID,
 		break;
 
 	case TDCC_PATH:
-		if (pTDS->GetParentTaskID())
-			sTaskColText = m_data.GetTaskPath(pTDI, pTDS);
+		sTaskColText = m_data.GetTaskPath(pTDI, pTDS);
 		break;
 
 		// items having no text or rendered differently
@@ -3460,12 +3459,7 @@ CString CTDLTaskCtrlBase::GetTaskColumnText(DWORD dwTaskID,
 		break;
 
 	case TDCC_SUBTASKDONE:
-		{
-			int nSubtasksCount, nSubtasksDone;
-
-			if (m_data.GetTaskSubtaskTotals(pTDI, pTDS, nSubtasksCount, nSubtasksDone))
-				sTaskColText.Format(_T("%d/%d"), nSubtasksDone, nSubtasksCount);
-		}
+		sTaskColText = m_data.FormatTaskSubtaskCompletion(pTDI, pTDS);
 		break;
 
 	default:
