@@ -4813,12 +4813,19 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 		case TDCA_SUBTASKDONE:
 			if (pTDS->HasSubTasks())
 			{
-				double dCompletion = CalcTaskSubtaskCompletion(pTDI, pTDS);
-				bMatch = TaskMatches(dCompletion, sp, resTask);
+				if (sp.OperatorIs(FOP_NOT_SET))
+				{
+					bMatch = FALSE;
+				}
+				else
+				{
+					double dCompletion = CalcTaskSubtaskCompletion(pTDI, pTDS);
+					bMatch = TaskMatches(dCompletion, sp, resTask);
+				}
 			}
 			else
 			{
-				bMatch = FALSE;
+				bMatch = sp.OperatorIs(FOP_NOT_SET);
 			}
 			break;
 			
