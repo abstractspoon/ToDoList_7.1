@@ -4877,6 +4877,25 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 						TaskMatches(pTDI->aFileLinks, sp, resTask, FALSE) ||
 						TaskMatches(pTDI->aTags, sp, resTask, TRUE) ||
 						TaskMatches(pTDI->sCreatedBy, sp, resTask, TRUE, FALSE));
+
+			if (!bMatch)
+			{
+				int nDef = params.aAttribDefs.GetSize();
+
+				while (nDef-- && !bMatch)
+				{
+					const TDCCUSTOMATTRIBUTEDEFINITION& attribDef = params.aAttribDefs[nDef];
+
+					if (attribDef.GetDataType() == TDCCA_STRING)
+					{
+						TDCCADATA data(pTDI->GetCustomAttribValue(attribDef.sUniqueID));
+						DWORD dwAttribType = (attribDef.GetListType() | TDCCA_STRING);
+
+						bMatch = TaskMatches(data, dwAttribType, sp, resTask);
+					}
+				}
+			}
+
 			break;
 
 		case TDCA_SELECTION:
