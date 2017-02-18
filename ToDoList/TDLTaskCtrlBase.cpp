@@ -2823,7 +2823,15 @@ BOOL CTDLTaskCtrlBase::DrawItemCustomColumn(const TODOITEM* pTDI, const TODOSTRU
 
 			CStringArray aImages;
 			int nNumImage = data.AsArray(aImages);
-			int nTotalWidth = (nNumImage * 18) - 2;
+
+			int nReqWidth = (nNumImage * 18) - 2;
+			int nAvailWidth = rCol.Width();
+
+			if (nAvailWidth < nReqWidth)
+			{
+				nNumImage = min(nNumImage, ((nAvailWidth - 2) / 18));
+				nReqWidth = (nNumImage * 18) - 2;
+			}
 
 			// centre icon vertically
 			CPoint pt(rCol.left, (rCol.CenterPoint().y - 8));
@@ -2837,15 +2845,16 @@ BOOL CTDLTaskCtrlBase::DrawItemCustomColumn(const TODOITEM* pTDI, const TODOSTRU
 			switch (nTextAlign)
 			{
 			case DT_RIGHT:
-				rCol.right -= (LV_COLPADDING + 16);
-				pt.x = rCol.right;
+				// We still draw from the left just like text
+				rCol.right -= LV_COLPADDING;
+				pt.x = (rCol.right - nReqWidth);
 				break;
 				
 			case DT_CENTER:
 				// if there is associated text then we align left
 				if (sName.IsEmpty())
 				{
-					pt.x = (rCol.left + ((rCol.Width() - nTotalWidth) / 2));
+					pt.x = (rCol.left + ((rCol.Width() - nReqWidth) / 2));
 					break;
 				}
 				else 
