@@ -816,6 +816,8 @@ void CFilteredToDoCtrl::RefreshTreeFilter()
 
 			if (hti)
 				SelectItem(hti);
+			else
+				UpdateControls();
 		}
 	}
 	
