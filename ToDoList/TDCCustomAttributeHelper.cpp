@@ -999,18 +999,20 @@ void CTDCCustomAttributeHelper::UpdateCustomAttributeControl(const CWnd* pParent
 			CAutoComboBox* pACB = (CAutoComboBox*)pCtrl;
 
 			if (sData.IsEmpty())
+			{
 				pACB->SetCurSel(-1);
+			}
 			else
 			{
-				pACB->AddString(sData);
-				pACB->SelectString(-1, sData);
+				int nItem = pACB->AddString(sData);
+				pACB->SetCurSel(nItem);
 			}
 		}
 		break;
 		
 	case TDCCA_FIXEDLIST:
 		{
-			CComboBox* pCB = (CComboBox*)pCtrl;
+			COwnerdrawComboBoxBase* pCB = (COwnerdrawComboBoxBase*)pCtrl;
 
 			if (sData.IsEmpty())
 			{
@@ -1021,7 +1023,10 @@ void CTDCCustomAttributeHelper::UpdateCustomAttributeControl(const CWnd* pParent
 				((CTDLIconComboBox*)pCtrl)->SelectImage(sData);
 			}
 			else
-				pCB->SelectString(-1, sData);
+			{
+				int nItem = pCB->FindStringExact(-1, sData, FALSE);
+				pCB->SetCurSel(nItem);
+			}
 		}
 		break;
 		
