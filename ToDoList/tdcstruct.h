@@ -617,8 +617,11 @@ struct TDCCUSTOMATTRIBUTEDEFINITION
 	inline DWORD GetListType() const { return (dwAttribType & TDCCA_LISTMASK); }
 	inline BOOL HasFeature(DWORD dwFeature) const { return (dwFeatures & dwFeature); }
 
+	inline BOOL IsDataType(DWORD dwDataType) const { return (GetDataType() == dwDataType); }
 	inline BOOL IsList() const { return (GetListType() != TDCCA_NOTALIST); }
 	inline BOOL IsAutoList() const { return ((GetListType() == TDCCA_AUTOLIST) || (GetListType() == TDCCA_AUTOMULTILIST)); }
+	inline BOOL IsMultiList() const { return ((GetListType() == TDCCA_FIXEDMULTILIST) || (GetListType() == TDCCA_AUTOMULTILIST)); }
+	inline BOOL IsFixedList() const { return ((GetListType() == TDCCA_FIXEDLIST) || (GetListType() == TDCCA_FIXEDMULTILIST)); }
 
 	int GetUniqueListData(CStringArray& aData) const
 	{
@@ -672,7 +675,7 @@ struct TDCCUSTOMATTRIBUTEDEFINITION
 		// calculations not supported by multi-list types
 		DWORD dwListType = GetListType();
 
-		if (dwListType == TDCCA_AUTOMULTILIST || dwListType == TDCCA_FIXEDMULTILIST)
+		if (IsMultiList())
 			return FALSE;
 
 		DWORD dwDataType = GetDataType();
@@ -768,6 +771,50 @@ struct TDCCUSTOMATTRIBUTEDEFINITION
 
 		return sName;
 	}
+	
+	int CalcLongestListItem(CDC* pDC) const
+	{
+		if (!IsList())
+		{
+			ASSERT(0);
+			return 0;
+		}
+
+		int nItem = aDefaultListData.GetSize(), nLongest = 0;
+
+		while (nItem--)
+		{
+			const CString& sItem = Misc::GetItem(aDefaultListData, nItem);
+			int nItemLen = 0;
+
+			switch (GetDataType())
+			{
+			case TDCCA_STRING:
+			case TDCCA_INTEGER:	
+			case TDCCA_DOUBLE:	
+			case TDCCA_DATE:	
+			case TDCCA_BOOL:
+				nItemLen = pDC->GetTextExtent(sItem).cx;
+				break;
+
+			case TDCCA_ICON:
+				{
+					nItemLen = 20; // for the icon
+
+					// check for trailing text
+					CString sDummy, sName;
+
+					if (DecodeImageTag(sItem, sDummy, sName) && !sName.IsEmpty())
+						nItemLen += pDC->GetTextExtent(sName).cx;
+				}
+				break;
+			}
+
+			nLongest = max(nLongest, nItemLen);
+		}
+
+		return nLongest;
+	}
 
 	static CString EncodeImageTag(const CString& sImage, const CString& sName) 
 	{ 
@@ -834,8 +881,7 @@ private:
 		case TDCCA_BOOL:
 			if (dwListType)
 			{
-				if (dwListType != TDCCA_FIXEDLIST)
-					dwListType = TDCCA_FIXEDLIST;
+				dwListType = TDCCA_FIXEDLIST;
 			}
 			break;
 
@@ -873,6 +919,59 @@ public:
 	{
 		CArray<TDCCUSTOMATTRIBUTEDEFINITION, TDCCUSTOMATTRIBUTEDEFINITION&>::RemoveAt(nIndex, nCount);
 		RebuildIDs();
+	}
+
+	BOOL MatchAny(const CTDCCustomAttribDefinitionArray& aAttribDefs) const
+	{
+		for (int nAttrib = 0; nAttrib < aAttribDefs.GetSize(); nAttrib++)
+		{
+			const TDCCUSTOMATTRIBUTEDEFINITION& attribDef = GetData()[nAttrib];
+
+			if (Find(attribDef.sUniqueID) != -1)
+				return TRUE;
+		}
+
+		return FALSE;
+	}
+
+	int Find(const CString& sAttribID, int nIgnore = -1) const
+	{
+		ASSERT(!sAttribID.IsEmpty());
+
+		if (sAttribID.IsEmpty())
+			return -1;
+
+		int nAttrib = GetSize();
+
+		while (nAttrib--)
+		{
+			const TDCCUSTOMATTRIBUTEDEFINITION& attribDef = GetData()[nAttrib];
+
+			if ((nAttrib != nIgnore) && (attribDef.sUniqueID == sAttribID))
+				return nAttrib;
+		}
+
+		return -1;
+	}
+
+	int Append(const CTDCCustomAttribDefinitionArray& aSrc)
+	{
+		int nOrgSize = GetSize();
+
+		for (int nAttrib = 0; nAttrib < aSrc.GetSize(); nAttrib++)
+		{
+			const TDCCUSTOMATTRIBUTEDEFINITION& attribDef = aSrc.GetData()[nAttrib];
+
+			// Append unique items only
+			if (Find(attribDef.sUniqueID) == -1)
+			{
+				TDCCUSTOMATTRIBUTEDEFINITION def = aSrc[nAttrib];
+				Add(def);
+			}
+			// else skip
+		}
+
+		return (GetSize() - nOrgSize);
 	}
 
 protected:
@@ -2190,6 +2289,21 @@ struct TDCCADATA
 		}
 		else
 			sData.Empty(); 
+	}
+
+	CString FormatAsArray(TCHAR cSep = 0) const
+	{
+		if (cSep == '\n')
+			return sData;
+
+		CString sArray(sData);
+
+		if (cSep != 0)
+			sArray.Replace('\n', cSep);
+		else
+			sArray.Replace(_T("\n"), Misc::GetListSeparator());
+
+		return sArray;
 	}
 
 protected:

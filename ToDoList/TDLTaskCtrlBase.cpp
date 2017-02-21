@@ -4196,7 +4196,7 @@ BOOL CTDLTaskCtrlBase::ItemColumnSupportsClickHandling(int nItem, TDC_COLUMN nCo
 					break;
 					
 					default:
-						// do item cycling for fixed lists unless they support calculation
+						// do item cycling for fixed lists
 						bSupported = (attribDef.GetListType() == TDCCA_FIXEDLIST);
 						break;
 				}
@@ -4520,9 +4520,7 @@ BOOL CTDLTaskCtrlBase::ModNeedsResort(TDC_ATTRIBUTE nModType, TDC_COLUMN nSortBy
 	default:
 		if (CTDCCustomAttributeHelper::IsCustomAttribute(nModType))
 		{
-			ASSERT(nModCol != TDCC_NONE);
-			ASSERT (CTDCCustomAttributeHelper::IsColumnSortable(nSortBy, m_aCustomAttribDefs));
-
+			ASSERT(CTDCCustomAttributeHelper::IsColumnSortable(nModCol, m_aCustomAttribDefs));
 			return (nModCol == nSortBy);
 		}
 		// else unhandled attribute
@@ -4874,7 +4872,7 @@ int CTDLTaskCtrlBase::RecalcColumnWidth(int nCol, CDC* pDC, BOOL bVisibleOnly) c
 							switch (attribDef.GetListType())
 							{
 							case TDCCA_FIXEDLIST:
-								nColWidth = CTDCCustomAttributeHelper::CalcLongestListItem(attribDef, pDC);
+								nColWidth = attribDef.CalcLongestListItem(pDC);
 								break;
 
 							case TDCCA_FIXEDMULTILIST:
@@ -5829,6 +5827,7 @@ int CTDLTaskCtrlBase::GetSelectedTaskFileRefs(CStringArray& aFiles) const
 		return m_data.GetTaskFileRefs(GetSelectedTaskID(), aFiles);
 	
 	// else
+	aFiles.RemoveAll();
 	return 0;
 }
 

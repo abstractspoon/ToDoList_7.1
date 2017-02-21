@@ -69,6 +69,7 @@ public:
 	void Flush();
 	int GetCurSel() const;
 	void ModifyFlags(DWORD dwRemove, DWORD dwAdd);
+	CString GetItemText(int nItem) const;
 
 	operator HWND() const { return GetSafeHwnd(); }
 
@@ -150,7 +151,7 @@ protected:
 	void ParentACNotify(UINT nMsgNotify, int nIndex, LPCTSTR szItem);
 
 	virtual void HandleReturnKey();
-	virtual CString GetSelectedItem() const;
+	virtual CString GetSelectedItemText() const;
 	virtual BOOL DeleteLBItem(int nItem);
 
 	BOOL FixupListBoxPosition(const WINDOWPOS& wpos);

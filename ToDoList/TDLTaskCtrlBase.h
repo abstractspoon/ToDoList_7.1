@@ -274,6 +274,7 @@ protected:
 
 	BOOL m_bReadOnly;
 	BOOL m_bSortingColumns;
+
 	CString m_sCompletionStatus;
 	CString m_sTasksWndPrompt;
 	DWORD m_dwEditTitleTaskID;

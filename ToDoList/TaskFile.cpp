@@ -211,13 +211,7 @@ BOOL CTaskFile::Decrypt(LPCTSTR szPassword)
 	if (bResult && bWasEncrypted)
 	{
 		// fix corrupted tasklist where the root item has an ID
-		CXmlItem* pXI = GetItem(TDL_TASKID);
-
-		while (pXI)
-		{
-			DeleteItem(pXI);
-			pXI = GetItem(TDL_TASKID);
-		}
+		DeleteItem(TDL_TASKID);
 
 		m_dwNextUniqueID = (DWORD)GetItemValueI(TDL_NEXTUNIQUEID);
 
@@ -1036,7 +1030,10 @@ BOOL CTaskFile::GetAttributeVisibility(TDCCOLEDITFILTERVISIBILITY& vis) const
 BOOL CTaskFile::SetCustomAttributeDefs(const CTDCCustomAttribDefinitionArray& aAttribs)
 {
 	// delete old attribDef
-	DeleteItem(const_cast<CXmlItem*>(GetCustomAttribDefs()));
+	if (!DeleteItem(TDL_CUSTOMATTRIBDEFS))
+		DeleteItem(TDL_CUSTOMATTRIBDEFS_DEP);
+
+	ASSERT(GetCustomAttribDefs() == NULL);
 
 	int nNumAttrib = aAttribs.GetSize();
 
@@ -1570,7 +1567,7 @@ BOOL CTaskFile::SetTaskAttributes(HTASKITEM hTask, const TODOITEM* pTDI)
 			SetTaskString(hTask, TDL_TASKEXTERNALID, pTDI->sExternalID);
 		
 		if (!pTDI->sIcon.IsEmpty())
-			SetTaskString(hTask, TDL_TASKICONINDEX, tdi.sIcon);
+			SetTaskString(hTask, TDL_TASKICONINDEX, pTDI->sIcon);
 		
 		// rest of non-string attributes
 		SetTaskPriority(hTask, pTDI->nPriority);
@@ -3048,7 +3045,9 @@ BOOL CTaskFile::HideAttribute(HTASKITEM hTask, LPCTSTR szAttrib, BOOL bHide)
 				pXIAttrib->AddItem(_T("HIDE"), 1);
 		}
 		else if (pXIHide)
+		{
 			pXIAttrib->DeleteItem(pXIHide);
+		}
 		
 		return TRUE;
 	}
@@ -3997,3 +3996,7 @@ void CTaskFile::ApplyDefaultTaskAttributes(const TODOITEM& tdi, HTASKITEM hTask,
 		// note: we only need do the first child
 		HTASKITEM hSubtask = GetFirstTask(hTask);
 
+		if (hSubtask)
+			ApplyDefaultTaskAttributes(tdi, hSubtask, TRUE);
+	}
+}

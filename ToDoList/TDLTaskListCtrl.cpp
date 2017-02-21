@@ -1396,3 +1396,4 @@ GM_ITEMSTATE CTDLTaskListCtrl::GetColumnItemState(int nItem) const
 {
 	return GetListItemState(nItem);
 }
+
