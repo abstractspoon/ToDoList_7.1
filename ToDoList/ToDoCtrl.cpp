@@ -7084,7 +7084,7 @@ LRESULT CToDoCtrl::OnTreeDragDrop(WPARAM /*wParam*/, LPARAM lParam)
 
 					// fix up the dependencies of the copied tasks
 					if (bCopy)
-						PrepareTasksForPaste(tasks, TDCR_YES);
+						PrepareTasksForPaste(tasks, TDCR_YES, TRUE);
 					else
 						PrepareTaskIDsForPasteAsRef(tasks);
 					
@@ -7152,7 +7152,7 @@ void CToDoCtrl::RemoveNonSelectedTasks(CTaskFile& tasks, HTASKITEM hTask) const
 	}
 }
 
-void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, TDC_RESETIDS nResetID) const
+void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, TDC_RESETIDS nResetID, BOOL bResetCreation) const
 {
 	if (nResetID == TDCR_NO || (tasks.GetTaskCount() == 0))
 		return; // nothing to do
@@ -7165,7 +7165,7 @@ void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, TDC_RESETIDS nResetID) co
 	BuildTaskIDMapForPaste(tasks, tasks.GetFirstTask(NULL), dwNextID, mapID, nResetID, TRUE);
 
 	// then fix them
-	PrepareTasksForPaste(tasks, tasks.GetFirstTask(NULL), mapID, TRUE);
+	PrepareTasksForPaste(tasks, tasks.GetFirstTask(NULL), bResetCreation, mapID, TRUE);
 }
 
 void CToDoCtrl::PrepareTaskIDsForPasteAsRef(CTaskFile& tasks) const
@@ -7238,7 +7238,7 @@ void CToDoCtrl::BuildTaskIDMapForPaste(CTaskFile& tasks, HTASKITEM hTask, DWORD&
 	}
 }
 
-void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, HTASKITEM hTask, const CMapID2ID& mapID, BOOL bAndSiblings) const
+void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, HTASKITEM hTask, BOOL bResetCreation, const CMapID2ID& mapID, BOOL bAndSiblings) const
 {
 	if (!hTask)
 		return;
@@ -7252,8 +7252,11 @@ void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, HTASKITEM hTask, const CM
 		tasks.SetTaskID(hTask, dwNewID);
 
 		// And give it a new creation date and creator
-		tasks.SetTaskCreationDate(hTask, COleDateTime::GetCurrentTime());
-		tasks.SetTaskCreatedBy(hTask, m_tdiDefault.sCreatedBy);
+		if (bResetCreation)
+		{
+			tasks.SetTaskCreationDate(hTask, COleDateTime::GetCurrentTime());
+			tasks.SetTaskCreatedBy(hTask, m_tdiDefault.sCreatedBy);
+		}
 	}
 
 	// dependencies first
@@ -7299,7 +7302,7 @@ void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, HTASKITEM hTask, const CM
 		tasks.SetTaskFileLinks(hTask, aFileRefs);
 
 	// children
-	PrepareTasksForPaste(tasks, tasks.GetFirstTask(hTask), mapID, TRUE);
+	PrepareTasksForPaste(tasks, tasks.GetFirstTask(hTask), bResetCreation, mapID, TRUE);
 
 	// siblings
 	// handle sibling tasks WITHOUT RECURSION
@@ -7310,7 +7313,7 @@ void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, HTASKITEM hTask, const CM
 		while (hTask)
 		{
 			// FALSE == don't recurse on siblings
-			PrepareTasksForPaste(tasks, hTask, mapID, FALSE);
+			PrepareTasksForPaste(tasks, hTask, bResetCreation, mapID, FALSE);
 			
 			hTask = tasks.GetNextTask(hTask);
 		}
@@ -7997,7 +8000,8 @@ BOOL CToDoCtrl::PasteTasks(TDC_PASTE nWhere, BOOL bAsRef)
 			}
 
 			// and fix up the dependencies of the tasks
-			PrepareTasksForPaste(tasks, nResetID);
+			// and the creation date
+			PrepareTasksForPaste(tasks, nResetID, TRUE);
 		}
 
 		IMPLEMENT_UNDO(TDCUAT_PASTE);
@@ -9142,7 +9146,7 @@ BOOL CToDoCtrl::InsertTasks(const CTaskFile& tasks, TDC_INSERTWHERE nWhere, BOOL
 		CTaskFile copy(tasks);
 
 		// and always assign new IDs
-		PrepareTasksForPaste(copy, TDCR_YES);
+		PrepareTasksForPaste(copy, TDCR_YES, FALSE);
 		return AddTasksToTree(copy, htiParent, htiAfter, TDCR_NO, bSelectAll, TDCA_PASTE);
 	}
 

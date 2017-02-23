@@ -2433,7 +2433,6 @@ void CToDoListWnd::LoadSettings()
 
 	// default attributes
 	userPrefs.GetDefaultTaskAttributes(m_tdiDefault);
-	m_mgrImportExport.SetDefaultTaskAttributes(m_tdiDefault);
 	
 	// hotkey
 	UpdateGlobalHotkey();
@@ -4706,7 +4705,6 @@ void CToDoListWnd::DoPreferences(int nInitPage)
 
 		// default task attributes
 		newPrefs.GetDefaultTaskAttributes(m_tdiDefault);
-		m_mgrImportExport.SetDefaultTaskAttributes(m_tdiDefault);
 
 		// source control
 		BOOL bAutoCheckOut = newPrefs.GetAutoCheckOut();
@@ -5489,13 +5487,18 @@ BOOL CToDoListWnd::ImportFile(LPCTSTR szFilePath, BOOL bSilent)
 		return FALSE;
 
 	CTaskFile tasks;
-	m_mgrImportExport.ImportTaskList(szFilePath, &tasks, nImporter, bSilent);
+
+	if (m_mgrImportExport.ImportTaskList(szFilePath, &tasks, nImporter, bSilent) != IIR_SUCCESS)
+		return FALSE;
+
+	tasks.ApplyDefaultTaskAttributes(m_tdiDefault);
 		
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 		
-	if (tdc.InsertTasks(tasks, TDC_INSERTATTOP, FALSE))
-		UpdateCaption();
+	if (!tdc.InsertTasks(tasks, TDC_INSERTATTOP, TRUE))
+		return FALSE;
 
+	UpdateCaption();
 	return TRUE;
 }
 
@@ -8371,7 +8374,7 @@ BOOL CToDoListWnd::ImportTasks(BOOL bFromClipboard, const CString& sImportFrom,
 			}
 			else
 			{
-				VERIFY(tdc.InsertTasks(tasks, nWhere, TRUE));
+				VERIFY(tdc.InsertTasks(tasks, nWhere));
 			}
 
 			UpdateCaption();
