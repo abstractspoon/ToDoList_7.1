@@ -5045,7 +5045,12 @@ BOOL CToDoListWnd::ProcessStartupOptions(const CTDCStartupOptions& startup, BOOL
 	// 2. execute a command
 	if (startup.HasCommandID())
 	{
-		SendMessage(WM_COMMAND, MAKEWPARAM(startup.GetCommandID(), 0), 0);
+		CUIntArray aCmdIDs;
+		int nNumCmd = startup.GetCommandIDs(aCmdIDs);
+
+		for (int nCmd = 0; nCmd < nNumCmd; nCmd++)
+			SendMessage(WM_COMMAND, MAKEWPARAM(aCmdIDs[nCmd], 0), 0);
+
 		return TRUE;
 	}
 
