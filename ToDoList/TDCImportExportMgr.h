@@ -46,18 +46,11 @@ public:
 	BOOL ImportTaskListFromTdl(LPCTSTR szSrcFile, ITaskList* pDestTasks, BOOL bSilent = FALSE) const;
 	BOOL ImportTaskListFromOutlook(LPCTSTR szSrcFile, ITaskList* pDestTasks, BOOL bSilent = FALSE) const;
 
-	// override base class so we can set default task attributes
 	IIMPORT_RESULT ImportTaskList(LPCTSTR szSrcFile, ITaskList* pDestTasks, int nByImporter, BOOL bSilent = FALSE) const; 
 	BOOL ExportTaskList(const ITaskList* pSrcTasks, LPCTSTR szDestFile, int nByExporter, BOOL bSilent) const;
 	BOOL ExportTaskLists(const IMultiTaskList* pSrcTasks, LPCTSTR szDestFile, int nByExporter, BOOL bSilent) const;
 
-	void SetDefaultTaskAttributes(const TODOITEM& tdi) { m_tdiDefault = tdi; }
-
 protected:
-	TODOITEM m_tdiDefault; // default attributes
-
-protected:
-	void SetTaskAttributesToDefaults(ITaskList* pTasks, HTASKITEM hTask, BOOL bAndSiblings) const;
 	void Initialize() const;
 
 };
