@@ -1051,6 +1051,11 @@ void CTabbedToDoCtrl::RefreshExtensionViewSelection()
 					TSH().RemoveAll();
 					UpdateControls();
 				}
+				else
+				{
+					// Update Tree selection
+					CToDoCtrl::SelectTask(aTaskIDs[0], TRUE);
+				}
 			}
 		}
 		break;
