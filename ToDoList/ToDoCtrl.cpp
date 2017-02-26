@@ -6959,7 +6959,12 @@ LRESULT CToDoCtrl::OnTreeDragDrop(WPARAM /*wParam*/, LPARAM lParam)
 			BOOL bDropOn = (htiAfter == NULL);
 			
 			if (bDropOn)
-				htiAfter = m_bDragDropSubtasksAtTop ? TVI_FIRST : TVI_LAST;
+			{
+				if (m_bDragDropSubtasksAtTop)
+					htiAfter = TVI_FIRST;
+				else
+					htiAfter = m_taskTree.TCH().GetLastChildItem(htiDrop);
+			}
 			
 			if (pDDI->bLeftDrag) 
 			{
