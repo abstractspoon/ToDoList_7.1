@@ -8354,7 +8354,7 @@ BOOL CToDoListWnd::ImportTasks(BOOL bFromClipboard, const CString& sImportFrom,
 
 				if (tasks.GetCustomAttributeDefs(aImportedDefs))
 				{
-					int nTDC = GetTDCCount();
+					int nTDC = (GetTDCCount() - 1); // ignore just created tasklist
 
 					while (nTDC--)
 					{

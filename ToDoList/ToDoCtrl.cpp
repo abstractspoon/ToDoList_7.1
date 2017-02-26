@@ -4475,6 +4475,7 @@ BOOL CToDoCtrl::SetSelectedTaskArray(TDC_ATTRIBUTE nAttrib, const CStringArray& 
 	
 	if (nRes == SET_CHANGE)
 	{
+		// Update combo to show new selection
 		ASSERT(dwRefTaskID);
 
 		switch (nAttrib)
