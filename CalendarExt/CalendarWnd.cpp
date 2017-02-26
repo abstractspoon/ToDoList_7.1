@@ -290,6 +290,9 @@ bool CCalendarWnd::ProcessMessage(MSG* pMsg)
 	if (m_BigCalendar.ProcessMessage(pMsg))
 		return true;
 
+	if (m_MiniCalendar.PreTranslateMessage(pMsg))
+		return true;
+
 	return false;
 }
 
