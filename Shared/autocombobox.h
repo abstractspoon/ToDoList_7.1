@@ -122,6 +122,7 @@ protected:
 	afx_msg BOOL OnDropDown();
 	afx_msg BOOL OnCloseUp();
 	afx_msg BOOL OnEditChange();
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	DECLARE_MESSAGE_MAP()
 
 	// pseudo handlers

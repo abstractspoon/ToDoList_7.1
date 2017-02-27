@@ -557,6 +557,20 @@ LRESULT CAutoComboBox::OnEditboxMessage(UINT msg, WPARAM wp, LPARAM lp)
 	return CSubclasser::ScDefault(m_scEdit);
 }
 
+void CAutoComboBox::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if ((nChar == VK_ESCAPE) && GetDroppedState() && !m_scEdit.IsValid())
+	{
+		m_bEditChange = FALSE;
+		ShowDropDown(FALSE);
+
+		return;
+	}
+
+	// else
+	COwnerdrawComboBoxBase::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
 int CAutoComboBox::HitTestListDeleteBtn(const CPoint& ptList) const
 {
 	if (!IsType(CBS_DROPDOWNLIST))
