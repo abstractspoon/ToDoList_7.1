@@ -84,7 +84,7 @@ protected:
 	virtual BOOL DeleteLBItem(int nItem);
 	virtual int GetExtraListboxWidth() const;
 	virtual void HandleReturnKey();
-	virtual CString GetSelectedItem() const;
+	virtual CString GetSelectedItemText() const;
 
 protected:
 	void RecalcText(BOOL bUpdate = TRUE, BOOL bNotify = TRUE);
