@@ -436,16 +436,21 @@ BEGIN_MESSAGE_MAP(CToDoCtrl, CRuntimeDlg)
 	ON_CBN_SELCHANGE(IDC_DONETIME, OnSelChangeDoneTime)
 	ON_CBN_SELCHANGE(IDC_DUETIME, OnSelChangeDueTime)
 	ON_CBN_SELCHANGE(IDC_FILEPATH, OnSelChangeFileRefPath)
-	ON_CBN_SELENDCANCEL(IDC_FILEPATH, OnCancelChangeFileRefPath)
 	ON_CBN_SELCHANGE(IDC_PRIORITY, OnChangePriority)
 	ON_CBN_SELCHANGE(IDC_RISK, OnChangeRisk)
 	ON_CBN_SELCHANGE(IDC_STARTTIME, OnSelChangeStartTime)
 	ON_CBN_SELCHANGE(IDC_STATUS, OnSelChangeStatus)
 	ON_CBN_SELCHANGE(IDC_TAGS, OnSelChangeTag)
 	ON_CBN_SELCHANGE(IDC_VERSION, OnSelChangeVersion)
+	ON_CBN_SELENDCANCEL(IDC_FILEPATH, OnCancelChangeFileRefPath)
 	ON_CBN_SELENDCANCEL(IDC_ALLOCTO, OnSelCancelAllocTo)
 	ON_CBN_SELENDCANCEL(IDC_CATEGORY, OnSelCancelCategory)
 	ON_CBN_SELENDCANCEL(IDC_TAGS, OnSelCancelTag)
+	ON_CBN_SELENDCANCEL(IDC_ALLOCBY, OnSelCancelAllocBy)
+	ON_CBN_SELENDCANCEL(IDC_PRIORITY, OnSelCancelPriority)
+	ON_CBN_SELENDCANCEL(IDC_RISK, OnSelCancelRisk)
+	ON_CBN_SELENDCANCEL(IDC_STATUS, OnSelCancelStatus)
+	ON_CBN_SELENDCANCEL(IDC_VERSION, OnSelCancelVersion)
 	ON_CBN_SELENDOK(IDC_COMMENTSTYPE, OnSelChangeCommentsType)
 	ON_EN_CHANGE(IDC_COST, OnChangeCost)
 	ON_EN_CHANGE(IDC_DEPENDS, OnChangeDependency)
@@ -7769,6 +7774,31 @@ void CToDoCtrl::OnSelCancelTag()
 			m_cbTags.SetChecked(aTags);
 		}
 	}
+}
+
+void CToDoCtrl::OnSelCancelAllocBy()
+{
+	m_cbAllocBy.SelectString(0, GetSelectedTaskAllocBy());
+}
+
+void CToDoCtrl::OnSelCancelPriority()
+{
+	m_cbPriority.SetSelectedPriority(GetSelectedTaskPriority());
+}
+
+void CToDoCtrl::OnSelCancelRisk()
+{
+	m_cbRisk.SetSelectedRisk(GetSelectedTaskRisk());
+}
+
+void CToDoCtrl::OnSelCancelStatus()
+{
+	m_cbStatus.SelectString(0, GetSelectedTaskStatus());
+}
+
+void CToDoCtrl::OnSelCancelVersion()
+{
+	m_cbVersion.SelectString(0, GetSelectedTaskVersion());
 }
 
 void CToDoCtrl::OnChangeTimeEstimate()
