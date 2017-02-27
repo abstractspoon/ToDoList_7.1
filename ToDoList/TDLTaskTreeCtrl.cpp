@@ -1955,6 +1955,9 @@ int CTDLTaskTreeCtrl::CacheSelection(TDCSELECTIONCACHE& cache, BOOL bIncBreadcru
 		if (bIncBreadcrumbs)
 		{
 			HTREEITEM htiFocus = m_tcTasks.GetSelectedItem();
+
+			if (htiFocus == NULL)
+				htiFocus = m_find.GetItem(cache.dwFocusedTaskID);
 		
 			m_find.GetTaskBreadcrumbs(htiFocus, cache.aBreadcrumbs, TCFBC_VISIBLEONLY);
 			m_find.GetTaskBreadcrumbs(htiFocus, cache.aBreadcrumbs, TCFBC_VISIBLEONLY | TCFBC_APPEND | TCFBC_UP);
