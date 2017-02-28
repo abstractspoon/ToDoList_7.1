@@ -10841,12 +10841,12 @@ int CToDoCtrl::GetSelectedTaskCustomAttributeData(CMapStringToString& mapData, B
 {
 	mapData.RemoveAll();
 	
-	int nCtrl = m_aCustomControls.GetSize();
+	int nDef = m_aCustomAttribDefs.GetSize();
 	
-	while (nCtrl--)
+	while (nDef--)
 	{
-		const CUSTOMATTRIBCTRLITEM& ctrl = m_aCustomControls.GetData()[nCtrl];
-		mapData[ctrl.sAttribID] = GetSelectedTaskCustomAttributeData(ctrl.sAttribID, bFormatted);
+		const TDCCUSTOMATTRIBUTEDEFINITION& def = m_aCustomAttribDefs.GetData()[nDef];
+		mapData[def.sUniqueID] = GetSelectedTaskCustomAttributeData(def.sUniqueID, bFormatted);
 	}
 	
 	return mapData.GetCount();
