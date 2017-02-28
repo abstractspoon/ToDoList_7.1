@@ -299,7 +299,7 @@ BOOL CTDCToolsHelper::PrepareCmdline(const USERTOOL& tool, const USERTOOLARGS& a
 	while (nArg--)
 	{
 		CString sAttribID(aCustomArgs[nArg].sName), sValue;
-		args.mapTaskCustData.Lookup(sAttribID, sValue);
+		args.mapTaskCustData.Lookup(Misc::ToUpper(sAttribID), sValue);
 
 		ReplaceToolArgument(tcp, aCustomArgs[nArg].sPlaceHolder, sValue, bEscapeSpaces);
 	}
