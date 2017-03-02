@@ -3566,8 +3566,6 @@ int CGanttTreeListCtrl::BuildVisibleDependencyList(CGanttDependArray& aDepends) 
 
 BOOL CGanttTreeListCtrl::CalcDependencyEndPos(int nItem, GANTTDEPENDENCY& depend, BOOL bFrom, LPPOINT lpp) const
 {
-	ASSERT(nItem >= 0);
-
 	if (nItem < 0)
 	{
 		ASSERT(0);
