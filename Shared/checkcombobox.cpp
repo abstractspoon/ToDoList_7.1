@@ -21,13 +21,13 @@ static char THIS_FILE[] = __FILE__;
 struct CCB_CHECK_DATA
 {
 public:
-	CCB_CHECKSTATE nCheck;
-	DWORD dwUserData;
+	BOOL m_bChecked;;
+	DWORD m_dwUserData;
 
 	CCB_CHECK_DATA()
 	{
-		nCheck = CCBC_UNCHECKED;
-		dwUserData = 0;
+		m_bChecked = FALSE;
+		m_dwUserData = 0;
 	};
 };
 
