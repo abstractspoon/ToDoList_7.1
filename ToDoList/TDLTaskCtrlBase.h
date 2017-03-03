@@ -418,7 +418,7 @@ protected:
 	{
 		TDSORTFLAGS() 
 			: 
-		bSortChildren(TRUE), 
+			bSortChildren(TRUE), 
 			bSortDueTodayHigh(FALSE), 
 			dwTimeTrackID(0), 
 			bIncStartTime(FALSE), 
@@ -466,7 +466,7 @@ protected:
 		
 	struct TDSORTPARAMS
 	{
-		TDSORTPARAMS(const CTDLTaskCtrlBase& tcb) : base(tcb) 
+		TDSORTPARAMS(const CTDLTaskCtrlBase& tcb) : base(tcb)
 		{
 		}
 		

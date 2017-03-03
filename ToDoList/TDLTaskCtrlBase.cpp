@@ -2538,18 +2538,13 @@ void CTDLTaskCtrlBase::DrawColumnsRowText(CDC* pDC, int nItem, DWORD dwTaskID, c
 			break;
 			
 		case TDCC_TRACKTIME:
-			// show icon in red if we're currently tracking
 			if (m_dwTimeTrackTaskID == dwTrueID)
-			{
 				DrawColumnImage(pDC, nColID, rSubItem);
-			}
 			break;
 			
 		case TDCC_FLAG:
 			if (pTDI->bFlagged)
-			{
 				DrawColumnImage(pDC, nColID, rSubItem);
-			}
 			break;
 			
 		case TDCC_REMINDER:
@@ -2629,7 +2624,6 @@ void CTDLTaskCtrlBase::DrawColumnsRowText(CDC* pDC, int nItem, DWORD dwTaskID, c
 			break;
 			
 		case TDCC_ICON:
-			//if (rSubItem.Width() >= 16)
 			{
 				int nIcon = m_ilTaskIcons.GetImageIndex(pTDI->sIcon);
 									
@@ -4242,10 +4236,6 @@ void CTDLTaskCtrlBase::SetModified(TDC_ATTRIBUTE nAttrib)
 	case TDCA_DUEDATE:
 		if (!AccumulateRecalcColumn(TDCC_DUEDATE, nRecalcColID))
 			bRedrawCols = IsColumnShowing(TDCC_PRIORITY);
-		
-		// don't redraw while month cal control is visible
-		// 			if (m_dateDue.GetMonthCalCtrl() == NULL)
-		// 				m_taskTree.InvalidateAll(); // text color can be affected 
 		break;
 		
 	case TDCA_PRIORITY:

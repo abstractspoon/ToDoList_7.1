@@ -543,6 +543,7 @@ bool CGanttChartWnd::DoAppCommand(IUI_APPCOMMAND nCmd, DWORD dwExtra)
 	case IUI_GETNEXTTOPLEVELTASK:
 	case IUI_GETPREVTASK:
 	case IUI_GETPREVTOPLEVELTASK:
+		if (dwExtra)
 		{
 			DWORD* pTaskID = (DWORD*)dwExtra;
 			DWORD dwNextID =  m_ctrlGantt.GetNextTask(*pTaskID, nCmd);

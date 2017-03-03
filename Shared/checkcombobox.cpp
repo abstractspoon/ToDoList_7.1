@@ -21,15 +21,13 @@ static char THIS_FILE[] = __FILE__;
 struct CCB_CHECK_DATA
 {
 public:
-	BOOL m_bChecked;
-	//BOOL m_bEnabled;
-	DWORD m_dwUserData;
+	CCB_CHECKSTATE nCheck;
+	DWORD dwUserData;
 
 	CCB_CHECK_DATA()
 	{
-		m_bChecked = FALSE;
-		//m_bEnabled = TRUE;
-		m_dwUserData = 0;
+		nCheck = CCBC_UNCHECKED;
+		dwUserData = 0;
 	};
 };
 
@@ -48,7 +46,6 @@ CCheckComboBox::CCheckComboBox(DWORD dwFlags) : CAutoComboBox(dwFlags)
 CCheckComboBox::~CCheckComboBox()
 {
 }
-
 
 BEGIN_MESSAGE_MAP(CCheckComboBox, CAutoComboBox)
 	//{{AFX_MSG_MAP(CCheckComboBox)
