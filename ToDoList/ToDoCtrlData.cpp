@@ -827,6 +827,7 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 	const CString& sAttribID = attribDef.sUniqueID;
 	CString sTaskVal = pTDI->GetCustomAttribValue(sAttribID);
 	DWORD dwDataType = attribDef.GetDataType();
+	double dCalcValue = TODOITEM::NULL_VALUE;
 
 	// easier to handle by feature 
 	// -----------------------------------------------------------
@@ -836,7 +837,7 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 				dwDataType == TDCCA_INTEGER);
 
 		// our value
-		dValue = Misc::Atof(sTaskVal);
+		dCalcValue = Misc::Atof(sTaskVal);
 		
 		// our children's values
 		for (int i = 0; i < pTDS->GetSubTaskCount(); i++)
@@ -846,7 +847,7 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 			
 			// ignore references else risk of infinite loop
 			if (!IsTaskReference(dwSubtaskID) && CalcTaskCustomAttributeData(dwSubtaskID, attribDef, dSubtaskVal))
-				dValue += dSubtaskVal;
+				dCalcValue += dSubtaskVal;
 		}
 	}
 	// -----------------------------------------------------------
@@ -857,9 +858,9 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 				dwDataType == TDCCA_DATE);
 
 		if (sTaskVal.IsEmpty())
-			dValue = -DBL_MAX;
+			dCalcValue = -DBL_MAX;
 		else
-			dValue = Misc::Atof(sTaskVal);
+			dCalcValue = Misc::Atof(sTaskVal);
 
 		// our children's values
 		for (int i = 0; i < pTDS->GetSubTaskCount(); i++)
@@ -869,11 +870,11 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 			
 			// ignore references else risk of infinite loop
 			if (!IsTaskReference(dwSubtaskID) && CalcTaskCustomAttributeData(dwSubtaskID, attribDef, dSubtaskVal))
-				dValue = max(dSubtaskVal, dValue);
+				dCalcValue = max(dSubtaskVal, dCalcValue);
 		}
 
-		if (dValue <= -DBL_MAX)
-			dValue = TODOITEM::NULL_VALUE;
+		if (dCalcValue <= -DBL_MAX)
+			dCalcValue = TODOITEM::NULL_VALUE;
 	}
 	// -----------------------------------------------------------
 	else if (attribDef.HasFeature(TDCCAF_MINIMIZE))
@@ -883,9 +884,9 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 			dwDataType == TDCCA_DATE);
 		
 		if (sTaskVal.IsEmpty())
-			dValue = DBL_MAX;
+			dCalcValue = DBL_MAX;
 		else
-			dValue = Misc::Atof(sTaskVal);
+			dCalcValue = Misc::Atof(sTaskVal);
 
 		// our children's values
 		for (int i = 0; i < pTDS->GetSubTaskCount(); i++)
@@ -895,19 +896,18 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 			
 			// ignore references else risk of infinite loop
 			if (!IsTaskReference(dwSubtaskID) && CalcTaskCustomAttributeData(dwSubtaskID, attribDef, dSubtaskVal))
-				dValue = min(dSubtaskVal, dValue);
+				dCalcValue = min(dSubtaskVal, dCalcValue);
 		}
 
-		if (dValue >= DBL_MAX)
-			dValue = TODOITEM::NULL_VALUE;
-	}
-	// -----------------------------------------------------------
-	else
-	{
-		return FALSE;
+		if (dCalcValue >= DBL_MAX)
+			dCalcValue = TODOITEM::NULL_VALUE;
 	}
 
-	return (dValue != TODOITEM::NULL_VALUE);
+	if (dCalcValue == TODOITEM::NULL_VALUE)
+		return FALSE;
+
+	dValue = dCalcValue;
+	return TRUE;
 }
 
 BOOL CToDoCtrlData::IsTaskFlagged(DWORD dwTaskID) const
