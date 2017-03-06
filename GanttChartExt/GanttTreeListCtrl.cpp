@@ -1400,8 +1400,6 @@ void CGanttTreeListCtrl::Resize(const CRect& rect)
 void CGanttTreeListCtrl::ExpandAll(BOOL bExpand)
 {
 	ExpandItem(NULL, bExpand, TRUE);
-
-	RecalcTreeColumns(TRUE);
 }
 
 void CGanttTreeListCtrl::ExpandItem(HTREEITEM hti, BOOL bExpand, BOOL bAndChildren)
@@ -1439,7 +1437,7 @@ void CGanttTreeListCtrl::ExpandItem(HTREEITEM hti, BOOL bExpand, BOOL bAndChildr
 	TreeView_EnsureVisible(m_hwndTree, TreeView_GetChild(m_hwndTree, NULL));
 
 	EnableResync(TRUE, m_hwndTree);
-	Resize();
+	RecalcTreeColumns(TRUE);
 }
 
 BOOL CGanttTreeListCtrl::CanExpandItem(HTREEITEM hti, BOOL bExpand) const
