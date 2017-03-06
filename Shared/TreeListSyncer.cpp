@@ -323,6 +323,7 @@ void CTreeListSyncer::Unsync()
 
 	RemoveType(m_scLeft.GetHwnd());
 	RemoveType(m_scRight.GetHwnd());
+	RemoveType(m_hwndPrimaryHeader);
 
 	m_scLeft.HookWindow(NULL);
 	m_scRight.HookWindow(NULL);
@@ -1154,12 +1155,20 @@ TLS_TYPE CTreeListSyncer::GetType(HWND hwnd)
 	if (!s_mapTypes.Lookup(hwnd, nType) || (nType == TLST_NONE))
 	{
 		// add value to map
-		BOOL bList = CWinClasses::IsClass(hwnd, WC_LISTVIEW);
-#ifdef _DEBUG
-		BOOL bTree = CWinClasses::IsClass(hwnd, WC_TREEVIEW);	
-		ASSERT(bList || bTree);
-#endif
-		nType = (bList ? TLST_LIST : TLST_TREE);
+		if (CWinClasses::IsClass(hwnd, WC_LISTVIEW))
+		{
+			nType = TLST_LIST;
+		}
+		else if (CWinClasses::IsClass(hwnd, WC_TREEVIEW))
+		{
+			nType = TLST_TREE;
+		}
+		else if (CWinClasses::IsClass(hwnd, WC_HEADER))
+		{
+			nType = TLST_HEADER;
+		}
+		ASSERT(nType != TLST_NONE);
+
 		s_mapTypes[hwnd] = nType;
 	}
 
@@ -1175,6 +1184,7 @@ void CTreeListSyncer::PreDetachWindow()
 {
 	RemoveType(m_scLeft.GetHwnd());
 	RemoveType(m_scRight.GetHwnd());
+	RemoveType(m_hwndPrimaryHeader);
 }
 
 BOOL CTreeListSyncer::IsList(HWND hwnd)
@@ -1189,7 +1199,7 @@ BOOL CTreeListSyncer::IsTree(HWND hwnd)
 
 BOOL CTreeListSyncer::IsHeader(HWND hwnd)
 {
-	return (CWinClasses::IsClass(hwnd, WC_HEADER) ? TRUE : FALSE);
+	return (GetType(hwnd) == TLST_HEADER);
 }
 
 void CTreeListSyncer::ResyncListHeader(HWND hwnd)
