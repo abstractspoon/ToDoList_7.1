@@ -2337,8 +2337,10 @@ LRESULT CGanttTreeListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPA
 
 				if (!(tvi.flags & TVHT_ONITEMBUTTON))
 				{
-					if (hti && (hti != GetTreeSelItem(hRealWnd)))
-						SelectTreeItem(hRealWnd, hti);
+					HTREEITEM htiTreeSel = GetTreeSelItem(hRealWnd);
+
+					if (hti && (hti != htiTreeSel))
+						SelectTreeItem(hRealWnd, hti, FALSE);
 				}
 			}
 			break;
