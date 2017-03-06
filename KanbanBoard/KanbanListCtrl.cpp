@@ -447,7 +447,7 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 				int nItem = (int)pLVCD->nmcd.dwItemSpec;
 				CDC* pDC = CDC::FromHandle(pLVCD->nmcd.hdc);
 		
-				// draw backgound
+				// draw background and bar
 				CRect rItem;
 				GetItemRect(nItem, rItem, LVIR_BOUNDS);
 				rItem.DeflateRect(1, 1);
@@ -463,14 +463,16 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 
 					GraphicsMisc::DrawExplorerItemBkgnd(pDC, pNMHDR->hwndFrom, nState, rItem, GMIB_THEMECLASSIC);
 				}
-				else if (m_bShowTaskColorAsBar && !m_bTextColorIsBkgnd)
+				else if (m_bShowTaskColorAsBar)
 				{
 					COLORREF crFill = GetSysColor(COLOR_WINDOW);
 					COLORREF crBorder = GetSysColor(COLOR_WINDOWFRAME);
 					
 					GraphicsMisc::DrawRect(pDC, rItem, crFill, crBorder);
+
+
 				}
-				else
+				else // use task's own colour
 				{
 					COLORREF crFill = pKI->GetFillColor(m_bTextColorIsBkgnd);
 					COLORREF crBorder = pKI->GetBorderColor(m_bTextColorIsBkgnd);
@@ -479,8 +481,9 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 				}
 
 				// Draw bar as required
-				if (m_bShowTaskColorAsBar && (!m_bTextColorIsBkgnd || m_bColorByPriority))
+				if (m_bShowTaskColorAsBar)
 				{
+					// Don't draw for completed items but ensure same indentation
 					CRect rBar(rItem);
 					
 					rBar.DeflateRect(2, 2);
