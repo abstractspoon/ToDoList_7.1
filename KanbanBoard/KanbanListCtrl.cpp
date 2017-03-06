@@ -113,7 +113,7 @@ CKanbanListCtrl::CKanbanListCtrl(const CKanbanItemMap& data, const KANBANCOLUMN&
 	m_bSelected(FALSE),
 	m_bShowTaskColorAsBar(TRUE),
 	m_bColorByPriority(FALSE),
-	m_dwLButtonDownTask(0),
+	m_dwSelectingTask(0),
 	m_nLineHeight(-1)
 {
 }
@@ -134,6 +134,8 @@ BEGIN_MESSAGE_MAP(CKanbanListCtrl, CListCtrl)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_LBUTTONDBLCLK()
+	ON_WM_KEYDOWN()
+	ON_WM_KEYUP()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -743,8 +745,8 @@ int CKanbanListCtrl::GetSelectedTasks(CDWordArray& aItemIDs) const
 	while (pos)
 		aItemIDs.Add(GetItemData(GetNextSelectedItem(pos)));
 
-	if ((aItemIDs.GetSize() == 0) && IsClickingOnTask())
-		aItemIDs.Add(m_dwLButtonDownTask);
+	if ((aItemIDs.GetSize() == 0) && IsSelectingTask())
+		aItemIDs.Add(m_dwSelectingTask);
 
 	return aItemIDs.GetSize();
 }
@@ -984,7 +986,7 @@ void CKanbanListCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CKanbanListCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	m_dwLButtonDownTask = 0;
+	m_dwSelectingTask = 0;
 
 	CListCtrl::OnLButtonUp(nFlags, point);
 }
@@ -1000,7 +1002,7 @@ void CKanbanListCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 BOOL CKanbanListCtrl::HandleLButtonClick(CPoint point)
 {
-	m_dwLButtonDownTask = 0;
+	m_dwSelectingTask = 0;
 
 	// don't let the selection to be set to -1
 	// when clicking below the last item
@@ -1022,7 +1024,7 @@ BOOL CKanbanListCtrl::HandleLButtonClick(CPoint point)
 	}
 	else
 	{
-		m_dwLButtonDownTask = GetItemData(nHit);
+		m_dwSelectingTask = GetItemData(nHit);
 	}
 	
 	// all else
@@ -1035,4 +1037,58 @@ BOOL CKanbanListCtrl::IsSelectionChange(NMLISTVIEW* pNMLV)
 
 	return ((pNMLV->uChanged & LVIF_STATE) && 
 			((pNMLV->uNewState & LVIS_SELECTED) || (pNMLV->uOldState & LVIS_SELECTED)));
+}
+
+void CKanbanListCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	int nAnchor = SendMessage(LVM_GETSELECTIONMARK, 0, 0);
+	int nLastIndex = (GetItemCount() - 1);
+	
+	if (Misc::ModKeysArePressed(0) && (nAnchor != -1) && (nLastIndex != -1))
+	{
+		// Work out the next item to be selected
+		int nNext = nAnchor;
+
+		switch (nChar)
+		{
+		case VK_DOWN:
+			nNext++;
+			break;
+			
+		case VK_UP:
+			nNext--;
+			break;
+			
+		case VK_NEXT:
+			nNext = (GetTopIndex() + GetCountPerPage());
+			break;
+			
+		case VK_PRIOR: 
+			nNext = GetTopIndex();
+			break;
+			
+		case VK_HOME:
+			nNext = 0;
+			break;
+			
+		case VK_END:
+			nNext = nLastIndex;
+			break;
+		}
+
+		// Validate
+		nNext = min(nNext, nLastIndex);
+		nNext = max(nNext, 0);
+
+		m_dwSelectingTask = GetItemData(nNext);
+	}
+
+	CListCtrl::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CKanbanListCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	m_dwSelectingTask = 0;
+
+	CListCtrl::OnKeyUp(nChar, nRepCnt, nFlags);
 }
