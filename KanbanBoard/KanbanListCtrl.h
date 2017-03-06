@@ -63,6 +63,9 @@ public:
 	void SetSelected(BOOL bSelected);
 
 	void OnDisplayAttributeChanged();
+	BOOL IsClickingOnTask() const { return (m_dwLButtonDownTask != 0); }
+
+	static BOOL IsSelectionChange(NMLISTVIEW* pNMLV);
 
 protected:
 	BOOL m_bTextColorIsBkgnd;
@@ -82,6 +85,7 @@ protected:
 	KANBANCOLUMN m_columnDef;
 	DWORD m_dwDisplay;
 	int m_nLineHeight;
+	DWORD m_dwLButtonDownTask;
 	
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -104,6 +108,7 @@ protected:
 	afx_msg void OnHeaderCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg LRESULT OnThemeChanged(WPARAM wp, LPARAM lp);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 
 	DECLARE_MESSAGE_MAP()

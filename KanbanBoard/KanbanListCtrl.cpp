@@ -113,6 +113,7 @@ CKanbanListCtrl::CKanbanListCtrl(const CKanbanItemMap& data, const KANBANCOLUMN&
 	m_bSelected(FALSE),
 	m_bShowTaskColorAsBar(TRUE),
 	m_bColorByPriority(FALSE),
+	m_dwLButtonDownTask(0),
 	m_nLineHeight(-1)
 {
 }
@@ -131,6 +132,7 @@ BEGIN_MESSAGE_MAP(CKanbanListCtrl, CListCtrl)
 	ON_NOTIFY(NM_CUSTOMDRAW, 0, OnHeaderCustomDraw)
 	ON_MESSAGE(WM_THEMECHANGED, OnThemeChanged)
 	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
 	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
@@ -741,6 +743,9 @@ int CKanbanListCtrl::GetSelectedTasks(CDWordArray& aItemIDs) const
 	while (pos)
 		aItemIDs.Add(GetItemData(GetNextSelectedItem(pos)));
 
+	if ((aItemIDs.GetSize() == 0) && IsClickingOnTask())
+		aItemIDs.Add(m_dwLButtonDownTask);
+
 	return aItemIDs.GetSize();
 }
 
@@ -977,6 +982,13 @@ void CKanbanListCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 	CListCtrl::OnLButtonDown(nFlags, point);
 }
 
+void CKanbanListCtrl::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	m_dwLButtonDownTask = 0;
+
+	CListCtrl::OnLButtonUp(nFlags, point);
+}
+
 void CKanbanListCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	if (HandleLButtonClick(point))
@@ -988,9 +1000,13 @@ void CKanbanListCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 BOOL CKanbanListCtrl::HandleLButtonClick(CPoint point)
 {
+	m_dwLButtonDownTask = 0;
+
 	// don't let the selection to be set to -1
 	// when clicking below the last item
-	if (HitTest(point) == -1)
+	int nHit = HitTest(point);
+
+	if (nHit == -1)
 	{
 		ClientToScreen(&point);
 
@@ -1004,7 +1020,19 @@ BOOL CKanbanListCtrl::HandleLButtonClick(CPoint point)
 			return TRUE; // eat it
 		}
 	}
+	else
+	{
+		m_dwLButtonDownTask = GetItemData(nHit);
+	}
 	
 	// all else
 	return FALSE;
+}
+
+BOOL CKanbanListCtrl::IsSelectionChange(NMLISTVIEW* pNMLV)
+{
+	ASSERT(pNMLV);
+
+	return ((pNMLV->uChanged & LVIF_STATE) && 
+			((pNMLV->uNewState & LVIS_SELECTED) || (pNMLV->uOldState & LVIS_SELECTED)));
 }

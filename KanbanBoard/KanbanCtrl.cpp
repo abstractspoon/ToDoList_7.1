@@ -2242,8 +2242,7 @@ void CKanbanCtrl::OnListItemChange(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		NMLISTVIEW* pNMLV = (NMLISTVIEW*)pNMHDR;
 		
-		if ((pNMLV->uChanged & LVIF_STATE) && 
-			((pNMLV->uNewState & LVIS_SELECTED) || (pNMLV->uOldState & LVIS_SELECTED)))
+		if (CKanbanListCtrl::IsSelectionChange(pNMLV))
 		{
 			NotifyParentSelectionChange();
 		}
