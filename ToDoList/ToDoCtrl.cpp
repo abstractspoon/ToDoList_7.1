@@ -5933,6 +5933,11 @@ TDC_FILE CToDoCtrl::Save(CTaskFile& tasks/*out*/, const CString& sFilePath)
 			}
 		}
 	}
+
+	///////////////////////////////////////////////////////////////////////
+	// PERMANENT LOGGING
+	DWORD dwTick = GetTickCount();
+	///////////////////////////////////////////////////////////////////////
 	
 	// prepare task file
 	BuildTasksForSave(tasks, bFirstSave);
@@ -5943,6 +5948,12 @@ TDC_FILE CToDoCtrl::Save(CTaskFile& tasks/*out*/, const CString& sFilePath)
 	// do the save
 	if (tasks.Save(sSavePath, SFEF_UTF16))
 	{
+		///////////////////////////////////////////////////////////////////
+		// PERMANENT LOGGING
+		CString sFileName = FileMisc::GetFileNameFromPath(sFilePath);
+		FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::Save(%s)"), sFileName);
+		///////////////////////////////////////////////////////////////////
+
 		m_sLastSavePath = sSavePath;
 		m_bModified = FALSE;
 		m_bCheckedOut = tasks.IsCheckedOutTo(GetSourceControlID());
