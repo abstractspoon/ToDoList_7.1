@@ -1653,24 +1653,26 @@ BOOL CTaskFile::GetTaskAttributes(HTASKITEM hTask, TODOITEM* pTDI) const
 	if (pTDI->dwTaskRefID == 0)
 	{
 		// Call GetTaskString directly wherever possible to avoid string copying
-		pTDI->dateLastMod = GetTaskLastModifiedOle(hTask);
 		pTDI->sTitle = GetTaskString(hTask, TDL_TASKTITLE);
 		pTDI->sComments = GetTaskString(hTask, TDL_TASKCOMMENTS);
 		pTDI->sAllocBy = GetTaskString(hTask, TDL_TASKALLOCBY);
 		pTDI->sStatus = GetTaskString(hTask, TDL_TASKSTATUS);
 		pTDI->sCreatedBy = GetTaskString(hTask, TDL_TASKCREATEDBY);
+		pTDI->sExternalID = GetTaskString(hTask, TDL_TASKEXTERNALID);
+
+		pTDI->dateLastMod = GetTaskLastModifiedOle(hTask);
+		pTDI->dateStart = GetTaskStartDateOle(hTask);
+		pTDI->dateDone = GetTaskDoneDateOle(hTask);
+		pTDI->dateCreated = GetTaskCreationDateOle(hTask);
+		pTDI->dateDue = GetTaskDueDateOle(hTask);
+
 		pTDI->bFlagged = IsTaskFlagged(hTask);
 		pTDI->color = (COLORREF)GetTaskColor(hTask);
 		pTDI->nPercentDone = (int)GetTaskPercentDone(hTask, FALSE);
 		pTDI->dTimeEstimate = GetTaskTimeEstimate(hTask, pTDI->nTimeEstUnits, FALSE);
 		pTDI->dTimeSpent = GetTaskTimeSpent(hTask, pTDI->nTimeSpentUnits, FALSE);
 		pTDI->nPriority = (int)GetTaskPriority(hTask, FALSE);
-		pTDI->dateDue = GetTaskDueDateOle(hTask);
-		pTDI->dateStart = GetTaskStartDateOle(hTask);
-		pTDI->dateDone = GetTaskDoneDateOle(hTask);
-		pTDI->dateCreated = GetTaskCreationDateOle(hTask);
 		pTDI->nRisk = GetTaskRisk(hTask, FALSE);
-		pTDI->sExternalID = GetTaskString(hTask, TDL_TASKEXTERNALID);
 		pTDI->dCost = GetTaskCost(hTask, FALSE);
 		pTDI->sVersion = GetTaskVersion(hTask);
 		pTDI->sIcon = GetTaskIcon(hTask);
@@ -3292,9 +3294,9 @@ bool CTaskFile::SetTaskIcon(HTASKITEM hTask, LPCTSTR szIcon)
 	return SetTaskString(hTask, TDL_TASKICONINDEX, szIcon);
 }
 
-BOOL CTaskFile::SetTaskSubtaskCompletion(HTASKITEM hTask, LPCTSTR szSubtaskDone)
+BOOL CTaskFile::SetTaskSubtaskCompletion(HTASKITEM hTask, const CString& sSubtaskDone)
 {
-	return SetTaskString(hTask, TDL_TASKSUBTASKDONE, szSubtaskDone);
+	return SetTaskString(hTask, TDL_TASKSUBTASKDONE, sSubtaskDone);
 }
 
 BOOL CTaskFile::SetTaskGoodAsDone(HTASKITEM hTask, BOOL bDone)

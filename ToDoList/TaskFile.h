@@ -161,7 +161,7 @@ public:
 	BOOL SetTaskHighestPriority(HTASKITEM hTask, int nPriority);
 	BOOL SetTaskHighestRisk(HTASKITEM hTask, int nRisk);
 	BOOL SetTaskCalcCost(HTASKITEM hTask, double dCost);
-	BOOL SetTaskSubtaskCompletion(HTASKITEM hTask, LPCTSTR szSubtaskDone);
+	BOOL SetTaskSubtaskCompletion(HTASKITEM hTask, const CString& sSubtaskDone);
 	BOOL SetTaskGoodAsDone(HTASKITEM hTask, BOOL bHasIncomplete);
 
 	BOOL SetTaskCategories(HTASKITEM hTask, const CStringArray& aCategories);
