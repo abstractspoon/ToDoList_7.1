@@ -82,7 +82,7 @@ public:
 	int Merge(LPCTSTR szTaskFilePath, BOOL bByID, BOOL bMoveExist);
 #endif
 
-	HTASKITEM NewTask(LPCTSTR szTitle, HTASKITEM hParent, DWORD dwID, DWORD dwParentID, BOOL bInitCreationDate = FALSE);
+	HTASKITEM NewTask(const CString& sTitle, HTASKITEM hParent, DWORD dwID, DWORD dwParentID, BOOL bInitCreationDate = FALSE);
 
 protected:
 	HTASKITEM NewTask(LPCTSTR szTitle, HTASKITEM hParent = NULL);		// ITasklist

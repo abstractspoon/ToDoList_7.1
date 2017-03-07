@@ -2003,7 +2003,7 @@ HTASKITEM CTaskFile::NewTask(LPCTSTR szTitle, HTASKITEM hParent, DWORD dwID)
 
 // New wrapper that lets us set the parent ID if the parent task is NULL
 // And optionally initialise the creation date
-HTASKITEM CTaskFile::NewTask(LPCTSTR szTitle, HTASKITEM hParent, DWORD dwID, DWORD dwParentID, BOOL bInitCreationDate)
+HTASKITEM CTaskFile::NewTask(const CString& sTitle, HTASKITEM hParent, DWORD dwID, DWORD dwParentID, BOOL bInitCreationDate)
 {
 	ASSERT((dwID == 0) || (FindTask(dwID) == 0));
 
@@ -2036,7 +2036,7 @@ HTASKITEM CTaskFile::NewTask(LPCTSTR szTitle, HTASKITEM hParent, DWORD dwID, DWO
 
 		// Set name, parent ID and creation date
 		HTASKITEM hTask = (HTASKITEM)pXINew;
-		SetTaskTitle(hTask, szTitle);
+		SetTaskString(hTask, TDL_TASKTITLE, sTitle);
 
 		if (dwParentID)
 		{

@@ -722,7 +722,7 @@ void CXmlItem::ValidateString(CString& sText, TCHAR cReplace)
 	// remove nasties that XML does not like
 	int nLen = sText.GetLength();
 	
-	for(int nChar = 0; nChar < nLen; nChar++)
+	for (int nChar = 0; nChar < nLen; nChar++)
 	{
 		TCHAR c = sText[nChar];
 		
@@ -730,15 +730,15 @@ void CXmlItem::ValidateString(CString& sText, TCHAR cReplace)
 		{
 		case 0x2026: // ellipsis
 			sText.SetAt(nChar, cReplace);
-			break;
+			continue;
 		}
 		
 		// default handling
 		// from http://support.microsoft.com/kb/315580
 		BOOL bValid =  ((c >= 0xE000 && c <= 0xFFFD) ||
-			(c >  0x009F && c <= 0xD7FF) ||
-			(c >= 0x0020 && c <  0x0082) ||
-			(c == 0x09 || c == 0x0A || c == 0x0D));
+						(c >  0x009F && c <= 0xD7FF) ||
+						(c >= 0x0020 && c <  0x0082) ||
+						(c == 0x09 || c == 0x0A || c == 0x0D));
 		
 		if (!bValid)
 		{
