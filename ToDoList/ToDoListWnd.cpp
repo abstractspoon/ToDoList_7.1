@@ -1574,8 +1574,18 @@ void CToDoListWnd::OnDeleteAllTasks()
 
 void CToDoListWnd::OnSave() 
 {
-	if (SaveTaskList(GetSelToDoCtrl()) == TDCF_SUCCESS)
-		UpdateCaption();
+	///////////////////////////////////////////////////////////////////////
+	// PERMANENT LOGGING
+	DWORD dwTick = GetTickCount();
+	///////////////////////////////////////////////////////////////////////
+
+	SaveTaskList(GetSelToDoCtrl());
+
+	///////////////////////////////////////////////////////////////////
+	// PERMANENT LOGGING
+	CString sFileName = FileMisc::GetFileNameFromPath(GetToDoCtrl().GetFilePath());
+	FileMisc::LogTimeElapsed(dwTick, _T("CToDoListWnd::OnSave(%s)"), sFileName);
+	///////////////////////////////////////////////////////////////////
 }
 
 TDC_FILE CToDoListWnd::DoSaveWithBackupAndProgress(CFilteredToDoCtrl& tdc, int nIndex, CTaskFile& tasks, LPCTSTR szFilePath)
@@ -3617,8 +3627,10 @@ void CToDoListWnd::OnSaveas()
 			m_mgrToDoCtrls.ClearStorageDetails(nSel);
 			tdc.SetAlternatePreferencesKey(_T(""));
 		}
-
-		UpdateStatusbar();
+		else
+		{
+			UpdateStatusbar();
+		}
 	}
 }
 
