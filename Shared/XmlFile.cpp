@@ -1239,7 +1239,7 @@ void CXmlFile::CopyFrom(const CXmlFile& file)
 
 BOOL CXmlFile::Export(CString& sOutput) const
 {
-	BOOL bRes = FALSE;
+	BOOL bSuccess = FALSE;
 	sOutput.Empty();
 	
 	try
@@ -1247,14 +1247,11 @@ BOOL CXmlFile::Export(CString& sOutput) const
 		if (BuildDOM())
 		{
 			sOutput = m_xmlDoc.GetXML(TRUE);
+			bSuccess = !sOutput.IsEmpty();
 			
-			if (sOutput.IsEmpty()) // sanity check
-				m_nFileError = XFL_BADMSXML;
-			else
+			if (bSuccess) // sanity check
 			{
-				// carriage return after each attribute
-				sOutput.Replace(_T("><"), _T(">\r\n<"));
-				bRes = TRUE;
+				m_nFileError = XFL_BADMSXML;
 			}
 		}
 	}
@@ -1263,7 +1260,7 @@ BOOL CXmlFile::Export(CString& sOutput) const
 		m_nFileError = XFL_BADMSXML;
 	}
 	
-	return bRes;
+	return bSuccess;
 }
 
 BOOL CXmlFile::BuildDOM() const
