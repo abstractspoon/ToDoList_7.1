@@ -1574,18 +1574,7 @@ void CToDoListWnd::OnDeleteAllTasks()
 
 void CToDoListWnd::OnSave() 
 {
-	///////////////////////////////////////////////////////////////////////
-	// PERMANENT LOGGING
-	DWORD dwTick = GetTickCount();
-	///////////////////////////////////////////////////////////////////////
-
 	SaveTaskList(GetSelToDoCtrl());
-
-	///////////////////////////////////////////////////////////////////
-	// PERMANENT LOGGING
-	CString sFileName = FileMisc::GetFileNameFromPath(GetToDoCtrl().GetFilePath());
-	FileMisc::LogTimeElapsed(dwTick, _T("CToDoListWnd::OnSave(%s)"), sFileName);
-	///////////////////////////////////////////////////////////////////
 }
 
 TDC_FILE CToDoListWnd::DoSaveWithBackupAndProgress(CFilteredToDoCtrl& tdc, int nIndex, CTaskFile& tasks, LPCTSTR szFilePath)
@@ -1767,94 +1756,91 @@ TDC_FILE CToDoListWnd::SaveTaskList(int nTDC, LPCTSTR szFilePath, BOOL bAuto)
 	ASSERT (nResult == TDCF_SUCCESS);
 
 	// post-process success
-	if (nResult == TDCF_SUCCESS)
+	m_mgrToDoCtrls.RefreshFileLastModified(nTDC);
+	m_mgrToDoCtrls.RefreshReadOnlyStatus(nTDC);
+	m_mgrToDoCtrls.RefreshPathType(nTDC);
+
+	CString sFilePath = tdc.GetFilePath();
+
+	if (userPrefs.GetAddFilesToMRU() && !bUsesStorage)
+		m_mruList.Add(sFilePath);
+
+	UpdateCaption();
+	UpdateStatusbar();
+
+	// auto-export after saving
+	CString sExt;
+
+	if (userPrefs.GetAutoExport() && GetAutoExportExtension(sExt))
 	{
-		m_mgrToDoCtrls.RefreshFileLastModified(nTDC);
-		m_mgrToDoCtrls.RefreshReadOnlyStatus(nTDC);
-		m_mgrToDoCtrls.RefreshPathType(nTDC);
+		ASSERT(tasks.GetTaskCount());
 
-		CString sFilePath = tdc.GetFilePath();
+		DOPROGRESS(IDS_EXPORTPROGRESS);
 
-		if (userPrefs.GetAddFilesToMRU() && !bUsesStorage)
-			m_mruList.Add(sFilePath);
+		// construct output path
+		CString sExportPath = userPrefs.GetAutoExportFolderPath();
+		CString sDrive, sFolder, sFName;
 
-		UpdateCaption();
-		UpdateStatusbar();
+		FileMisc::SplitPath(sFilePath, &sDrive, &sFolder, &sFName);
 
-		// auto-export after saving
-		CString sExt;
+		if (!sExportPath.IsEmpty() && FileMisc::CreateFolder(sExportPath))
+			FileMisc::MakePath(sFilePath, NULL, sExportPath, sFName, sExt);
+		else
+			FileMisc::MakePath(sFilePath, sDrive, sFolder, sFName, sExt);
 
-		if (userPrefs.GetAutoExport() && GetAutoExportExtension(sExt))
+		// The current contents of 'tasks' is 'All Tasks' and 
+		// 'All Columns' but NOT 'Html Comments'.
+		// So if user either wants 'Filtered Tasks' or 'Html Comments' or
+		// only 'Visible Columns' we need to grab the tasks again.
+		BOOL bFiltered = (userPrefs.GetExportFilteredOnly() && tdc.HasAnyFilter());
+		BOOL bHtmlComments = userPrefs.GetExportToHTML();
+
+		CString sStylesheet(userPrefs.GetSaveExportStylesheet());
+		BOOL bTransform = GetStylesheetPath(tdc, sStylesheet);
+
+		if (bFiltered || userPrefs.GetExportToHTML() || !userPrefs.GetExportAllAttributes())
 		{
-			ASSERT(tasks.GetTaskCount());
+			TSD_TASKS nWhatTasks = bFiltered ? TSDT_FILTERED : TSDT_ALL;
+			TDCGETTASKS filter;
 
-			DOPROGRESS(IDS_EXPORTPROGRESS);
-
-			// construct output path
-			CString sExportPath = userPrefs.GetAutoExportFolderPath();
-			CString sDrive, sFolder, sFName;
-
-			FileMisc::SplitPath(sFilePath, &sDrive, &sFolder, &sFName);
-
-			if (!sExportPath.IsEmpty() && FileMisc::CreateFolder(sExportPath))
-				FileMisc::MakePath(sFilePath, NULL, sExportPath, sFName, sExt);
-			else
-				FileMisc::MakePath(sFilePath, sDrive, sFolder, sFName, sExt);
-
-			// The current contents of 'tasks' is 'All Tasks' and 
-			// 'All Columns' but NOT 'Html Comments'.
-			// So if user either wants 'Filtered Tasks' or 'Html Comments' or
-			// only 'Visible Columns' we need to grab the tasks again.
-			BOOL bFiltered = (userPrefs.GetExportFilteredOnly() && tdc.HasAnyFilter());
-			BOOL bHtmlComments = userPrefs.GetExportToHTML();
-
-			CString sStylesheet(userPrefs.GetSaveExportStylesheet());
-			BOOL bTransform = GetStylesheetPath(tdc, sStylesheet);
-
-			if (bFiltered || userPrefs.GetExportToHTML() || !userPrefs.GetExportAllAttributes())
+			if (!userPrefs.GetExportAllAttributes())
 			{
-				TSD_TASKS nWhatTasks = bFiltered ? TSDT_FILTERED : TSDT_ALL;
-				TDCGETTASKS filter;
+				// visible attributes
+				filter.mapAttribs.CopyAttributes(tdc.GetVisibleEditFields());
 
-				if (!userPrefs.GetExportAllAttributes())
-				{
-					// visible attributes
-					filter.mapAttribs.CopyAttributes(tdc.GetVisibleEditFields());
-
-					// add comments always
-					filter.mapAttribs.AddAttribute(TDCA_COMMENTS);
-				}
-
-				// set the html image folder to be the output path with
-				// an different extension
-				CString sImgFolder;
-
-				if (bHtmlComments)
-				{
-					sImgFolder = sFilePath;
-					FileMisc::ReplaceExtension(sImgFolder, _T("html_images"));
-				}
-
-				GetTasks(tdc, bHtmlComments, bTransform, nWhatTasks, filter, 0, tasks, sImgFolder); 
+				// add comments always
+				filter.mapAttribs.AddAttribute(TDCA_COMMENTS);
 			}
 
-			// save intermediate tasklist to file as required
-			LogIntermediateTaskList(tasks, tdc.GetFilePath());
+			// set the html image folder to be the output path with
+			// an different extension
+			CString sImgFolder;
 
-			// want HTML 
-			if (userPrefs.GetExportToHTML())
+			if (bHtmlComments)
 			{
-				Export2Html(tasks, sFilePath, sStylesheet);
+				sImgFolder = sFilePath;
+				FileMisc::ReplaceExtension(sImgFolder, _T("html_images"));
 			}
-			else if (userPrefs.GetOtherExporter() != -1)
-			{
-				int nExporter = userPrefs.GetOtherExporter();
-				m_mgrImportExport.ExportTaskList(&tasks, sFilePath, nExporter, TRUE);
-			}
+
+			GetTasks(tdc, bHtmlComments, bTransform, nWhatTasks, filter, 0, tasks, sImgFolder); 
+		}
+
+		// save intermediate tasklist to file as required
+		LogIntermediateTaskList(tasks, tdc.GetFilePath());
+
+		// want HTML 
+		if (userPrefs.GetExportToHTML())
+		{
+			Export2Html(tasks, sFilePath, sStylesheet);
+		}
+		else if (userPrefs.GetOtherExporter() != -1)
+		{
+			int nExporter = userPrefs.GetOtherExporter();
+			m_mgrImportExport.ExportTaskList(&tasks, sFilePath, nExporter, TRUE);
 		}
 	}
 
-	return nResult;
+	return TDCF_SUCCESS;
 }
 
 BOOL CToDoListWnd::GetAutoExportExtension(CString& sExt) const
