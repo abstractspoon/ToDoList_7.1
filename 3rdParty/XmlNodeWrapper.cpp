@@ -291,10 +291,10 @@ CXmlDocumentWrapper::CXmlDocumentWrapper(const CString& header)
 	VERIFY(Initialise(header));
 }
 
-CXmlDocumentWrapper::CXmlDocumentWrapper(const CString& szHeader, const CString& szRootItem) 
-	: m_bHeaderSet(FALSE), m_sRootItemName(szRootItem)
+CXmlDocumentWrapper::CXmlDocumentWrapper(const CString& sHeader, const CString& sRootItem) 
+	: m_bHeaderSet(FALSE), m_sRootItemName(sRootItem)
 {
-	VERIFY(Initialise(szHeader));
+	VERIFY(Initialise(sHeader));
 }
 
 BOOL CXmlDocumentWrapper::Initialise()
@@ -380,14 +380,14 @@ CString CXmlDocumentWrapper::GetXslHeader(BOOL bAsXml) const
 	return GetHeader(_T("stylesheet"), bAsXml);
 }
 
-CString CXmlDocumentWrapper::GetHeader(const CString& szName, BOOL bAsXml) const
+CString CXmlDocumentWrapper::GetHeader(const CString& sName, BOOL bAsXml) const
 {
 	CString sHeader;
 	
 	if (IsValid())
 	{
-		BOOL bRootItem = (!szName || !szName[0]);
-		long nItem = FindHeaderItem(szName);
+		BOOL bRootItem = sName.IsEmpty();
+		long nItem = FindHeaderItem(sName);
 
 		if (nItem != -1)
 		{
@@ -404,7 +404,7 @@ CString CXmlDocumentWrapper::GetHeader(const CString& szName, BOOL bAsXml) const
 
 				// remove name
 				if (!bRootItem)
-					sHeader = sHeader.Mid(lstrlen(szName));
+					sHeader = sHeader.Mid(sName.GetLength());
 
 				sHeader.TrimLeft();
 				sHeader.TrimRight();
@@ -442,7 +442,7 @@ CString CXmlDocumentWrapper::GetHeader(const CString& szName, BOOL bAsXml) const
 	return sHeader;
 }
 
-long CXmlDocumentWrapper::FindHeaderItem(const CString& szName) const
+long CXmlDocumentWrapper::FindHeaderItem(const CString& sName) const
 {
 	if (IsValid())
 	{
@@ -457,10 +457,10 @@ long CXmlDocumentWrapper::FindHeaderItem(const CString& szName) const
 				CString sNodeXml(node.GetXML());
 				CString sHeaderItem(_T("?xml"));
 
-				if (szName && *szName)
+				if (!sName.IsEmpty())
 				{
 					sHeaderItem += '-';
-					sHeaderItem += szName;
+					sHeaderItem += sName;
 				}
 				
 				if (sNodeXml.Find(sHeaderItem) == 1)
@@ -475,15 +475,15 @@ long CXmlDocumentWrapper::FindHeaderItem(const CString& szName) const
 	return -1;
 }
 
-BOOL CXmlDocumentWrapper::SetXmlHeader(const CString& szHeader)
+BOOL CXmlDocumentWrapper::SetXmlHeader(const CString& sHeader)
 {
 	ASSERT(IsValid());
-	ASSERT(szHeader && *szHeader);
+	ASSERT(!sHeader.IsEmpty());
 	ASSERT(!m_bHeaderSet);
 
-	if (IsValid() && (szHeader && *szHeader) && !m_bHeaderSet)
+	if (IsValid() && !sHeader.IsEmpty() && !m_bHeaderSet)
 	{
-		MSXML2::IXMLDOMProcessingInstructionPtr pHdr = m_xmldoc->createProcessingInstruction(STR2BSTR(_T("xml")), STR2BSTR(szHeader));
+		MSXML2::IXMLDOMProcessingInstructionPtr pHdr = m_xmldoc->createProcessingInstruction(STR2BSTR(_T("xml")), STR2BSTR(sHeader));
 		
 		// always insert header right at the start
 		MSXML2::IXMLDOMNodePtr pNode = m_xmldoc->childNodes->item[0];
@@ -506,13 +506,13 @@ BOOL CXmlDocumentWrapper::SetXmlHeader(const CString& szHeader)
 	return m_bHeaderSet;
 }
 
-BOOL CXmlDocumentWrapper::SetXslHeader(const CString& szHeader)
+BOOL CXmlDocumentWrapper::SetXslHeader(const CString& sHeader)
 {
 	ASSERT(IsValid());
 
 	if (IsValid())
 	{
-		if (!szHeader || !szHeader[0])
+		if (sHeader.IsEmpty())
 		{
 			// delete the xsl header
 			long nItem = FindHeaderItem(_T("stylesheet"));
@@ -525,7 +525,7 @@ BOOL CXmlDocumentWrapper::SetXslHeader(const CString& szHeader)
 		else
 		{
 			_bstr_t name(STR2BSTR(_T("xml-stylesheet")));
-			_bstr_t bstr(STR2BSTR(szHeader));
+			_bstr_t bstr(STR2BSTR(sHeader));
 		
 			MSXML2::IXMLDOMProcessingInstructionPtr pHdr = m_xmldoc->createProcessingInstruction(name, bstr);
 		
