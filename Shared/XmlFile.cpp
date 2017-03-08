@@ -873,7 +873,7 @@ CString CXmlItem::ToString(double dValue)
 CXmlFile::CXmlFile(const CString& sRootItemName) 
 	: 
 	m_xiRoot(NULL, sRootItemName), 
-	m_xmlDoc(NULL, sRootItemName),
+	m_xmlDoc(_T(""), sRootItemName),
 	m_pCallback(NULL)
 {
 }
@@ -1351,17 +1351,15 @@ BOOL CXmlFile::Export(const CXmlItem* pItem, CXmlNodeWrapper* pNode)
 		const CXmlItem* pXIChild = pItem->GetNextItem(pos);
 		ASSERT (pXIChild);
 		
-		CString sItem = pXIChild->GetName();
-		
 		if (pXIChild->IsAttribute())
 		{
 			ASSERT (!pXIChild->GetSibling());
-			pNode->SetValue(sItem, pXIChild->GetValue());
+			pNode->SetValue(pXIChild->GetName(), pXIChild->GetValue());
 		}
 		else if (pXIChild->IsCDATA())
 		{
 			// create a named node to wrap the CDATA
-			MSXML2::IXMLDOMNodePtr pChildNode = pNode->InsertNode(nNode++, (LPCTSTR)sItem);
+			MSXML2::IXMLDOMNodePtr pChildNode = pNode->InsertNode(nNode++, pXIChild->GetName());
 			MSXML2::IXMLDOMCDATASectionPtr pCData = 
 				pNode->ParentDocument()->createCDATASection((LPCTSTR)pXIChild->GetValue());
 			pChildNode->appendChild(pCData);
@@ -1370,8 +1368,7 @@ BOOL CXmlFile::Export(const CXmlItem* pItem, CXmlNodeWrapper* pNode)
 		{
 			while (pXIChild)
 			{
-				// Valik - Change IXMLDOMNode* to IXMLDOMNodePtr to prevent an ambiguous symbol error (C2872) in VC 7.1
-				MSXML2::IXMLDOMNodePtr pChildNode = pNode->InsertNode(nNode++, (LPCTSTR)sItem);
+				MSXML2::IXMLDOMNodePtr pChildNode = pNode->InsertNode(nNode++, pXIChild->GetName());
 				CXmlNodeWrapper nodeChild(pChildNode);
 				ASSERT (nodeChild.IsValid());
 				
