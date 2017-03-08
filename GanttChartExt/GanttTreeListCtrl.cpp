@@ -3581,7 +3581,7 @@ BOOL CGanttTreeListCtrl::CalcDependencyEndPos(int nItem, GANTTDEPENDENCY& depend
 	
 	if (!m_display.Lookup(dwTaskID, pGD))
 	{
-		ASSERT(0);
+		//ASSERT(0);
 		return FALSE;
 	}
 
