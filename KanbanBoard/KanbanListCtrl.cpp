@@ -458,7 +458,7 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 				
 				BOOL bSelected = (GetItemState(nItem, LVIS_SELECTED) == LVIS_SELECTED);
 				BOOL bFocused = (bSelected && (::GetFocus() == pNMHDR->hwndFrom));
-				COLORREF crText = pKI->GetTextColor(bSelected, m_bTextColorIsBkgnd);
+				COLORREF crText = pKI->GetTextColor(bSelected, (m_bTextColorIsBkgnd && !m_bShowTaskColorAsBar));
 
 				if (bSelected)
 				{
@@ -473,8 +473,6 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 					COLORREF crBorder = GetSysColor(COLOR_WINDOWFRAME);
 					
 					GraphicsMisc::DrawRect(pDC, rItem, crFill, crBorder);
-
-
 				}
 				else // use task's own colour
 				{
