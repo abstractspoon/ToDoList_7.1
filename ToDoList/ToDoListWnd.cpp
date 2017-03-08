@@ -1574,6 +1574,11 @@ void CToDoListWnd::OnDeleteAllTasks()
 
 void CToDoListWnd::OnSave() 
 {
+	///////////////////////////////////////////////////////////////////
+	// PERMANENT LOGGING
+	CScopedLogTime log(_T("CToDoListWnd::OnSave()"));
+	///////////////////////////////////////////////////////////////////
+
 	SaveTaskList(GetSelToDoCtrl());
 }
 
