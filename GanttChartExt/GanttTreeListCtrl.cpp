@@ -3068,6 +3068,7 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 	if (gdTemp.nDonePos > GCDR_NOTDRAWN)
 		pGD->nDonePos = (gdTemp.nDonePos + nScrollPos);
 
+	pGD->UpdatePositions(gdTemp, nScrollPos);
 	pDC->RestoreDC(nSaveDC);
 
 	return TRUE;
@@ -3478,7 +3479,7 @@ BOOL CGanttTreeListCtrl::CalcDateRect(const CRect& rMonth, int nDaysInMonth,
 			rDate.right -= (int)(((dtMonthEnd - dtTo) * dMultiplier) + 0.5);
 	}
 
-	return TRUE;
+	return (rDate.right > 0);
 }
 
 BOOL CGanttTreeListCtrl::BuildDependency(int nFrom, int nTo, GANTTDEPENDENCY& depend) const

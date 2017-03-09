@@ -456,6 +456,20 @@ void GANTTDISPLAY::SetHasNoDates()
 	nStartPos = nEndPos = nDonePos = GCDR_NODATES;
 }
 
+void GANTTDISPLAY::UpdatePositions(const GANTTDISPLAY& gdDrawn, int nScrollPos)
+{
+	// Only update items if they were previously not set
+	if (gdDrawn.IsStartSet() && !IsStartSet())
+		nStartPos = (gdDrawn.nStartPos + nScrollPos);
+
+	if (gdDrawn.IsEndSet() && !IsEndSet())
+		nEndPos = (gdDrawn.nEndPos + nScrollPos);
+
+	if (gdDrawn.IsDoneSet() && !IsDoneSet())
+		nDonePos = (gdDrawn.nDonePos + nScrollPos);
+}
+
+
 BOOL GANTTDISPLAY::HasNoDates() const
 {
 	// must all be set or none be set
