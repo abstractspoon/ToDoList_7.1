@@ -206,12 +206,12 @@ GANTTITEM::GANTTITEM()
 	: 
 	color(CLR_NONE), 
 	bParent(FALSE), 
+	dwTaskID(0), 
 	dwRefID(0), 
 	dwOrgRefID(0), 
 	bGoodAsDone(FALSE),
 	nPosition(-1)
 {
-
 }
 
 GANTTITEM::GANTTITEM(const GANTTITEM& gi)
@@ -230,6 +230,7 @@ GANTTITEM& GANTTITEM::operator=(const GANTTITEM& gi)
 	color = gi.color;
 	sAllocTo = gi.sAllocTo;
 	bParent = gi.bParent;
+	dwTaskID = gi.dwTaskID;
 	dwRefID = gi.dwRefID;
 	nPercent = gi.nPercent;
 	bGoodAsDone = gi.bGoodAsDone;
@@ -252,6 +253,7 @@ BOOL GANTTITEM::operator==(const GANTTITEM& gi)
 			(color == gi.color) &&
 			(sAllocTo == gi.sAllocTo) &&
 			(bParent == gi.bParent) &&
+			(dwTaskID == gi.dwTaskID) &&
 			(dwRefID == gi.dwRefID) &&
 			(nPercent == gi.nPercent) &&	
 			(nPosition == gi.nPosition) &&

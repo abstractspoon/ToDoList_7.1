@@ -31,7 +31,7 @@ struct GANTTITEM
 	COLORREF color;
 	CString sAllocTo;
 	BOOL bParent;
-	DWORD dwRefID, dwOrgRefID;
+	DWORD dwTaskID, dwRefID, dwOrgRefID;
 	CStringArray aDepends;
 	CStringArray aTags;
 	int nPercent;
