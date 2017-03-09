@@ -4467,6 +4467,10 @@ int CToDoCtrlData::Compare(const COleDateTime& date1, const COleDateTime& date2,
 				break;
 				
 			case TDCD_CREATE:
+				// There was a period when I did not save the creation time
+				// so we need to allow for that
+				break;
+
 			case TDCD_LASTMOD:
 				// Should never end up here
 			default: 
