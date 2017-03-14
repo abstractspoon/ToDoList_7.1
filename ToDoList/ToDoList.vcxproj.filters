@@ -378,9 +378,6 @@
     <ClInclude Include="..\Interfaces\IEncryption.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="..\Interfaces\IFileStorage.h">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="..\Interfaces\IImportExport.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
