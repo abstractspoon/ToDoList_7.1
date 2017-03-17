@@ -6712,7 +6712,7 @@ HTREEITEM CToDoCtrl::AddTaskToTreeItem(const CTaskFile& file, HTASKITEM hTask, H
 		else if (dwTaskID && nResetID == TDCR_CHECK)
 		{
 			// see if it already exist
-			if (HasTask(dwTaskID))
+			if (m_data.HasTask(dwTaskID))
 			{
 				// provide a new unique ID
 				dwTaskID = m_dwNextUniqueID++; 
@@ -7244,7 +7244,7 @@ void CToDoCtrl::BuildTaskIDMapForPaste(CTaskFile& tasks, HTASKITEM hTask, DWORD&
 	// we map this task only if it needs a new ID
 	DWORD dwTaskID = tasks.GetTaskID(hTask);
 
-	if ((dwTaskID <= 0) || (nResetID == TDCR_YES) || HasTask(dwTaskID))
+	if ((dwTaskID <= 0) || (nResetID == TDCR_YES) || m_data.HasTask(dwTaskID))
 		mapID[dwTaskID] = dwNextID++;
 
 	// children

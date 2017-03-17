@@ -47,7 +47,6 @@ CKanbanListCtrlArray::~CKanbanListCtrlArray()
 	RemoveAll();
 }
 
-
 void CKanbanListCtrlArray::RemoveAll()
 {
 	int nList = GetSize();
@@ -222,6 +221,7 @@ void CKanbanListCtrl::OnDisplayAttributeChanged()
 	m_nLineHeight = CalcLineHeight();
 	int nItemHeight = CalcRequiredItemHeight();
 
+	// Use an image list to force required height
 	m_ilHeight.Create(1, nItemHeight, ILC_COLOR32, 1, 0);
 	
 	SetImageList(&m_ilHeight, LVSIL_SMALL);
@@ -444,7 +444,6 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 	case CDDS_ITEMPREPAINT:
 		{
 			const KANBANITEM* pKI = GetKanbanItem(pLVCD->nmcd.lItemlParam);
-			//ASSERT(pKI);
 			
 			if (pKI)
 			{
@@ -639,7 +638,6 @@ void CKanbanListCtrl::OnHeaderCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 
 	HWND hwndHdr = pNMCD->hdr.hwndFrom;
 
-	//ASSERT(hwndHdr == m_header);
 	if (hwndHdr != m_header)
 		return;
 	

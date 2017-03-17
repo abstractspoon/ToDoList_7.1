@@ -201,7 +201,7 @@ TODOITEM* CToDoCtrlData::NewTask(const TODOITEM& tdiRef, DWORD dwParentTaskID) c
 	// copy over parent attribs
 	if (dwParentTaskID && !s_mapParentAttribs.IsEmpty())
 		CopyTaskAttributes(pTDI, dwParentTaskID, s_mapParentAttribs);
-
+	
 	return pTDI;
 }
 
@@ -213,10 +213,12 @@ TODOITEM* CToDoCtrlData::NewTask(const CTaskFile& tasks, HTASKITEM hTask) const
 		return NULL;
 
 	TODOITEM* pTDI = NewTask();
-	ASSERT(pTDI);
 
 	if (!pTDI)
+	{
+		ASSERT(0);
 		return NULL;
+	}
 	
 	tasks.GetTaskAttributes(hTask, pTDI);
 	
@@ -2716,6 +2718,12 @@ BOOL CToDoCtrlData::TaskHasIncompleteSubtasks(DWORD dwTaskID, BOOL bExcludeRecur
 
 BOOL CToDoCtrlData::TaskHasIncompleteSubtasks(const TODOSTRUCTURE* pTDS, BOOL bExcludeRecurring) const
 {
+	if (!pTDS)
+	{
+		ASSERT(0);
+		return FALSE;
+	}
+
 	// process its subtasks
 	int nPos = pTDS->GetSubTaskCount();
 

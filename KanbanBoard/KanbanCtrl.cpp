@@ -1061,7 +1061,7 @@ void CKanbanCtrl::RemoveOldDynamicListCtrls(const CKanbanItemArrayMap& mapKIArra
 		CKanbanListCtrl* pList = m_aListCtrls[nList];
 		ASSERT(pList && !pList->HasMultipleValues());
 		
-		if (pGlobals == NULL)
+		if ((pGlobals == NULL) || !WantShowColumn(pList))
 		{
 			DeleteListCtrl(nList);
 		}
@@ -1181,14 +1181,23 @@ void CKanbanCtrl::RebuildListCtrls(BOOL bRebuildData)
 	CKanbanItemArrayMap mapKIArray;
 	m_data.BuildTempItemMaps(m_sTrackAttribID, mapKIArray);
 
-	if (m_aColumnDefs.GetSize() == 0) // Dynamic columns
+	if (UsingDynamicColumns())
 		RebuildDynamicListCtrls(mapKIArray);
 	else
 		RebuildFixedListCtrls(mapKIArray);
 
 	// Rebuild the list data for each list (which can be empty)
 	if (bRebuildData)
+	{
 		RebuildListCtrlData(mapKIArray);
+	}
+	else if (UsingDynamicColumns())
+	{
+		// If not rebuilding the data (which will remove lists
+		// which are empty as consequence of not showing parent
+		// tasks) we made need to remove such lists.
+		RemoveOldDynamicListCtrls(mapKIArray);
+	}
 
 	Resize();
 	FixupSelection();
@@ -1448,7 +1457,7 @@ BOOL CKanbanCtrl::RebuildListContents(CKanbanListCtrl* pList, const CKanbanItemA
 	return TRUE;
 }
 
-void CKanbanCtrl::BuildTaskMap(const ITaskList15* pTasks, HTASKITEM hTask, 
+void CKanbanCtrl::BuildTaskIDMap(const ITaskList15* pTasks, HTASKITEM hTask, 
 									  CSet<DWORD>& mapIDs, BOOL bAndSiblings)
 {
 	if (hTask == NULL)
@@ -1457,7 +1466,7 @@ void CKanbanCtrl::BuildTaskMap(const ITaskList15* pTasks, HTASKITEM hTask,
 	mapIDs.AddKey(pTasks->GetTaskID(hTask));
 	
 	// children
-	BuildTaskMap(pTasks, pTasks->GetFirstTask(hTask), mapIDs, TRUE);
+	BuildTaskIDMap(pTasks, pTasks->GetFirstTask(hTask), mapIDs, TRUE);
 	
 	// handle siblings WITHOUT RECURSION
 	if (bAndSiblings)
@@ -1467,7 +1476,7 @@ void CKanbanCtrl::BuildTaskMap(const ITaskList15* pTasks, HTASKITEM hTask,
 		while (hSibling)
 		{
 			// FALSE == not siblings
-			BuildTaskMap(pTasks, hSibling, mapIDs, FALSE);
+			BuildTaskIDMap(pTasks, hSibling, mapIDs, FALSE);
 			hSibling = pTasks->GetNextTask(hSibling);
 		}
 	}
@@ -1476,7 +1485,7 @@ void CKanbanCtrl::BuildTaskMap(const ITaskList15* pTasks, HTASKITEM hTask,
 void CKanbanCtrl::RemoveDeletedTasks(const ITaskList15* pTasks)
 {
 	CSet<DWORD> mapIDs;
-	BuildTaskMap(pTasks, pTasks->GetFirstTask(NULL), mapIDs, TRUE);
+	BuildTaskIDMap(pTasks, pTasks->GetFirstTask(NULL), mapIDs, TRUE);
 
 	POSITION pos = m_data.GetStartPosition();
 	DWORD dwTaskID = 0;

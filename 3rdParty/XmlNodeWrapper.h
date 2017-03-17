@@ -9,11 +9,12 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-//#include "..\todolist\debug\msxml3.tlh"
+//////////////////////////////////////////////////////////////////////////////
+
 #import "MSXML3.dll" named_guids 
 using namespace MSXML2;
 
-class CXmlDocumentWrapper;
+//////////////////////////////////////////////////////////////////////////////
 
 class CXmlNodeWrapper  
 {
@@ -73,6 +74,8 @@ private:
 	BOOL m_bAutoRelease;
 	MSXML2::IXMLDOMNodePtr m_xmlnode;
 };
+
+//////////////////////////////////////////////////////////////////////////////
 
 class CXmlDocumentWrapper
 {
@@ -144,5 +147,7 @@ private:
 
 	
 };
+
+//////////////////////////////////////////////////////////////////////////////
 
 #endif // !defined(AFX_XMLNODEWRAPPER_H__43622334_FDEB_4175_9E6D_19BBAA3992A5__INCLUDED_)
