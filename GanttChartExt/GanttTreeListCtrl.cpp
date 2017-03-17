@@ -2879,7 +2879,11 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 	GANTTITEM* pGI = NULL;
 	GET_GI_RET(dwTaskID, pGI, FALSE);
 
+	GANTTDISPLAY* pGD = NULL;
+	GET_GD_RET(dwTaskID, pGD, FALSE);
+
 	int nSaveDC = pDC->SaveDC();
+
 	float fMonthWidth = GetMonthWidth(rItem.Width());
 	GANTTDISPLAY gdTemp;
 	BOOL bToday = FALSE;
@@ -3053,22 +3057,10 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 		break;
 	}
 
-	// save off the absolute item end pos
+	// Update the absolute item start/end positions
 	int nScrollPos = ::GetScrollPos(m_hwndList, SB_HORZ);
-
-	GANTTDISPLAY* pGD = NULL;
-	GET_GD_RET(dwTaskID, pGD, FALSE);
-	
-	if (gdTemp.nStartPos > GCDR_NOTDRAWN)
-		pGD->nStartPos = (gdTemp.nStartPos + nScrollPos);
-	
-	if (gdTemp.nEndPos > GCDR_NOTDRAWN)
-		pGD->nEndPos = (gdTemp.nEndPos + nScrollPos);
-	
-	if (gdTemp.nDonePos > GCDR_NOTDRAWN)
-		pGD->nDonePos = (gdTemp.nDonePos + nScrollPos);
-
 	pGD->UpdatePositions(gdTemp, nScrollPos);
+	
 	pDC->RestoreDC(nSaveDC);
 
 	return TRUE;
