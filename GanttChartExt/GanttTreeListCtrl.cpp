@@ -164,7 +164,8 @@ CGanttTreeListCtrl::CGanttTreeListCtrl()
 	m_ptLastDependPick(0),
 	m_pDependEdit(NULL),
 	m_dwMaxTaskID(0),
-	m_bReadOnly(FALSE)
+	m_bReadOnly(FALSE),
+	m_bPageScrolling(FALSE)
 {
 
 }
@@ -1642,13 +1643,15 @@ LRESULT CGanttTreeListCtrl::OnListCustomDraw(NMLVCUSTOMDRAW* pLVCD)
 				}
 			}
 			
-			PostDrawListItem(pDC, nItem, dwTaskID);
+			if (!m_bPageScrolling)
+				PostDrawListItem(pDC, nItem, dwTaskID);
 		}
 		return CDRF_SKIPDEFAULT;
 								
 	case CDDS_POSTPAINT:
-		// draw dependencies
+		if (!m_bPageScrolling)
 		{
+			// draw dependencies
 			CGanttDependArray aDepends;
 			
 			if (BuildVisibleDependencyList(aDepends))
@@ -2331,12 +2334,25 @@ LRESULT CGanttTreeListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPA
 		case WM_HSCROLL:
 		case WM_VSCROLL:
 			{
-				LRESULT lr = CTreeListSyncer::ScWindowProc(hRealWnd, msg, wp, lp);
-				
-				::InvalidateRect(hRealWnd, NULL, FALSE);
-				::UpdateWindow(hRealWnd);
-				
-				return lr;
+				switch (wp)
+				{
+				case SB_PAGELEFT:  // SB_PAGEUP
+				case SB_PAGERIGHT: // SB_PAGEDOWN
+					TRACE(_T("GanttTreeListCtrl has started page-scrolling\n"));
+					m_bPageScrolling = TRUE;
+					break;
+					
+				default:
+					{
+						if ((wp == SB_ENDSCROLL) && m_bPageScrolling)
+							TRACE(_T("GanttTreeListCtrl has finished page-scrolling\n"));
+						
+						m_bPageScrolling = FALSE;
+						::InvalidateRect(hRealWnd, NULL, FALSE);
+						::UpdateWindow(hRealWnd);
+					}
+					break;
+				}
 			}
 			break;
 		}
@@ -2400,7 +2416,6 @@ LRESULT CGanttTreeListCtrl::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPA
 				}
 			}
 			break;
-			
 		}
 	}
 
@@ -3059,9 +3074,13 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 		break;
 	}
 
-	// Update the absolute item start/end positions
-	int nScrollPos = ::GetScrollPos(m_hwndList, SB_HORZ);
-	pGD->UpdatePositions(gdTemp, nScrollPos);
+	// Animations can mess up our display cache so we don't
+	// update the cache while we are scrolling
+	if (!m_bPageScrolling)
+	{
+		int nScrollPos = ::GetScrollPos(m_hwndList, SB_HORZ);
+		pGD->UpdatePositions(gdTemp, nScrollPos);
+	}
 	
 	pDC->RestoreDC(nSaveDC);
 
@@ -4208,9 +4227,6 @@ BOOL CGanttTreeListCtrl::ZoomTo(GTLC_MONTH_DISPLAY nNewDisplay, int nNewMonthWid
 	if (nScrollPos)
 		VERIFY(GetDateFromScrollPos(nScrollPos, dtPos));
 
-	// clear display cache since it's all about to change
-	m_display.RemoveAll();
-
 	// always cancel any ongoing operation
 	CancelOperation();
 	
@@ -4244,6 +4260,9 @@ BOOL CGanttTreeListCtrl::ZoomTo(GTLC_MONTH_DISPLAY nNewDisplay, int nNewMonthWid
 		nScrollPos = GetScrollPosFromDate(dtPos);
 		ListView_Scroll(m_hwndList, nScrollPos - ::GetScrollPos(m_hwndList, SB_HORZ), 0);
 	}
+
+	// clear display cache since it's all about to change
+	m_display.RemoveAll();
 
 	return TRUE;
 }
@@ -4829,8 +4848,11 @@ void CGanttTreeListCtrl::ScrollTo(const COleDateTime& date)
 	// and arbitrary offset
 	nStartPos -= 50;
 
-	ListView_Scroll(m_hwndList, nStartPos, 0);
-	Invalidate(FALSE);
+	if (ListView_Scroll(m_hwndList, nStartPos, 0))
+	{
+		::InvalidateRect(m_hwndList, NULL, FALSE);
+		m_display.RemoveAll();
+	}
 }
 
 BOOL CGanttTreeListCtrl::GetListColumnRect(int nCol, CRect& rColumn, BOOL bScrolled) const
