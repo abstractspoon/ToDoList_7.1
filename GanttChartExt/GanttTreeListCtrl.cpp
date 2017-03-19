@@ -2919,7 +2919,6 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 			// draw vertical month divider
 			DrawItemDivider(pDC, rMonth, (i == 11), TRUE, bSelected);
 			
-			// if we're passed the end of the item then we can stop drawing
 			if (!bToday)
 				bToday = DrawToday(pDC, rMonth, nMonth + i, nYear, bSelected);
 
@@ -2977,7 +2976,6 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 			int nFirstDOW = CDateHelper::GetFirstDayOfWeek();
 			CRect rDay(rMonth);
 
-			// omit the first one so as not to overwrite the previous month divider
 			COleDateTime dtDay = COleDateTime(nYear, nMonth, 1, 0, 0, 0);
 			COLORREF crWeekends = GetWeekendColor(bSelected);
 
@@ -3036,7 +3034,6 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 			double dMonthWidth = rMonth.Width();
 			CRect rDay(rMonth);
 
-			// omit the first one so as not to overwrite the previous month divider
 			COleDateTime dtDay = COleDateTime(nYear, nMonth, 1, 0, 0, 0);
 			COLORREF crWeekends = GetWeekendColor(bSelected);
 
@@ -3074,8 +3071,8 @@ BOOL CGanttTreeListCtrl::DrawListItemColumn(CDC* pDC, int nItem, int nCol, DWORD
 		break;
 	}
 
-	// Animations can mess up our display cache so we don't
-	// update the cache while we are scrolling
+	// Animations can mess up our display cache so we only
+	// update the cache if we are NOT scrolling
 	if (!m_bPageScrolling)
 	{
 		int nScrollPos = ::GetScrollPos(m_hwndList, SB_HORZ);
@@ -3197,7 +3194,9 @@ void CGanttTreeListCtrl::DrawListHeaderItem(CDC* pDC, int nCol)
 					bDone = TRUE;
 				}
 				else 
+				{
 					rWeek.right = rMonth.left + (int)((nDay + 6) * dMonthWidth / nNumDays);
+				}
 
 				// check if we can stop
 				if (rWeek.left > rClip.right)
@@ -3233,7 +3232,6 @@ void CGanttTreeListCtrl::DrawListHeaderItem(CDC* pDC, int nCol)
 			int nNumDays = CDateHelper::GetDaysInMonth(nMonth, nYear);
 			double dMonthWidth = rMonth.Width();
 
-			// precalc end of last day to reduce loop calculations
 			rDay.right = rDay.left;
 			
 			for (int nDay = 0; nDay < nNumDays; nDay++)
@@ -3652,6 +3650,9 @@ BOOL CGanttTreeListCtrl::CalcDependencyEndPos(int nItem, GANTTDEPENDENCY& depend
 void CGanttTreeListCtrl::DrawGanttBar(CDC* pDC, const CRect& rMonth, int nMonth, int nYear, const GANTTITEM& gi, GANTTDISPLAY& gd)
 {
 	// sanity checks
+	if (gd.IsEndSet())
+		return;
+	
 	int nDaysInMonth = CDateHelper::GetDaysInMonth(nMonth, nYear);
 
 	if (nDaysInMonth == 0)
@@ -3660,9 +3661,6 @@ void CGanttTreeListCtrl::DrawGanttBar(CDC* pDC, const CRect& rMonth, int nMonth,
 	COleDateTime dtMonthStart, dtMonthEnd;
 
 	if (!GetMonthDates(nMonth, nYear, dtMonthStart, dtMonthEnd))
-		return;
-
-	if (gd.IsEndSet())
 		return;
 
 	if (IsMilestone(gi))
