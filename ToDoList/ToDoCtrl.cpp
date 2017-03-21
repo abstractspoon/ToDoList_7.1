@@ -6202,6 +6202,12 @@ TDC_FILE CToDoCtrl::Load(const CString& sFilePath, CTaskFile& tasks/*out*/)
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////
+	CString sScope;
+	sScope.Format(_T("CToDoCtrl::Load(%s)"), sFilePath);
+	CScopedLogTime log(sScope);
+	///////////////////////////////////////////////////////////////////
+
 	if (tasks.LoadEx())
 	{
 		tasks.Close();
@@ -6306,6 +6312,10 @@ BOOL CToDoCtrl::LoadTasks(const CTaskFile& file)
 	if (!GetSafeHwnd())
 		return FALSE;
 
+	///////////////////////////////////////////////////////////////////
+	DWORD dwTick = GetTickCount();
+	///////////////////////////////////////////////////////////////////
+
 	// save visible state
 	BOOL bHidden = !IsWindowVisible();
 
@@ -6320,6 +6330,10 @@ BOOL CToDoCtrl::LoadTasks(const CTaskFile& file)
 		SaveTasksState(prefs);
 		SaveSplitPos(prefs);
 		SaveAttributeVisibility(prefs);
+
+		///////////////////////////////////////////////////////////////////
+		FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::LoadTasks(Save state)"));
+		///////////////////////////////////////////////////////////////////
 	}	
 	
 	// Update XML headers if not already unicode
@@ -6368,6 +6382,10 @@ BOOL CToDoCtrl::LoadTasks(const CTaskFile& file)
 		LoadAttributeVisibility(prefs);
 	}
 
+	///////////////////////////////////////////////////////////////////
+	FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::LoadTasks(Process header)"));
+	///////////////////////////////////////////////////////////////////
+
 	if (file.GetTaskCount())
 	{
 		HOLD_REDRAW(*this, m_taskTree.Tree());
@@ -6376,10 +6394,18 @@ BOOL CToDoCtrl::LoadTasks(const CTaskFile& file)
 		DWORD dwFirstVis = GetTaskID(m_taskTree.Tree().GetFirstVisibleItem());
 		HTREEITEM htiFirst = SetAllTasks(file);
 
+		///////////////////////////////////////////////////////////////////
+		FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::LoadTasks(Build tree)"));
+		///////////////////////////////////////////////////////////////////
+
 		if (m_taskTree.GetItemCount())
 		{
 			// restore last tree state
 			htiSel = LoadTasksState(prefs);
+
+			///////////////////////////////////////////////////////////////////
+			FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::LoadTasks(Restore state)"));
+			///////////////////////////////////////////////////////////////////
 			
 			// redo last sort
 			if (IsSorting())
@@ -6424,6 +6450,10 @@ BOOL CToDoCtrl::LoadTasks(const CTaskFile& file)
 		ShowWindow(SW_HIDE);
 	else
 		Resize();
+
+	///////////////////////////////////////////////////////////////////
+	FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::LoadTasks(Remaining)"));
+	///////////////////////////////////////////////////////////////////
 
 	return TRUE;
 }
@@ -8911,21 +8941,42 @@ void CToDoCtrl::HandleUnsavedComments()
 
 HTREEITEM CToDoCtrl::SetAllTasks(const CTaskFile& tasks)
 {
+	///////////////////////////////////////////////////////////////////
+	DWORD dwTick = GetTickCount();
+	///////////////////////////////////////////////////////////////////
+
 	// Clear existing tree items
 	TSH().RemoveAll(FALSE);
 	m_taskTree.DeleteAll();
 
+	///////////////////////////////////////////////////////////////////
+	FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::SetAllTasks(m_taskTree.DeleteAll)"));
+	///////////////////////////////////////////////////////////////////
+
 	// Build data structure first 
 	m_data.BuildDataModel(tasks);
 
+	///////////////////////////////////////////////////////////////////
+	FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::SetAllTasks(m_data.BuildDataModel)"));
+	///////////////////////////////////////////////////////////////////
+
 	// Then tree structure
-	return RebuildTree();
+	HTREEITEM hti = RebuildTree();
+
+	///////////////////////////////////////////////////////////////////
+	FileMisc::LogTimeElapsed(dwTick, _T("CToDoCtrl::SetAllTasks(RebuildTree)"));
+	///////////////////////////////////////////////////////////////////
+
+	return hti;
 }
 
 HTREEITEM CToDoCtrl::RebuildTree(const void* pContext)
 {
-	TCH().SelectItem(NULL);
-	m_taskTree.DeleteAll();
+	if (m_taskTree.GetItemCount())
+	{
+		TCH().SelectItem(NULL);
+		m_taskTree.DeleteAll();
+	}
 
 	if (BuildTreeItem(NULL, m_data.GetStructure(), pContext))
 	{
