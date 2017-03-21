@@ -5044,19 +5044,7 @@ BOOL CToDoListWnd::ProcessStartupOptions(const CTDCStartupOptions& startup, BOOL
 		return FALSE;
 	}
 
-	// 2. execute a command
-	if (startup.HasCommandID())
-	{
-		CUIntArray aCmdIDs;
-		int nNumCmd = startup.GetCommandIDs(aCmdIDs);
-
-		for (int nCmd = 0; nCmd < nNumCmd; nCmd++)
-			SendMessage(WM_COMMAND, MAKEWPARAM(aCmdIDs[nCmd], 0), 0);
-
-		return TRUE;
-	}
-
-	// 3. try open/import file
+	// 2. try open/import file
 	if (startup.HasFilePath())
 	{
 		int nFirstSel = -1;
@@ -5107,6 +5095,18 @@ BOOL CToDoListWnd::ProcessStartupOptions(const CTDCStartupOptions& startup, BOOL
 		ASSERT((nFirstSel != -1) && (nFirstSel < GetTDCCount()));
 
 		SelectToDoCtrl(nFirstSel, FALSE);
+	}
+
+	// 3. execute a command
+	if (startup.HasCommandID())
+	{
+		CUIntArray aCmdIDs;
+		int nNumCmd = startup.GetCommandIDs(aCmdIDs);
+
+		for (int nCmd = 0; nCmd < nNumCmd; nCmd++)
+			SendMessage(WM_COMMAND, MAKEWPARAM(aCmdIDs[nCmd], 0), 0);
+
+		return TRUE;
 	}
 	
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
