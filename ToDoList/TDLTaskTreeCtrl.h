@@ -217,7 +217,8 @@ protected:
 	BOOL CanMoveItem(HTREEITEM hti, TDC_MOVETASK nDirection) const;
 	void BeginLabelEditTimer();
 	void EndLabelEditTimer();
-
+	void ExpandItemRaw(HTREEITEM hti, BOOL bExpand, BOOL bAndChildren);
+	
 	GM_ITEMSTATE GetTreeItemState(HTREEITEM hti) const;
 	GM_ITEMSTATE GetColumnItemState(int nItem) const;
 
