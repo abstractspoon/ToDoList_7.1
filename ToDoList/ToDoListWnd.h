@@ -616,6 +616,7 @@ protected:
 	void CheckCreateDefaultReminder(const CFilteredToDoCtrl& tdc, DWORD dwTaskID);
 	BOOL GetAutoArchiveOptions(TDC_ARCHIVE& nRemove, BOOL& bRemoveFlagged) const;
 	BOOL ValidateTaskLinkFilePath(CString& sPath) const;
+	BOOL WantCheckRemoteFiles(int nCtrl, int nInterval, int& nElapsed) const;
 
 	BOOL HandleReservedShortcut(DWORD dwShortcut);
 	BOOL SendShortcutCommand(UINT nCmdID);

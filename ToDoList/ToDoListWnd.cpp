@@ -6492,23 +6492,18 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl, BOOL bForceCheckRemote)
 	}
 			
 	// work out whether we should check remote files or not
-	BOOL bCheckRemoteFiles = (bForceCheckRemote || (nCtrl != -1));
-	
+	BOOL bCheckRemoteFiles = bForceCheckRemote;
+
 	if (!bCheckRemoteFiles)
 	{
 		static int nElapsed = 0;
-		UINT nRemoteFileCheckInterval = userPrefs.GetRemoteFileCheckFrequency() * 1000; // in ms
-		
-		nElapsed %= nRemoteFileCheckInterval;
-		bCheckRemoteFiles = !nElapsed;
-		
-		nElapsed += INTERVAL_READONLYSTATUS;
+		bCheckRemoteFiles = WantCheckRemoteFiles(nCtrl, INTERVAL_READONLYSTATUS, nElapsed);
 	}
 	
 	// process files
 	CString sFileList;
-	int nFrom = (nCtrl == -1) ? 0 : nCtrl;
-	int nTo = (nCtrl == -1) ? GetTDCCount() - 1 : nCtrl;
+	int nFrom = ((nCtrl == -1) ? 0 : nCtrl);
+	int nTo = ((nCtrl == -1) ? (GetTDCCount() - 1) : nCtrl);
 	
 	for (nCtrl = nFrom; nCtrl <= nTo; nCtrl++)
 	{
@@ -6516,7 +6511,7 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl, BOOL bForceCheckRemote)
 		if (!m_mgrToDoCtrls.IsLoaded(nCtrl))
 			continue;
 		
-		// don't check removeable drives
+		// don't check removable drives
 		int nType = m_mgrToDoCtrls.GetFilePathType(nCtrl);
 		
         if (nType == TDCM_UNDEF || nType == TDCM_REMOVABLE)
@@ -6600,23 +6595,18 @@ void CToDoListWnd::OnTimerTimestampChange(int nCtrl, BOOL bForceCheckRemote)
 	}
 	
 	// work out whether we should check remote files or not
-	BOOL bCheckRemoteFiles = (bForceCheckRemote || (nCtrl != -1));
-	
+	BOOL bCheckRemoteFiles = bForceCheckRemote;
+
 	if (!bCheckRemoteFiles)
 	{
 		static int nElapsed = 0;
-		UINT nRemoteFileCheckInterval = userPrefs.GetRemoteFileCheckFrequency() * 1000; // in ms
-		
-		nElapsed %= nRemoteFileCheckInterval;
-		bCheckRemoteFiles = !nElapsed;
-		
-		nElapsed += INTERVAL_TIMESTAMPCHANGE;
+		bCheckRemoteFiles = WantCheckRemoteFiles(nCtrl, INTERVAL_TIMESTAMPCHANGE, nElapsed);
 	}
 	
 	// process files
 	CString sFileList;
-	int nFrom = (nCtrl == -1) ? 0 : nCtrl;
-	int nTo = (nCtrl == -1) ? GetTDCCount() - 1 : nCtrl;
+	int nFrom = ((nCtrl == -1) ? 0 : nCtrl);
+	int nTo = ((nCtrl == -1) ? (GetTDCCount() - 1) : nCtrl);
 	
 	for (nCtrl = nFrom; nCtrl <= nTo; nCtrl++)
 	{
@@ -6624,7 +6614,7 @@ void CToDoListWnd::OnTimerTimestampChange(int nCtrl, BOOL bForceCheckRemote)
 		if (!m_mgrToDoCtrls.IsLoaded(nCtrl))
 			continue;
 
-		// don't check removeable drives
+		// don't check removable drives
 		int nType = m_mgrToDoCtrls.GetFilePathType(nCtrl);
 		
         if (nType == TDCM_UNDEF || nType == TDCM_REMOVABLE)
@@ -6702,29 +6692,42 @@ void CToDoListWnd::OnTimerAutoMinimize()
 		ShowWindow(SW_MINIMIZE);
 }
 
-void CToDoListWnd::OnTimerCheckoutStatus(int nCtrl, BOOL bForceCheckRemote)
+BOOL CToDoListWnd::WantCheckRemoteFiles(int nCtrl, int nInterval, int& nElapsed) const
 {
-	AF_NOREENTRANT // macro helper
-		
-	const CPreferencesDlg& userPrefs = Prefs();
-	
 	// work out whether we should check remote files or not
-	BOOL bCheckRemoteFiles = (bForceCheckRemote || (nCtrl != -1));
+	BOOL bCheckRemoteFiles = (nCtrl != -1);
 	
 	if (!bCheckRemoteFiles)
 	{
-		static int nElapsed = 0;
-		UINT nRemoteFileCheckInterval = userPrefs.GetRemoteFileCheckFrequency() * 1000; // in ms
+		UINT nRemoteFileCheckInterval = Prefs().GetRemoteFileCheckFrequency() * 1000; // in ms
 		
 		nElapsed %= nRemoteFileCheckInterval;
 		bCheckRemoteFiles = !nElapsed;
 		
-		nElapsed += INTERVAL_CHECKOUTSTATUS;
+		nElapsed += nInterval;
+	}
+
+	return bCheckRemoteFiles;
+}
+
+void CToDoListWnd::OnTimerCheckoutStatus(int nCtrl, BOOL bForceCheckRemote)
+{
+	AF_NOREENTRANT // macro helper
+		
+	// work out whether we should check remote files or not
+	BOOL bCheckRemoteFiles = bForceCheckRemote;
+	
+	if (!bCheckRemoteFiles)
+	{
+		static int nElapsed = 0;
+		bCheckRemoteFiles = WantCheckRemoteFiles(nCtrl, INTERVAL_CHECKOUTSTATUS, nElapsed);
 	}
 	
 	// process files
-	int nFrom = (nCtrl == -1) ? 0 : nCtrl;
-	int nTo = (nCtrl == -1) ? GetTDCCount() - 1 : nCtrl;
+	const CPreferencesDlg& userPrefs = Prefs();
+	
+	int nFrom = ((nCtrl == -1) ? 0 : nCtrl);
+	int nTo = ((nCtrl == -1) ? (GetTDCCount() - 1) : nCtrl);
 
 	CString sCheckedInFiles, sCheckedOutFiles;
 	
