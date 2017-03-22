@@ -3831,17 +3831,7 @@ void CToDoListWnd::Show(BOOL bAllowToggle)
 
 	// refresh all tasklists if we are visible
 	if (m_bVisible && !IsIconic())
-	{
-		const CPreferencesDlg& userPrefs = Prefs();
-		
-		if (userPrefs.GetReadonlyReloadOption() != RO_NO)
-			OnTimerReadOnlyStatus();
-		
-		if (userPrefs.GetTimestampReloadOption() != RO_NO)
-			OnTimerTimestampChange();
-		
-		OnTimerCheckoutStatus();
-	}	
+		OnTimerCheckForReload(-1, TRUE);
 
 	GetToDoCtrl().SetFocusToTasks();
 }
@@ -6480,7 +6470,7 @@ void CToDoListWnd::OnTimerDueItems(int nCtrl)
 		m_tabCtrl.Invalidate(FALSE);
 }
 
-void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl)
+void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl, BOOL bForceCheckRemote)
 {
 	AF_NOREENTRANT // macro helper
 
@@ -6488,14 +6478,21 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl)
 	// we are configured to prompt the user
 	const CPreferencesDlg& userPrefs = Prefs();
 	
-	int nReloadOption = userPrefs.GetReadonlyReloadOption();
-	ASSERT (nReloadOption != RO_NO);
-	
-	if ((nReloadOption == RO_ASK) && (!IsWindowVisible() || IsIconic()))
+	int nReloadOption = userPrefs.GetTimestampReloadOption();
+
+	switch (nReloadOption)
+	{
+	case RO_NO:	
 		return;
+
+	case RO_ASK:
+		if (!IsWindowVisible() || IsIconic())
+			return;
+		break;
+	}
 			
 	// work out whether we should check remote files or not
-	BOOL bCheckRemoteFiles = (nCtrl != -1);
+	BOOL bCheckRemoteFiles = (bForceCheckRemote || (nCtrl != -1));
 	
 	if (!bCheckRemoteFiles)
 	{
@@ -6581,7 +6578,7 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl)
 	}
 }
 
-void CToDoListWnd::OnTimerTimestampChange(int nCtrl)
+void CToDoListWnd::OnTimerTimestampChange(int nCtrl, BOOL bForceCheckRemote)
 {
 	AF_NOREENTRANT // macro helper
 		
@@ -6590,13 +6587,20 @@ void CToDoListWnd::OnTimerTimestampChange(int nCtrl)
 	const CPreferencesDlg& userPrefs = Prefs();
 	
 	int nReloadOption = userPrefs.GetTimestampReloadOption();
-	ASSERT (nReloadOption != RO_NO);
-	
-	if ((nReloadOption == RO_ASK) && (!IsWindowVisible() || IsIconic()))
+
+	switch (nReloadOption)
+	{
+	case RO_NO:	
 		return;
+
+	case RO_ASK:
+		if (!IsWindowVisible() || IsIconic())
+			return;
+		break;
+	}
 	
 	// work out whether we should check remote files or not
-	BOOL bCheckRemoteFiles = (nCtrl != -1);
+	BOOL bCheckRemoteFiles = (bForceCheckRemote || (nCtrl != -1));
 	
 	if (!bCheckRemoteFiles)
 	{
@@ -6698,14 +6702,14 @@ void CToDoListWnd::OnTimerAutoMinimize()
 		ShowWindow(SW_MINIMIZE);
 }
 
-void CToDoListWnd::OnTimerCheckoutStatus(int nCtrl)
+void CToDoListWnd::OnTimerCheckoutStatus(int nCtrl, BOOL bForceCheckRemote)
 {
 	AF_NOREENTRANT // macro helper
 		
 	const CPreferencesDlg& userPrefs = Prefs();
 	
 	// work out whether we should check remote files or not
-	BOOL bCheckRemoteFiles = (nCtrl != -1);
+	BOOL bCheckRemoteFiles = (bForceCheckRemote || (nCtrl != -1));
 	
 	if (!bCheckRemoteFiles)
 	{
@@ -7552,8 +7556,7 @@ void CToDoListWnd::OnTabCtrlSelchange(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 		tdcShow.SetFocusToTasks();
 
 		// check for external changes to file
-		OnTimerTimestampChange(nCurSel);
-		OnTimerReadOnlyStatus(nCurSel);
+		OnTimerCheckForReload(nCurSel, TRUE);
 
 		// notify user of due tasks if req
 		DoDueTaskNotification(nCurSel, nDueBy);
@@ -7565,6 +7568,13 @@ void CToDoListWnd::OnTabCtrlSelchange(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 	RefreshPauseTimeTracking();
 	
 	*pResult = 0;
+}
+
+void CToDoListWnd::OnTimerCheckForReload(int nCtrl, BOOL bForceCheckRemote)
+{
+	OnTimerTimestampChange(nCtrl, bForceCheckRemote);
+	OnTimerReadOnlyStatus(nCtrl, bForceCheckRemote);
+	OnTimerCheckoutStatus(nCtrl, bForceCheckRemote);
 }
 
 void CToDoListWnd::UpdateMenuIconMgrSourceControlStatus()
@@ -7974,15 +7984,9 @@ BOOL CToDoListWnd::SelectToDoCtrl(int nIndex, BOOL bCheckPassword, int nNotifyDu
 	
 	if (!m_bClosing)
 	{
-		if (userPrefs.GetReadonlyReloadOption() != RO_NO)
-			OnTimerReadOnlyStatus(nIndex);
-		
-		if (userPrefs.GetTimestampReloadOption() != RO_NO)
-			OnTimerTimestampChange(nIndex);
-		
-		if (tdcShow.IsSourceControlled())
-			OnTimerCheckoutStatus(nIndex);
-		
+		// Reload as required
+		OnTimerCheckForReload(nIndex, TRUE);
+
 		// update various dependencies
 		UpdateCaption();
 		UpdateStatusbar();
@@ -10434,6 +10438,10 @@ void CToDoListWnd::OnActivateApp(BOOL bActive, HTASK hTask)
 	// don't do any further processing if closing
     if (m_bClosing)
         return; 
+
+	// Reload tasklists as required
+	if (bActive)
+		OnTimerCheckForReload(-1, TRUE);
 
 	// Don't do any further processing if the Reminder dialog is active
 	// because the two windows get into a fight for activation!

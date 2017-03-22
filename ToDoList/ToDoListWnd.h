@@ -541,10 +541,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 		
 	// Pseudo-handlers
-	void OnTimerReadOnlyStatus(int nCtrl = -1);
-	void OnTimerTimestampChange(int nCtrl = -1);
+	void OnTimerReadOnlyStatus(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
+	void OnTimerTimestampChange(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
+	void OnTimerCheckoutStatus(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
+	void OnTimerCheckForReload(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
+
 	void OnTimerAutoSave();
-	void OnTimerCheckoutStatus(int nCtrl = -1);
 	void OnTimerDueItems(int nCtrl = -1);
 	void OnTimerTimeTracking();
 	void OnTimerTimeTrackReminder();
