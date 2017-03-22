@@ -6474,22 +6474,12 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl, BOOL bForceCheckRemote)
 {
 	AF_NOREENTRANT // macro helper
 
-	// Skip if we are hidden or minimised and 
-	// we are configured to prompt the user
+	// Don't distract the user unnecessarily
 	const CPreferencesDlg& userPrefs = Prefs();
-	
-	int nReloadOption = userPrefs.GetTimestampReloadOption();
+	int nReloadOption = userPrefs.GetReadonlyReloadOption();
 
-	switch (nReloadOption)
-	{
-	case RO_NO:	
+	if (!WantCheckReloadFiles(nReloadOption))
 		return;
-
-	case RO_ASK:
-		if (!IsWindowVisible() || IsIconic())
-			return;
-		break;
-	}
 			
 	// work out whether we should check remote files or not
 	BOOL bCheckRemoteFiles = bForceCheckRemote;
@@ -6526,7 +6516,7 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl, BOOL bForceCheckRemote)
 			CFilteredToDoCtrl& tdc = GetToDoCtrl(nCtrl);
 		
 			BOOL bReadOnly = m_mgrToDoCtrls.GetReadOnlyStatus(nCtrl);
-			BOOL bReload = FALSE;
+			BOOL bReload = !bReadOnly; // now writable
 			
 			if (nReloadOption == RO_ASK)
 			{
@@ -6539,10 +6529,6 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl, BOOL bForceCheckRemote)
 				UINT nRet = MessageBox(sMessage, IDS_STATUSCHANGE_TITLE, !bReadOnly ? MB_YESNOCANCEL : MB_OK);
 				
 				bReload = (nRet == IDYES || nRet == IDOK);
-			}
-			else
-			{
-				bReload = !bReadOnly; // now writable
 			}
 			
 			if (bReload && ReloadTaskList(nCtrl, FALSE, (nReloadOption == RO_ASK)))
@@ -6573,27 +6559,35 @@ void CToDoListWnd::OnTimerReadOnlyStatus(int nCtrl, BOOL bForceCheckRemote)
 	}
 }
 
+BOOL CToDoListWnd::WantCheckReloadFiles(int nOption) const
+{
+	switch (nOption)
+	{
+	case RO_NO:	
+		return FALSE;
+
+	case RO_ASK:
+		return (IsWindowVisible() && !IsIconic());
+
+	case RO_NOTIFY: // Means reload and notify
+		return TRUE;
+	}
+
+	ASSERT(0);
+	return FALSE;
+}
+
 void CToDoListWnd::OnTimerTimestampChange(int nCtrl, BOOL bForceCheckRemote)
 {
 	AF_NOREENTRANT // macro helper
 		
-	// Skip if we are hidden or minimised and 
-	// we are configured to prompt the user
+	// Don't distract the user unnecessarily
 	const CPreferencesDlg& userPrefs = Prefs();
-	
 	int nReloadOption = userPrefs.GetTimestampReloadOption();
 
-	switch (nReloadOption)
-	{
-	case RO_NO:	
+	if (!WantCheckReloadFiles(nReloadOption))
 		return;
 
-	case RO_ASK:
-		if (!IsWindowVisible() || IsIconic())
-			return;
-		break;
-	}
-	
 	// work out whether we should check remote files or not
 	BOOL bCheckRemoteFiles = bForceCheckRemote;
 
