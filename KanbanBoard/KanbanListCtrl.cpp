@@ -111,14 +111,14 @@ CKanbanListCtrl::CKanbanListCtrl(const CKanbanItemMap& data, const KANBANCOLUMN&
 	m_aDisplayAttrib(aDisplayAttrib),
 	m_fonts(fonts),
 	m_aPriorityColors(aPriorityColors),
-	m_bStrikeThruDoneTasks(TRUE),
+	m_bStrikeThruDoneTasks(FALSE),
 	m_bTextColorIsBkgnd(FALSE),
 	m_bSelected(FALSE),
-	m_bShowTaskColorAsBar(TRUE),
+	m_bShowTaskColorAsBar(FALSE),
 	m_bColorByPriority(FALSE),
 	m_dwSelectingTask(0),
 	m_nLineHeight(-1),
-	m_bDrawAttribLabels(-1)
+	m_bDrawAttribLabels(TRUE)
 {
 }
 
