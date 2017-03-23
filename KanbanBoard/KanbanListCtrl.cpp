@@ -467,7 +467,12 @@ void CKanbanListCtrl::OnSize(UINT nType, int cx, int cy)
 	CListCtrl::OnSize(nType, cx, cy);
 
 	if (m_header.GetSafeHwnd() && m_header.GetItemCount())
-		SetColumnWidth(0, (cx - 1 - GetSystemMetrics(SM_CXVSCROLL)));
+	{
+		if (GetStyle() & WS_VSCROLL)
+			SetColumnWidth(0, (cx - 1));
+		else
+			SetColumnWidth(0, (cx - 1 - GetSystemMetrics(SM_CXVSCROLL)));
+	}
 }
 
 void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult) 
