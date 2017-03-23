@@ -39,6 +39,10 @@ static char THIS_FILE[] = __FILE__;
 
 const int MIN_LABEL_EDIT_WIDTH	= 200;
 const int BAR_WIDTH				= 6;
+const int LV_PADDING			= 3;
+const int ATTRIB_INDENT			= 6;
+
+const CRect TEXT_BORDER			= CRect(4, 1, 3, 2);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -113,7 +117,8 @@ CKanbanListCtrl::CKanbanListCtrl(const CKanbanItemMap& data, const KANBANCOLUMN&
 	m_bShowTaskColorAsBar(TRUE),
 	m_bColorByPriority(FALSE),
 	m_dwSelectingTask(0),
-	m_nLineHeight(-1)
+	m_nLineHeight(-1),
+	m_bDrawAttribLabels(-1)
 {
 }
 
@@ -135,6 +140,7 @@ BEGIN_MESSAGE_MAP(CKanbanListCtrl, CListCtrl)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_KEYDOWN()
 	ON_WM_KEYUP()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -325,6 +331,14 @@ void CKanbanListCtrl::SetColorTasksByPriority(BOOL bSet)
 		Invalidate(TRUE);
 }
 
+void CKanbanListCtrl::SetDrawAttributeLabels(BOOL bDraw)
+{
+	m_bDrawAttribLabels = bDraw;
+
+	if (GetSafeHwnd())
+		Invalidate(TRUE);
+}
+
 void CKanbanListCtrl::SetSelected(BOOL bSelected)
 {
 	m_bSelected = bSelected;
@@ -430,6 +444,32 @@ void CKanbanListCtrl::RefreshColumnTitle()
 	m_header.SetItemText(0, sFormat);
 }
 
+int CKanbanListCtrl::CalcAvailableAttributeWidth(int nListWidth) const
+{
+	if (nListWidth < 0)
+		nListWidth = GetColumnWidth(0);
+	else
+		nListWidth -= GetSystemMetrics(SM_CXVSCROLL);
+
+	int nAvailWidth = (nListWidth - (2 * LV_PADDING));
+
+	if (m_bShowTaskColorAsBar)
+		nAvailWidth -= BAR_WIDTH;
+
+	nAvailWidth -= (TEXT_BORDER.left + TEXT_BORDER.right);
+	nAvailWidth -= ATTRIB_INDENT;
+
+	return nAvailWidth;
+}
+
+void CKanbanListCtrl::OnSize(UINT nType, int cx, int cy)
+{
+	CListCtrl::OnSize(nType, cx, cy);
+
+	if (m_header.GetSafeHwnd() && m_header.GetItemCount())
+		SetColumnWidth(0, (cx - 1 - GetSystemMetrics(SM_CXVSCROLL)));
+}
+
 void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	NMLVCUSTOMDRAW* pLVCD = (NMLVCUSTOMDRAW*)pNMHDR;
@@ -521,7 +561,7 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 				
 				// first line is the task title
 				CRect rLine(rItem);
-				rLine.DeflateRect(4, 1, 3, 2);
+				rLine.DeflateRect(TEXT_BORDER);
 
 				pDC->SetBkMode(TRANSPARENT);
 				pDC->SetTextColor(crText);
@@ -538,7 +578,7 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 				if (dwFontFlags)
 					pOldFont = pDC->SelectObject(m_fonts.GetFont(dwFontFlags));
 				
-				DrawAttribute(pDC, rLine, 0, pKI->sTitle, nFlags);
+				DrawAttribute(pDC, rLine, IUI_TASKNAME, pKI->sTitle, nFlags);
 
 				// Remove boldness for attributes
 				if (dwFontFlags & GMFS_BOLD)
@@ -553,14 +593,13 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 				if (!bSelected && !Misc::IsHighContrastActive() && !pKI->IsDone(TRUE))
 					crText = pDC->SetTextColor(GraphicsMisc::Lighter(crText, 0.3));
 				
-				rLine.left += 6; // indent
+				rLine.left += ATTRIB_INDENT;
 
 				for (int nDisp = 0; nDisp < m_aDisplayAttrib.GetSize(); nDisp++)
 				{
 					IUI_ATTRIBUTE nAttrib = m_aDisplayAttrib[nDisp];
-					UINT nFormatID = GetDisplayNameID(nAttrib);
 
-					DrawAttribute(pDC, rLine, nFormatID, pKI->GetAttributeValue(nAttrib), nFlags);
+					DrawAttribute(pDC, rLine, nAttrib, pKI->GetAttributeValue(nAttrib), nFlags);
 				}
 
 				if (pOldFont)
@@ -576,6 +615,7 @@ UINT CKanbanListCtrl::GetDisplayNameID(IUI_ATTRIBUTE nAttrib)
 {
 	switch (nAttrib)
 	{
+	case IUI_TASKNAME:		return 0;
 	case IUI_ALLOCBY:		return IDS_DISPLAY_ALLOCBY;
 	case IUI_ALLOCTO:		return IDS_DISPLAY_ALLOCTO;
 	case IUI_CATEGORY:		return IDS_DISPLAY_CATEGORY;
@@ -604,31 +644,29 @@ UINT CKanbanListCtrl::GetDisplayNameID(IUI_ATTRIBUTE nAttrib)
 
 	ASSERT(0);
 	return 0;
-
 }
 
-void CKanbanListCtrl::DrawAttribute(CDC* pDC, CRect& rLine, UINT nFormatID, const CString& sValue, int nFlags) const
+void CKanbanListCtrl::DrawAttribute(CDC* pDC, CRect& rLine, IUI_ATTRIBUTE nAttrib, const CString& sValue, int nFlags) const
 {
-	CEnString sAttrib;
-				
-	if (nFormatID)
-	{
-		sAttrib.LoadString(nFormatID);
-		sAttrib += _T(": ");
-
-		if (!sValue.IsEmpty())
-			sAttrib += sValue;
-// 		else
-// 			sAttrib += CEnString(IDS_NONE);
-	}
-	else
-	{
-		sAttrib = sValue;
-	}
-
+	CString sAttrib = FormatAttribute(nAttrib, sValue, m_bDrawAttribLabels);
 	pDC->DrawText(sAttrib, rLine, nFlags);
 
 	rLine.top += m_nLineHeight;
+}
+
+CString CKanbanListCtrl::FormatAttribute(IUI_ATTRIBUTE nAttrib, const CString& sValue, BOOL bWithLabel)
+{
+	UINT nFormatID = (bWithLabel ? GetDisplayNameID(nAttrib) : 0);
+
+	if (!bWithLabel || (nFormatID == 0))
+		return sValue;
+
+	CEnString sAttrib(nFormatID);
+
+	sAttrib += _T(": ");
+	sAttrib += sValue;
+
+	return sAttrib;
 }
 
 void CKanbanListCtrl::OnHeaderCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
