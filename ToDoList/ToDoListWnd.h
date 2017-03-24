@@ -544,7 +544,7 @@ protected:
 	void OnTimerReadOnlyStatus(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
 	void OnTimerTimestampChange(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
 	void OnTimerCheckoutStatus(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
-	void OnTimerCheckForReload(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
+	void OnTimerCheckReloadTasklists(int nCtrl = -1, BOOL bForceCheckRemote = FALSE);
 
 	void OnTimerAutoSave();
 	void OnTimerDueItems(int nCtrl = -1);

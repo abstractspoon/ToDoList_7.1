@@ -3831,7 +3831,7 @@ void CToDoListWnd::Show(BOOL bAllowToggle)
 
 	// refresh all tasklists if we are visible
 	if (m_bVisible && !IsIconic())
-		OnTimerCheckForReload(-1, TRUE);
+		OnTimerCheckReloadTasklists(-1, TRUE);
 
 	GetToDoCtrl().SetFocusToTasks();
 }
@@ -7553,7 +7553,7 @@ void CToDoListWnd::OnTabCtrlSelchange(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 		tdcShow.SetFocusToTasks();
 
 		// check for external changes to file
-		OnTimerCheckForReload(nCurSel, TRUE);
+		OnTimerCheckReloadTasklists(nCurSel, TRUE);
 
 		// notify user of due tasks if req
 		DoDueTaskNotification(nCurSel, nDueBy);
@@ -7567,7 +7567,7 @@ void CToDoListWnd::OnTabCtrlSelchange(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 	*pResult = 0;
 }
 
-void CToDoListWnd::OnTimerCheckForReload(int nCtrl, BOOL bForceCheckRemote)
+void CToDoListWnd::OnTimerCheckReloadTasklists(int nCtrl, BOOL bForceCheckRemote)
 {
 	OnTimerTimestampChange(nCtrl, bForceCheckRemote);
 	OnTimerReadOnlyStatus(nCtrl, bForceCheckRemote);
@@ -7982,7 +7982,7 @@ BOOL CToDoListWnd::SelectToDoCtrl(int nIndex, BOOL bCheckPassword, int nNotifyDu
 	if (!m_bClosing)
 	{
 		// Reload as required
-		OnTimerCheckForReload(nIndex, TRUE);
+		OnTimerCheckReloadTasklists(nIndex, TRUE);
 
 		// update various dependencies
 		UpdateCaption();
@@ -8884,10 +8884,18 @@ void CToDoListWnd::OnSysCommand(UINT nID, LPARAM lParam)
 
 	case SC_RESTORE:
 	case SC_MAXIMIZE:
-		CFrameWnd::OnSysCommand(nID, lParam);
+		{
+			BOOL bWasMinimised = IsIconic();
+			CFrameWnd::OnSysCommand(nID, lParam);
+			
+			Resize();
 
-		Resize();
-		PostMessage(WM_APPRESTOREFOCUS, 0L, (LPARAM)m_hwndLastFocus);
+			if (m_hwndLastFocus)
+				PostMessage(WM_APPRESTOREFOCUS, 0L, (LPARAM)m_hwndLastFocus);
+
+			if (bWasMinimised)
+				OnTimerCheckReloadTasklists(-1, TRUE);
+		}
 		return;
 	}
 
@@ -10438,7 +10446,7 @@ void CToDoListWnd::OnActivateApp(BOOL bActive, HTASK hTask)
 
 	// Reload tasklists as required
 	if (bActive)
-		OnTimerCheckForReload(-1, TRUE);
+		OnTimerCheckReloadTasklists(-1, TRUE);
 
 	// Don't do any further processing if the Reminder dialog is active
 	// because the two windows get into a fight for activation!
