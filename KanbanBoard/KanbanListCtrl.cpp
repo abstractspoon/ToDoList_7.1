@@ -616,7 +616,7 @@ void CKanbanListCtrl::OnListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 }
 
-UINT CKanbanListCtrl::GetDisplayNameID(IUI_ATTRIBUTE nAttrib)
+UINT CKanbanListCtrl::GetDisplayFormat(IUI_ATTRIBUTE nAttrib)
 {
 	switch (nAttrib)
 	{
@@ -881,14 +881,12 @@ int CKanbanListCtrl::FindTask(DWORD dwTaskID) const
 
 int CKanbanListCtrl::FindTask(const CPoint& ptScreen) const
 {
-	LVFINDINFO lvfi = { 0 };
+	LVHITTESTINFO lvht = { 0 };
 	
-	lvfi.flags = LVFI_NEARESTXY;
-	lvfi.pt = ptScreen;
-
-	ScreenToClient(&lvfi.pt);
+	CPoint ptClient(ptScreen);
+	ScreenToClient(&ptClient);
 	
-	return CListCtrl::FindItem(&lvfi);
+	return CListCtrl::HitTest(ptClient);
 }
 
 int CALLBACK CKanbanListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)

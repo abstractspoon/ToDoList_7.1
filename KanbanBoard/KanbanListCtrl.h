@@ -90,7 +90,6 @@ protected:
 	DWORD m_dwDisplay;
 	int m_nLineHeight;
 	DWORD m_dwSelectingTask;
-
 	
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -132,7 +131,7 @@ protected:
 	void DrawAttribute(CDC* pDC, CRect& rLine, IUI_ATTRIBUTE nAttrib, const CString& sValue, int nFlags) const;
 
 	static int CALLBACK SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
-	static UINT GetDisplayNameID(IUI_ATTRIBUTE nAttrib);
+	static UINT GetDisplayFormat(IUI_ATTRIBUTE nAttrib);
 
 };
 
