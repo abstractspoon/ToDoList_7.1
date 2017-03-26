@@ -661,7 +661,7 @@ void CKanbanListCtrl::DrawAttribute(CDC* pDC, CRect& rLine, IUI_ATTRIBUTE nAttri
 
 CString CKanbanListCtrl::FormatAttribute(IUI_ATTRIBUTE nAttrib, const CString& sValue, BOOL bWithLabel)
 {
-	UINT nFormatID = (bWithLabel ? GetDisplayNameID(nAttrib) : 0);
+	UINT nFormatID = (bWithLabel ? GetDisplayFormat(nAttrib) : 0);
 
 	if (!bWithLabel || (nFormatID == 0))
 		return sValue;
