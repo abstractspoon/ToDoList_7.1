@@ -895,8 +895,16 @@ int CALLBACK CKanbanListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lP
 	
 	const KANBANITEM* pKI1 = pSort->data.GetItem(lParam1);
 	const KANBANITEM* pKI2 = pSort->data.GetItem(lParam2);
-	
+
+	// If sorting subtasks below parents we must first sort the parents
+	// recursively and only if tasks have the same parent do we need to
+	// sort by the actual sort attribute
 	int nCompare = 0;
+
+	if (pSort->bSubtasksBelowParent)
+	{
+		// TODO
+	}
 	
 	if (pKI1 && pKI2)
 	{
@@ -988,12 +996,13 @@ int CALLBACK CKanbanListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lP
 	return (pSort->bAscending ? nCompare : -nCompare);
 }
 
-void CKanbanListCtrl::Sort(IUI_ATTRIBUTE nBy, BOOL bAscending)
+void CKanbanListCtrl::Sort(IUI_ATTRIBUTE nBy, BOOL bAscending, BOOL bSubtasksBelowParent)
 {
 	KANBANSORT ks(m_data);
 	
 	ks.nBy = nBy;
 	ks.bAscending = bAscending;
+	ks.bSubtasksBelowParent = bSubtasksBelowParent;
 
 	switch (nBy)
 	{

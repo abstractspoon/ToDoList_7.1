@@ -145,6 +145,7 @@ struct KANBANSORT
 	IUI_ATTRIBUTE nBy;
 	CString sAttribID;
 	BOOL bAscending;
+	BOOL bSubtasksBelowParent;
 };
 
 /////////////////////////////////////////////////////////////////////////////

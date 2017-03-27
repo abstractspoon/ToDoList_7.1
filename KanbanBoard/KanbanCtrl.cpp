@@ -1963,6 +1963,7 @@ void CKanbanCtrl::Sort(IUI_ATTRIBUTE nBy, BOOL bAllowToggle, BOOL bAscending)
 
 		// do the sort
  		CHoldRedraw hr(*this);
+		BOOL bSubtasksBelowParent = HasOption(KBCF_SORTSUBTASTASKSBELOWPARENTS);
 
 		int nList = m_aListCtrls.GetSize();
 
@@ -1972,7 +1973,7 @@ void CKanbanCtrl::Sort(IUI_ATTRIBUTE nBy, BOOL bAllowToggle, BOOL bAscending)
 			ASSERT(pList);
 
 			if (pList)
-				pList->Sort(nBy, m_bSortAscending);
+				pList->Sort(nBy, m_bSortAscending, bSubtasksBelowParent);
 		}
 	}
 }

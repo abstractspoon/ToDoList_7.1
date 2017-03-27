@@ -581,7 +581,8 @@ KANBANSORT::KANBANSORT(const CKanbanItemMap& map)
 	:
 	data(map),
 	nBy(IUI_NONE),
-	bAscending(TRUE)
+	bAscending(TRUE),
+	bSubtasksBelowParent(FALSE)
 {
 }
 
