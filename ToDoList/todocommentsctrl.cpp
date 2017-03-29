@@ -312,9 +312,12 @@ void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID)
 			if (dialog.DoModal() == IDOK)
 			{
 				CStringArray aPaths;
-
+				
 				if (dialog.GetPathNames(aPaths) > 0)
+				{
+					SetFocus();
 					CRichEditHelper::PasteFiles(*this, aPaths, REP_ASFILEURL);
+				}
 			}
 
 			// reset
