@@ -2725,30 +2725,27 @@ void CTabbedToDoCtrl::UpdateExtensionViews(TDC_ATTRIBUTE nAttrib, DWORD dwTaskID
 
 					if (pExtWnd && (nView == nCurView))
 					{
+						IUI_UPDATETYPE nUpdate = TDC::MapAttributeToIUIUpdateType(nAttrib);
+
 						CTaskFile tasks;
+						int nNumTasks = GetAllTasksForExtensionViewUpdate(tasks, pData->mapWantedAttrib);
 
-						if (GetAllTasksForExtensionViewUpdate(tasks, pData->mapWantedAttrib))
-						{
-							CWaitCursor cursor;
-							BeginExtensionProgress(pData);
+						ASSERT(nNumTasks || (nUpdate == IUI_DELETE));
 
-							// update all tasks
-							IUI_UPDATETYPE nUpdate = IUI_ALL;
+						CWaitCursor cursor;
+						BeginExtensionProgress(pData);
 
-							if ((nAttrib == TDCA_DELETE) || (nAttrib == TDCA_ARCHIVE))
-								nUpdate = IUI_DELETE;
+						// update all tasks
+						UpdateExtensionView(pExtWnd, tasks, nUpdate, pData->mapWantedAttrib);
+						pData->bNeedFullTaskUpdate = FALSE;
 
-							UpdateExtensionView(pExtWnd, tasks, nUpdate, pData->mapWantedAttrib);
-							pData->bNeedFullTaskUpdate = FALSE;
+						if ((nAttrib == TDCA_NEWTASK) && dwTaskID)
+							pExtWnd->SelectTask(dwTaskID);
+						else
+							RefreshExtensionViewSelection();
 
-							if ((nAttrib == TDCA_NEWTASK) && dwTaskID)
-								pExtWnd->SelectTask(dwTaskID);
-							else
-								RefreshExtensionViewSelection();
-
-							EndExtensionProgress();
-							ResyncExtensionSelection(nView);
-						}
+						EndExtensionProgress();
+						ResyncExtensionSelection(nView);
 					}
 					else
 					{
