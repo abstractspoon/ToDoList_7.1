@@ -527,10 +527,6 @@ void CGanttTreeListCtrl::UpdateTasks(const ITaskList* pTasks, IUI_UPDATETYPE nUp
 		}
 		break;
 		
-	case IUI_MOVE:
-		ASSERT(0);
-		break;
-		
 	default:
 		ASSERT(0);
 	}
