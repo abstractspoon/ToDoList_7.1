@@ -47,7 +47,7 @@ struct KANBANITEM
 	DWORD dwTaskID, dwParentID;
 	BOOL bDone, bGoodAsDone;
 	BOOL bParent, bFlag;
-	int nPercent;
+	int nPercent, nLevel;
 
 	CString sTitle, sPath;
 	double dTimeEst, dTimeSpent, dCost;
@@ -140,6 +140,9 @@ public:
 struct KANBANSORT
 {
 	KANBANSORT(const CKanbanItemMap& map);
+
+	BOOL IsParent(DWORD dwTaskID, const KANBANITEM* pKIChild) const;
+	const KANBANITEM* GetParent(const KANBANITEM* pKIChild) const;
 
 	const CKanbanItemMap& data;
 	IUI_ATTRIBUTE nBy;

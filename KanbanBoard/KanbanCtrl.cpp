@@ -425,6 +425,12 @@ BOOL CKanbanCtrl::AddTaskToData(const ITaskList15* pTasks, HTASKITEM hTask, DWOR
 			pKI->sPath = pKIParent->sTitle;
 		else
 			pKI->sPath = pKIParent->sPath + '\\' + pKIParent->sTitle;
+
+		pKI->nLevel = (pKIParent->nLevel + 1);
+	}
+	else
+	{
+		pKI->nLevel = 0;
 	}
 
 	// trackable attributes

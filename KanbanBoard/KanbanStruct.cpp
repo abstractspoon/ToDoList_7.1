@@ -585,5 +585,27 @@ KANBANSORT::KANBANSORT(const CKanbanItemMap& map)
 	bSubtasksBelowParent(FALSE)
 {
 }
+	
+BOOL KANBANSORT::IsParent(DWORD dwTaskID, const KANBANITEM* pKIChild) const
+{
+	ASSERT(dwTaskID);
+
+	if (pKIChild->dwParentID == dwTaskID)
+		return TRUE;
+
+	if (pKIChild->dwParentID == 0)
+		return FALSE;
+
+	return IsParent(dwTaskID, GetParent(pKIChild));
+}
+
+const KANBANITEM* KANBANSORT::GetParent(const KANBANITEM* pKIChild) const
+{
+	if (pKIChild->dwParentID == 0)
+		return NULL;
+
+	// else
+	return data.GetItem(pKIChild->dwParentID);
+}
 
 //////////////////////////////////////////////////////////////////////
