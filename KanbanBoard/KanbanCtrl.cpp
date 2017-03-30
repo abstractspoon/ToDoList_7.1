@@ -256,7 +256,7 @@ void CKanbanCtrl::UpdateTasks(const ITaskList* pTasks, IUI_UPDATETYPE nUpdate, c
 	// always cancel any ongoing operation
 	CancelOperation();
 
-	const ITaskList15* pTasks14 = GetITLInterface<ITaskList15>(pTasks, IID_TASKLIST15);
+	const ITaskList15* pTasks15 = GetITLInterface<ITaskList15>(pTasks, IID_TASKLIST15);
 	BOOL bResort = FALSE;
 	
 	switch (nUpdate)
@@ -266,7 +266,7 @@ void CKanbanCtrl::UpdateTasks(const ITaskList* pTasks, IUI_UPDATETYPE nUpdate, c
  			CDWordArray aSelIDs;
 			GetSelectedTaskIDs(aSelIDs);
 
- 			RebuildData(pTasks14, attrib);
+ 			RebuildData(pTasks15, attrib);
  			RebuildListCtrls(TRUE);
 
 			SelectTasks(aSelIDs);
@@ -283,8 +283,8 @@ void CKanbanCtrl::UpdateTasks(const ITaskList* pTasks, IUI_UPDATETYPE nUpdate, c
 			GetSelectedTaskIDs(aSelIDs);
 			
  			// update the task(s)
-			BOOL bChange = UpdateGlobalAttributeValues(pTasks14, attrib);
-			bChange |= UpdateData(pTasks14, pTasks14->GetFirstTask(), attrib, TRUE);
+			BOOL bChange = UpdateGlobalAttributeValues(pTasks15, attrib);
+			bChange |= UpdateData(pTasks15, pTasks15->GetFirstTask(), attrib, TRUE);
 
 			if (bChange)
 				RebuildListCtrls(TRUE);
@@ -300,7 +300,7 @@ void CKanbanCtrl::UpdateTasks(const ITaskList* pTasks, IUI_UPDATETYPE nUpdate, c
 		
 	case IUI_DELETE:
 		{
- 			RemoveDeletedTasks(pTasks14);
+ 			RemoveDeletedTasks(pTasks15);
 		}
 		break;
 		
@@ -1520,7 +1520,6 @@ void CKanbanCtrl::RemoveDeletedTasks(const ITaskList15* pTasks)
 
 		if (!mapIDs.HasKey(dwTaskID))
 			m_data.RemoveKey(dwTaskID);
-		}
 	}
 }
 
