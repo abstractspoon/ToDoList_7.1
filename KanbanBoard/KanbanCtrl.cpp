@@ -1489,6 +1489,27 @@ void CKanbanCtrl::RemoveDeletedTasks(const ITaskList15* pTasks)
 	CSet<DWORD> mapIDs;
 	BuildTaskIDMap(pTasks, pTasks->GetFirstTask(NULL), mapIDs, TRUE);
 
+	// Go thru each list removing deleted items
+	int nList = m_aListCtrls.GetSize();
+
+	while (nList--)
+	{
+		CKanbanListCtrl* pList = m_aListCtrls[nList];
+		int nItem = pList->GetItemCount();
+
+		while (nItem--)
+		{
+			DWORD dwTaskID = pList->GetItemData(nItem);
+
+			if (!mapIDs.HasKey(dwTaskID))
+			{
+				pList->DeleteItem(nItem);
+				m_data.RemoveKey(dwTaskID);
+			}
+		}
+	}
+
+	// Remove any other 'hidden' items
 	POSITION pos = m_data.GetStartPosition();
 	DWORD dwTaskID = 0;
 	KANBANITEM* pKI = NULL;
@@ -1498,21 +1519,6 @@ void CKanbanCtrl::RemoveDeletedTasks(const ITaskList15* pTasks)
 		m_data.GetNextAssoc(pos, dwTaskID, pKI);
 
 		if (!mapIDs.HasKey(dwTaskID))
-		{
-			// Find the list containing this task and delete it
-			int nList = m_aListCtrls.GetSize();
-			
-			while (nList--)
-			{
-				int nItem = m_aListCtrls[nList]->FindTask(dwTaskID);
-
-				if (nItem != -1)
-				{
-					m_aListCtrls[nList]->DeleteItem(nItem);
-					break;
-				}
-			}
-
 			m_data.RemoveKey(dwTaskID);
 		}
 	}
