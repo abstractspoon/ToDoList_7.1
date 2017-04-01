@@ -9338,14 +9338,14 @@ BOOL CToDoCtrl::SetTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* pTD
 	}
 	
 	// highest priority, because we need it further down
-	int nHighestPriority = m_data.GetTaskHighestPriority(pTDI, pTDS, FALSE);
+	int nHighestPriority = m_data.CalcTaskHighestPriority(pTDI, pTDS, FALSE);
 	
 	if (!(bTitleOnly || bTitleCommentsOnly))
 	{
 		if (filter.WantAttribute(TDCA_POSITION))
 		{
 			file.SetTaskPosition(hTask, pTDS->GetPosition());
-			file.SetTaskPosition(hTask, m_data.GetTaskPositionString(pTDI, pTDS));
+			file.SetTaskPosition(hTask, m_data.FormatTaskPosition(pTDI, pTDS));
 		}
 		
 		if (pTDI->bFlagged && filter.WantAttribute(TDCA_FLAG))
@@ -9386,7 +9386,7 @@ BOOL CToDoCtrl::SetTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* pTD
 
  		if (filter.WantAttribute(TDCA_PATH))
 		{
-			CString sPath = m_data.GetTaskPath(pTDI, pTDS);
+			CString sPath = m_data.FormatTaskPath(pTDI, pTDS);
 
 			if (!sPath.IsEmpty())
  				file.SetTaskAttribute(hTask, TDL_TASKPATH, sPath);
@@ -9404,7 +9404,7 @@ BOOL CToDoCtrl::SetTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* pTD
 		{
 			file.SetTaskRisk(hTask, pTDI->nRisk);
 			
-			int nHighestRisk = m_data.GetTaskHighestRisk(pTDI, pTDS);
+			int nHighestRisk = m_data.CalcTaskHighestRisk(pTDI, pTDS);
 			
 			if (nHighestRisk > pTDI->nRisk)
 				file.SetTaskHighestRisk(hTask, nHighestRisk);
@@ -9444,7 +9444,7 @@ BOOL CToDoCtrl::SetTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* pTD
 			
 			// for calc'ed estimate use this item's units if it
 			// has a non-zero time estimate, else its first subtask's units
-			TDC_UNITS nUnits = m_data.GetBestCalcTimeEstUnits(pTDI, pTDS);
+			TDC_UNITS nUnits = m_data.CalcBestTimeEstUnits(pTDI, pTDS);
 			double dTime = m_data.CalcTaskTimeEstimate(pTDI, pTDS, nUnits);
 			
 			if (dTime > 0)
@@ -9459,7 +9459,7 @@ BOOL CToDoCtrl::SetTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* pTD
 			
 			// for calc'ed spent use this item's units if it
 			// has a non-zero time estimate, else its first subtask's units
-			TDC_UNITS nUnits = m_data.GetBestCalcTimeSpentUnits(pTDI, pTDS);
+			TDC_UNITS nUnits = m_data.CalcBestTimeSpentUnits(pTDI, pTDS);
 			double dTime = m_data.CalcTaskTimeSpent(pTDI, pTDS, nUnits);
 			
 			if (dTime != 0)
@@ -9622,12 +9622,12 @@ BOOL CToDoCtrl::SetAllTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* 
 	file.SetTaskAttributes(hTask, pTDI);
 
 	// dynamically calculated attributes
-	int nHighestPriority = m_data.GetTaskHighestPriority(pTDI, pTDS, FALSE); 
+	int nHighestPriority = m_data.CalcTaskHighestPriority(pTDI, pTDS, FALSE); 
 	
 	if (nHighestPriority > pTDI->nPriority)
 		file.SetTaskHighestPriority(hTask, nHighestPriority);
 	
-	int nHighestRisk = m_data.GetTaskHighestRisk(pTDI, pTDS);
+	int nHighestRisk = m_data.CalcTaskHighestRisk(pTDI, pTDS);
 	
 	if (nHighestRisk > pTDI->nRisk)
 		file.SetTaskHighestRisk(hTask, nHighestRisk);
@@ -9646,7 +9646,7 @@ BOOL CToDoCtrl::SetAllTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* 
 	
 	// for calc'ed estimate use this item's units if it
 	// has a non-zero time estimate, else its first subtask's units
-	TDC_UNITS nUnits = m_data.GetBestCalcTimeEstUnits(pTDI, pTDS);
+	TDC_UNITS nUnits = m_data.CalcBestTimeEstUnits(pTDI, pTDS);
 	double dTime = m_data.CalcTaskTimeEstimate(pTDI, pTDS, nUnits);
 	
 	if (dTime > 0)
@@ -9654,7 +9654,7 @@ BOOL CToDoCtrl::SetAllTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* 
 	
 	// for calc'ed spent use this item's units if it
 	// has a non-zero time estimate, else its first subtask's units
-	nUnits = m_data.GetBestCalcTimeEstUnits(pTDI, pTDS);
+	nUnits = m_data.CalcBestTimeEstUnits(pTDI, pTDS);
 	dTime = m_data.CalcTaskTimeSpent(pTDI, pTDS, nUnits);
 	
 	if (dTime != 0)

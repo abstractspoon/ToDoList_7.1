@@ -114,8 +114,8 @@ public:
 	BOOL IsTaskRecurring(DWORD dwTaskID, BOOL bCheckParent = FALSE) const;
 	BOOL CanTaskRecur(DWORD dwTaskID) const;
 	CString GetTaskVersion(DWORD dwTaskID) const;
-	CString GetTaskPath(DWORD dwTaskID, int nMaxLen = -1) const; 
-	CString GetTaskPositionString(DWORD dwTaskID) const; 
+	CString FormatTaskPath(DWORD dwTaskID, int nMaxLen = -1) const; 
+	CString FormatTaskPosition(DWORD dwTaskID) const; 
 	CString GetTaskCustomAttributeData(DWORD dwTaskID, const CString& sAttribID) const;
 
 	int GetTaskAllocTo(DWORD dwTaskID, CStringArray& aAllocTo) const;
@@ -133,6 +133,8 @@ public:
 	BOOL IsTaskReferenced(DWORD dwTaskID) const;
 	int GetReferencesToTask(DWORD dwTaskID, CDWordArray& aRefIDs) const;
 	BOOL IsReferenceToTask(DWORD dwTestID, DWORD dwTaskID) const;
+	BOOL IsTaskTimeTrackable(DWORD dwTaskID) const;
+	BOOL IsParentTaskDone(DWORD dwTaskID) const;
 
 	BOOL TaskHasDependents(DWORD dwTaskID) const;
 	int GetTaskLocalDependents(DWORD dwTaskID, CDWordArray& aDependents) const;
@@ -149,8 +151,8 @@ public:
 	BOOL IsTaskOverDue(DWORD dwTaskID) const;
 	double CalcTaskDueDate(DWORD dwTaskID) const;
 	double CalcTaskStartDate(DWORD dwTaskID) const;
-	int GetTaskHighestPriority(DWORD dwTaskID, BOOL bIncludeDue = TRUE) const;
-	int GetTaskHighestRisk(DWORD dwTaskID) const;
+	int CalcTaskHighestPriority(DWORD dwTaskID, BOOL bIncludeDue = TRUE) const;
+	int CalcTaskHighestRisk(DWORD dwTaskID) const;
 	int CalcTaskPercentDone(DWORD dwTaskID) const;
 	double CalcTaskCost(DWORD dwTaskID) const;
 	double CalcTaskTimeEstimate(DWORD dwTaskID, TDC_UNITS nUnits) const;
@@ -160,43 +162,48 @@ public:
 	CString FormatTaskCategories(DWORD dwTaskID) const;
 	CString FormatTaskTags(DWORD dwTaskID) const;
 	BOOL CalcTaskCustomAttributeData(DWORD dwTaskID, const TDCCUSTOMATTRIBUTEDEFINITION& attribDef, double& dValue) const;
-	BOOL GetTaskSubtaskTotals(DWORD dwTaskID, int& nSubtasksTotal, int& nSubtasksDone) const;
+	BOOL CalcTaskSubtaskTotals(DWORD dwTaskID, int& nSubtasksTotal, int& nSubtasksDone) const;
 	CString FormatTaskSubtaskCompletion(DWORD dwTaskID) const;
 	double CalcTaskSubtaskCompletion(DWORD dwTaskID) const;
 	BOOL TaskHasIncompleteSubtasks(DWORD dwTaskID, BOOL bExcludeRecurring) const;
+	BOOL TaskHasCompletedSubtasks(DWORD dwTaskID) const;
 	BOOL TaskHasRecurringParent(DWORD dwTaskID) const;
 	BOOL TaskHasFileRef(DWORD dwTaskID) const;
 
 	BOOL IsTaskStarted(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bToday = FALSE) const;
+	BOOL IsTaskDone(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, DWORD dwExtraCheck) const;
 	BOOL IsTaskDue(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bToday = FALSE) const;
 	BOOL IsTaskOverDue(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	BOOL IsTaskRecurring(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS = NULL, BOOL bCheckParent = FALSE) const;
+	BOOL IsParentTaskDone(const TODOSTRUCTURE* pTDS) const;
+
 	double CalcTaskDueDate(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	double CalcTaskStartDate(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
-	int GetTaskHighestPriority(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bIncludeDue = TRUE) const;
-	int GetTaskHighestRisk(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	int CalcTaskHighestPriority(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bIncludeDue = TRUE) const;
+	int CalcTaskHighestRisk(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	double CalcTaskCost(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	double CalcTaskTimeEstimate(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, TDC_UNITS nUnits) const;
 	double CalcTaskRemainingTime(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, TDC_UNITS& nUnits) const;
-	TDC_UNITS GetBestCalcTimeEstUnits(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	TDC_UNITS CalcBestTimeEstUnits(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	double CalcTaskTimeSpent(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, TDC_UNITS nUnits) const;
-	TDC_UNITS GetBestCalcTimeSpentUnits(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	TDC_UNITS CalcBestTimeSpentUnits(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	int CalcTaskPercentDone(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	int CalcPercentFromTime(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const; // spent / estimate
-	BOOL GetTaskSubtaskTotals(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, 
+	BOOL CalcTaskSubtaskTotals(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, 
 							int& nSubtasksTotal, int& nSubtasksDone) const;
-	CString FormatTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	double CalcTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
-	BOOL TaskHasIncompleteSubtasks(const TODOSTRUCTURE* pTDS, BOOL bExcludeRecurring) const;
-	BOOL TaskHasRecurringParent(const TODOSTRUCTURE* pTDS) const;
-	BOOL IsTaskDone(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, DWORD dwExtraCheck) const;
-	CString GetTaskPath(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
-	CString GetTaskPositionString(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	BOOL CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, const TDCCUSTOMATTRIBUTEDEFINITION& attribDef, double& dValue) const;
+
+	CString FormatTaskSubtaskCompletion(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	CString FormatTaskPath(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	CString FormatTaskPosition(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	CString FormatTaskAllocTo(const TODOITEM* pTDI) const;
 	CString FormatTaskCategories(const TODOITEM* pTDI) const;
 	CString FormatTaskTags(const TODOITEM* pTDI) const;
-	CString GetTaskCustomAttributeData(const TODOITEM* pTDI, const CString& sAttribID) const;
-	BOOL CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, const TDCCUSTOMATTRIBUTEDEFINITION& attribDef, double& dValue) const;
+
+	BOOL TaskHasRecurringParent(const TODOSTRUCTURE* pTDS) const;
+	BOOL TaskHasIncompleteSubtasks(const TODOSTRUCTURE* pTDS, BOOL bExcludeRecurring) const;
+	BOOL TaskHasCompletedSubtasks(const TODOSTRUCTURE* pTDS) const;
 
 	// Sets
 	TDC_SET SetTaskDate(DWORD dwTaskID, TDC_DATE nDate, const COleDateTime& date);
@@ -233,10 +240,6 @@ public:
 
 	BOOL TaskMatches(DWORD dwTaskID, const SEARCHPARAMS& params, SEARCHRESULT& result) const;
 	BOOL TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, const SEARCHPARAMS& params, SEARCHRESULT& result) const;
-	
-	BOOL IsTaskTimeTrackable(DWORD dwTaskID) const;
-	BOOL IsParentTaskDone(DWORD dwTaskID) const;
-	BOOL IsParentTaskDone(const TODOSTRUCTURE* pTDS) const;
 
 	TDC_SET ClearTaskAttribute(DWORD dwTaskID, TDC_ATTRIBUTE nAttrib, BOOL bAndChildren = FALSE);
 	TDC_SET ClearTaskCustomAttribute(DWORD dwTaskID, const CString& sAttribID, BOOL bAndChildren = FALSE);
@@ -300,14 +303,14 @@ protected:
 	BOOL TaskMatches(const TDCCADATA& data, DWORD dwAttribType, const SEARCHPARAM& sp, SEARCHRESULT& result) const;
 	BOOL TaskCommentsMatch(const TODOITEM* pTDI, const SEARCHPARAM& sp, SEARCHRESULT& result) const;
 
-	double SumPercentDone(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
-	double SumWeightedPercentDone(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	double CalcPercentDone(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
+	double CalcWeightedPercentDone(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const;
 	double CalcTaskTimeEstimate(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, TDC_UNITS nUnits, double& dWeightedEstimate) const;
 	double CalcStartDueDate(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bCheckChildren, BOOL bDue, BOOL bEarliest) const;
 	BOOL CalcMissingStartDateFromDue(TODOITEM* pTDI) const;
 	BOOL CalcMissingDueDateFromStart(TODOITEM* pTDI) const;
+	int CalcTaskLeafCount(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bIncludeDone) const;
 
-	int GetTaskLeafCount(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bIncludeDone) const;
 	BOOL LocateTask(DWORD dwTaskID, TODOSTRUCTURE*& pTDSParent, int& nPos) const;
 
 	// internal non-const versions
