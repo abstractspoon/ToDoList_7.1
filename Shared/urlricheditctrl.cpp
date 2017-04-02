@@ -603,6 +603,7 @@ CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIP
 { 
 	CLIPFORMAT formats[] = 
 	{ 
+		CMSOutlookHelper::CF_OUTLOOK,
 		CF_HDROP,
 			
 #ifndef _UNICODE
@@ -614,11 +615,6 @@ CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIP
 	
 	const long nNumFmts = sizeof(formats) / sizeof(CLIPFORMAT);
 	
-	// check for outlook first
-	if (CMSOutlookHelper::IsOutlookObject(lpDataOb))
-		return CMSOutlookHelper::CF_OUTLOOK;
-    
-	// else
 	COleDataObject dataobj;
     dataobj.Attach(lpDataOb, FALSE);
 
@@ -632,8 +628,15 @@ CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIP
 		if (dataobj.IsDataAvailable(formats[nFmt], &fmtEtc))
 			return formats[nFmt];
 	}
-	
-	return format;
+
+	if (format)
+		return format;
+
+#ifndef _UNICODE
+	return CF_TEXT;
+#else
+	return CF_UNICODETEXT;
+#endif
 }
 
 HRESULT CUrlRichEditCtrl::GetDragDropEffect(BOOL fDrag, DWORD grfKeyState, LPDWORD pdwEffect)
