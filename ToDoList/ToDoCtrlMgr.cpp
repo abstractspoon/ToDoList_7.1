@@ -265,7 +265,7 @@ BOOL CToDoCtrlMgr::HasFilePath(int nIndex) const
 {
 	CHECKVALIDINDEXRET(nIndex, FALSE);
 
-	return !GetFilePath(nIndex).IsEmpty();
+	return !GetFilePath(nIndex, TRUE).IsEmpty();
 }
 
 TDCM_PATHTYPE CToDoCtrlMgr::GetFilePathType(int nIndex) const

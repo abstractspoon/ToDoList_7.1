@@ -51,6 +51,7 @@
 #include "..\shared\savefocus.h"
 #include "..\shared\localizer.h"
 #include "..\shared\clipboard.h"
+#include "..\shared\mapex.h"
 
 #include "..\interfaces\IContentControl.h"
 
@@ -2978,10 +2979,18 @@ BOOL CToDoCtrl::IncrementSelectedTaskPriority(BOOL bUp)
 
 	IMPLEMENT_UNDOEDIT();
 		
+	// Keep track of what we've processed to avoid incrementing
+	// the same task multiple times via references
+	CDWordSet mapProcessed;
+
 	while (pos)
 	{
-		DWORD dwTaskID = TSH().GetNextItemData(pos);
-		int nPriority = m_data.GetTaskPriority(dwTaskID) + nAmount;
+		DWORD dwTaskID = GetTrueTaskID(TSH().GetNextItem(pos));
+
+		if (mapProcessed.HasKey(dwTaskID))
+			continue;
+
+		int nPriority = (m_data.GetTaskPriority(dwTaskID) + nAmount);
 
 		// need to jump over -1
 		if (nPriority < 0)
@@ -2999,6 +3008,8 @@ BOOL CToDoCtrl::IncrementSelectedTaskPriority(BOOL bUp)
 			nRes = SET_CHANGE;
 			dwModTaskID = dwTaskID;
 		}
+
+		mapProcessed.AddKey(dwTaskID);
 	}
 	
 	if (nRes == SET_CHANGE)
@@ -3210,14 +3221,19 @@ BOOL CToDoCtrl::OffsetSelectedTaskDate(TDC_DATE nDate, int nAmount, TDC_OFFSET n
 	int nRes = SET_NOCHANGE;
 	DWORD dwModTaskID = 0;
 	TDC_UNITS nUnits = TDC::MapDateOffsetToUnits(nOffset);
-
 	
 	IMPLEMENT_UNDOEDIT();
-		
+
+	// Keep track of what we've processed to avoid offsetting
+	// the same task multiple times via references
+	CDWordSet mapProcessed;
+	
 	while (pos)
 	{
-		HTREEITEM hti = htiSel.GetNext(pos);
-		DWORD dwTaskID = m_taskTree.GetTaskID(hti);
+		DWORD dwTaskID = GetTrueTaskID(htiSel.GetNext(pos));
+
+		if (mapProcessed.HasKey(dwTaskID))
+			continue;
 
 		int nItemRes = m_data.OffsetTaskDate(dwTaskID, nDate, nAmount, nUnits, bAndSubtasks, FALSE);
 		
@@ -3228,6 +3244,8 @@ BOOL CToDoCtrl::OffsetSelectedTaskDate(TDC_DATE nDate, int nAmount, TDC_OFFSET n
 
 			nRes = SET_CHANGE;
 		}
+
+		 mapProcessed.AddKey(dwTaskID);
 	}
 	
 	if (nRes == SET_CHANGE)
@@ -3272,18 +3290,24 @@ BOOL CToDoCtrl::OffsetSelectedTaskDates(int nAmount, TDC_OFFSET nOffset, BOOL bA
 	// processing subtasks anyway
 	CHTIList htiSel;
 	TSH().CopySelection(htiSel, bAndSubtasks);
-	
+
 	POSITION pos = htiSel.GetHeadPosition();
 	int nRes = SET_NOCHANGE;
 	DWORD dwModTaskID = 0;
 	DH_UNITS nDHUnits = TDC::MapDateOffsetToDHUnits(nOffset);
+
+	// Keep track of what we've processed to avoid offsetting
+	// the same task multiple times via references
+	CDWordSet mapProcessed;
 	
 	IMPLEMENT_UNDOEDIT();
 	
 	while (pos)
 	{
-		HTREEITEM hti = htiSel.GetNext(pos);
-		DWORD dwTaskID = m_taskTree.GetTaskID(hti);
+		DWORD dwTaskID = GetTrueTaskID(htiSel.GetNext(pos));
+
+		if (mapProcessed.HasKey(dwTaskID))
+			continue;
 
 		COleDateTime dtStart = m_data.GetTaskDate(dwTaskID, TDCD_START);
 		ASSERT(CDateHelper::IsDateSet(dtStart));
@@ -3299,6 +3323,8 @@ BOOL CToDoCtrl::OffsetSelectedTaskDates(int nAmount, TDC_OFFSET nOffset, BOOL bA
 			
 			nRes = SET_CHANGE;
 		}
+
+		mapProcessed.AddKey(dwTaskID);
 	}
 	
 	if (nRes == SET_CHANGE)
@@ -3757,7 +3783,7 @@ void CToDoCtrl::InitialiseNewRecurringTask(DWORD dwPrevTaskID, DWORD dwNewTaskID
 	m_data.SetTaskStatus(dwNewTaskID, m_tdiDefault.sStatus);
 
 	// Reset number of occurrences
-	m_data.ResetRecurringSubtaskOcurrences(dwNewTaskID);
+	m_data.ResetRecurringSubtaskOccurrences(dwNewTaskID);
 
 	// Special handling for recreated tasks
 	if (dwNewTaskID != dwPrevTaskID)
@@ -4000,10 +4026,16 @@ BOOL CToDoCtrl::IncrementSelectedTaskPercentDone(BOOL bUp)
 	
 	IMPLEMENT_UNDOEDIT();
 	
+	// Keep track of what we've processed to avoid incrementing
+	// the same task multiple times via references
+	CDWordSet mapProcessed;
+
 	while (pos)
 	{
-		HTREEITEM hti = TSH().GetNextItem(pos);
-		DWORD dwTaskID = GetTaskID(hti);
+		DWORD dwTaskID = GetTrueTaskID(TSH().GetNextItem(pos));
+
+		if (mapProcessed.HasKey(dwTaskID))
+			continue;
 
 		BOOL bDone = m_data.IsTaskDone(dwTaskID);
 
@@ -4027,6 +4059,8 @@ BOOL CToDoCtrl::IncrementSelectedTaskPercentDone(BOOL bUp)
 			nRes = SET_CHANGE;
 			dwModTaskID = dwTaskID;
 		}
+
+		mapProcessed.AddKey(dwTaskID);
 	}
 	
 	if (nRes == SET_CHANGE)
@@ -4203,13 +4237,11 @@ BOOL CToDoCtrl::SetSelectedTaskTimeEstimateUnits(TDC_UNITS nUnits, BOOL bRecalcT
 		
 	while (pos)
 	{
-		HTREEITEM hti = TSH().GetNextItem(pos);
+		DWORD dwTaskID = TSH().GetNextItemData(pos);
 
 		// ignore parent tasks
-		if (!m_taskTree.ItemHasChildren(hti) || HasStyle(TDCS_ALLOWPARENTTIMETRACKING))
+		if (!m_data.TaskHasSubtasks(dwTaskID) || HasStyle(TDCS_ALLOWPARENTTIMETRACKING))
 		{
-			DWORD dwTaskID = GetTaskID(hti);
-
 			TDC_UNITS nCurUnits;
 			double dCurTime = m_data.GetTaskTimeEstimate(dwTaskID, nCurUnits);
 
@@ -4290,13 +4322,11 @@ BOOL CToDoCtrl::SetSelectedTaskTimeSpentUnits(TDC_UNITS nUnits, BOOL bRecalcTime
 		
 	while (pos)
 	{
-		HTREEITEM hti = TSH().GetNextItem(pos);
+		DWORD dwTaskID = TSH().GetNextItemData(pos);
 
 		// ignore parent tasks
-		if (!m_taskTree.ItemHasChildren(hti) || HasStyle(TDCS_ALLOWPARENTTIMETRACKING))
+		if (!m_data.TaskHasSubtasks(dwTaskID) || HasStyle(TDCS_ALLOWPARENTTIMETRACKING))
 		{
-			DWORD dwTaskID = GetTaskID(hti);
-
 			TDC_UNITS nCurUnits;
 			double dCurTime = m_data.GetTaskTimeSpent(dwTaskID, nCurUnits);
 
@@ -5628,7 +5658,6 @@ BOOL CToDoCtrl::SetStyle(TDC_STYLE nStyle, BOOL bOn, BOOL bWantUpdate)
 		case TDCS_READONLY:
 		case TDCS_CONFIRMDELETE:
 		case TDCS_CHECKOUTONLOAD:
-		case TDCS_SORTVISIBLETASKSONLY:
 		case TDCS_SYNCTIMEESTIMATESANDDATES:
 		case TDCS_FOCUSTREEONENTER:
 		case TDCS_TRACKSELECTEDTASKONLY:
@@ -6922,14 +6951,12 @@ LRESULT CToDoCtrl::OnCommentsChange(WPARAM /*wParam*/, LPARAM /*lParam*/)
 LRESULT CToDoCtrl::OnCommentsKillFocus(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	HandleUnsavedComments();
-
 	return 0L;
 }
 
 LRESULT CToDoCtrl::OnCommentsDoHelp(WPARAM /*wParam*/, LPARAM lParam)
 {
 	AfxGetApp()->WinHelp(lParam);
-
 	return 0L;
 }
 
@@ -9017,8 +9044,12 @@ BOOL CToDoCtrl::BuildTreeItem(HTREEITEM htiParent, const TODOSTRUCTURE* pTDS, co
 
 		DWORD dwTaskID = m_taskTree.GetTaskID(htiParent);
 		pTDS = m_data.LocateTask(dwTaskID);
+		ASSERT(pTDS);
 	}
 #endif
+
+	if (!pTDS)
+		return FALSE;
 
 	// rebuild
 	int nSubtask = pTDS->GetSubTaskCount();
@@ -9027,12 +9058,7 @@ BOOL CToDoCtrl::BuildTreeItem(HTREEITEM htiParent, const TODOSTRUCTURE* pTDS, co
 	while (nSubtask--)
 	{
 		const TODOSTRUCTURE* pTDSChild = pTDS->GetSubTask(nSubtask);
-		DWORD dwTaskID = pTDSChild->GetTaskID();
-
-		// Get the 'True' task for matching but also hang
-		// on to the 'original' task ID because it may get
-		// overwritten and we need it for when we add the item
-		DWORD dwOrgID = dwTaskID;
+		DWORD dwTaskID = pTDSChild->GetTaskID(), dwOrgID(dwTaskID);
 
 		const TODOITEM* pTDIChild = GetTask(dwTaskID);
 		ASSERT(pTDIChild);
@@ -9253,6 +9279,7 @@ BOOL CToDoCtrl::InsertTasks(const CTaskFile& tasks, TDC_INSERTWHERE nWhere, BOOL
 		return AddTasksToTree(copy, htiParent, htiAfter, TDCR_NO, bSelectAll, TDCA_PASTE);
 	}
 
+	// else
 	return AddTasksToTree(tasks, htiParent, htiAfter, TDCR_NO, bSelectAll, TDCA_PASTE);
 }
 
@@ -9752,7 +9779,12 @@ BOOL CToDoCtrl::AddTreeItemToTaskFile(HTREEITEM hti, DWORD dwTaskID, CTaskFile& 
 				return FALSE;
 
 			const TODOSTRUCTURE* pTDS = m_data.LocateTask(dwTaskID);
-			ASSERT (pTDS);
+
+			if (!pTDS)
+			{
+				ASSERT(0);
+				return FALSE;
+			}
 			
 			BOOL bTitleCommentsOnly = (m_taskTree.ItemHasChildren(hti) &&
 									filter.HasFlag(TDCGTF_PARENTTITLECOMMENTSONLY));
@@ -10984,7 +11016,6 @@ BOOL CToDoCtrl::GotoSelectedTaskReferences()
 	// traverse the selected items adding any
 	// reference task's target to a list
 	CDWordArray aTaskRefIDs;
-
 	POSITION pos = TSH().GetFirstItemPos();
 			
 	while (pos)

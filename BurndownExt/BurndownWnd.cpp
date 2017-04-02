@@ -874,8 +874,6 @@ void CBurndownWnd::RebuildXScale()
 			ASSERT(0);
 		}
 	}
-
-	//m_graph.Invalidate();
 }
 
 COleDateTime CBurndownWnd::GetGraphStartDate() const

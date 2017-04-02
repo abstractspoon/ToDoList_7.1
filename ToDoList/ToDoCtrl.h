@@ -180,7 +180,9 @@ public:
 
 	BOOL SelectTask(DWORD dwTaskID) { return SelectTask(dwTaskID, TRUE); }
 	BOOL SelectTasks(const CDWordArray& aTaskIDs) { return SelectTasks(aTaskIDs, TRUE); }
-
+	void SelectAll();
+	BOOL SelectTask(CString sPart, TDC_SELECTTASK nSelect);
+	
 	int CacheTreeSelection(TDCSELECTIONCACHE& cache, BOOL bIncBreadcrumbs = TRUE) const;
 	BOOL RestoreTreeSelection(const TDCSELECTIONCACHE& cache);
 
@@ -357,8 +359,6 @@ public:
 	virtual CString GetControlDescription(const CWnd* pCtrl) const;
 	virtual BOOL GetSelectionBoundingRect(CRect& rSelection) const;
 
-	void SelectAll();
-	BOOL SelectTask(CString sPart, TDC_SELECTTASK nSlect);
 	BOOL SelectedTasksHaveChildren() const { return m_taskTree.SelectionHasSubtasks(); }
 	BOOL SelectedTasksHaveIcons() const { return m_taskTree.SelectionHasIcons(); }
 	BOOL SelectedTasksAreAllDone() const { return m_taskTree.SelectionAreAllDone(); }

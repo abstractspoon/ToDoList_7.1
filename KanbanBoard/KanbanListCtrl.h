@@ -131,7 +131,6 @@ protected:
 	void DrawAttribute(CDC* pDC, CRect& rLine, IUI_ATTRIBUTE nAttrib, const CString& sValue, int nFlags) const;
 
 	static int CALLBACK SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
-	static int CALLBACK SortByPosProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 	static UINT GetDisplayFormat(IUI_ATTRIBUTE nAttrib);
 
 };

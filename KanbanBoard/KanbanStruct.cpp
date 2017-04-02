@@ -73,7 +73,8 @@ KANBANITEM::KANBANITEM(DWORD dwID)
 	bDone(FALSE), 
 	bGoodAsDone(FALSE),
 	bParent(FALSE),
-	dwParentID(0)
+	dwParentID(0),
+	nLevel(0)
 {
 	CDateHelper::ClearDate(dtCreate);
 	CDateHelper::ClearDate(dtDone);
@@ -99,6 +100,7 @@ KANBANITEM& KANBANITEM::operator=(const KANBANITEM& ki)
 	bGoodAsDone = ki.bGoodAsDone;
 	bParent = ki.bParent;
 	dwParentID = ki.dwParentID;
+	nLevel = ki.nLevel;
 
 	Misc::Copy(ki.mapAttribValues, mapAttribValues);
 	
@@ -116,6 +118,7 @@ BOOL KANBANITEM::operator==(const KANBANITEM& ki) const
 			(bDone == ki.bDone) &&
 			(bGoodAsDone == ki.bGoodAsDone) &&
 			(bParent == ki.bParent) &&
+			(nLevel == ki.nLevel) &&
 			(dwParentID == ki.dwParentID) &&
 			Misc::MatchAll(mapAttribValues, ki.mapAttribValues));
 }

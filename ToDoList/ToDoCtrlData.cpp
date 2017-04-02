@@ -1490,11 +1490,9 @@ BOOL CToDoCtrlData::ApplyLastChangeToSubtasks(const TODOITEM* pTDI, const TODOST
 	for (int nSubTask = 0; nSubTask < pTDS->GetSubTaskCount(); nSubTask++)
 	{
 		DWORD dwChildID = pTDS->GetSubTaskID(nSubTask);
-		TODOITEM* pTDIChild = GetTask(dwChildID);
-		ASSERT(pTDIChild);
 
-		if (!pTDIChild)
-			return FALSE;
+		TODOITEM* pTDIChild = NULL;
+		GET_TDI(dwChildID, pTDIChild, FALSE);
 
 		// save undo data
 		SaveEditUndo(dwChildID, pTDIChild, nAttrib);
@@ -2112,35 +2110,34 @@ TDC_SET CToDoCtrlData::SetTaskTimeSpent(DWORD dwTaskID, double dTime, TDC_UNITS 
 	return EditTaskTimeAttribute(dwTaskID, pTDI, TDCA_TIMESPENT, pTDI->dTimeSpent, dTime, pTDI->nTimeSpentUnits, nUnits);
 }
 
-void CToDoCtrlData::ResetRecurringSubtaskOcurrences(DWORD dwTaskID)
+BOOL CToDoCtrlData::ResetRecurringSubtaskOccurrences(DWORD dwTaskID)
 {
 	const TODOSTRUCTURE* pTDS = m_struct.FindTask(dwTaskID);
 
 	if (!pTDS)
 	{
 		ASSERT(0);
-		return;
+		return FALSE;
 	}
 	
 	for (int nSubtask = 0; nSubtask < pTDS->GetSubTaskCount(); nSubtask++)
 	{
 		DWORD dwSubtaskID = pTDS->GetSubTaskID(nSubtask);
 
-		TODOITEM* pTDI = GetTask(dwSubtaskID);
-		ASSERT(pTDI);
-		
-		if (pTDI)
-		{
-			if (pTDI->IsRecurring())
-			{
-				int nNumOccur = pTDI->trRecurrence.GetOccurrenceCount();
-				pTDI->trRecurrence.SetOccurrenceCount(nNumOccur, nNumOccur);
-			}
+		TODOITEM* pTDI = NULL;
+		GET_TDI(dwSubtaskID, pTDI, FALSE);
 
-			// then its subtasks
-			ResetRecurringSubtaskOcurrences(dwSubtaskID);
+		if (pTDI->IsRecurring())
+		{
+			int nNumOccur = pTDI->trRecurrence.GetOccurrenceCount();
+			pTDI->trRecurrence.SetOccurrenceCount(nNumOccur, nNumOccur);
 		}
+
+		// then its subtasks
+		ResetRecurringSubtaskOccurrences(dwSubtaskID);
 	}
+
+	return TRUE;
 }
 
 TDC_SET CToDoCtrlData::SetTaskArray(DWORD dwTaskID, TDC_ATTRIBUTE nAttrib, const CStringArray& aItems, BOOL bAppend)
@@ -2594,10 +2591,10 @@ int CToDoCtrlData::MoveTask(TODOSTRUCTURE* pTDSSrcParent, int nSrcPos, DWORD dwS
 	return nPos;
 }
 
-void CToDoCtrlData::FixupParentCompletion(DWORD dwParentID)
+BOOL CToDoCtrlData::FixupParentCompletion(DWORD dwParentID)
 {
 	if (!dwParentID) // top level item 
-		return;
+		return TRUE;
 		
 	// if the parent was marked as done and it has any incomplete
 	// subtasks then mark the parent as incomplete too
@@ -2610,7 +2607,12 @@ void CToDoCtrlData::FixupParentCompletion(DWORD dwParentID)
 		{
 			// work our way up the chain setting parent to incomplete
 			const TODOSTRUCTURE* pTDS = LocateTask(dwParentID);
-			ASSERT(pTDS);
+
+			if (!pTDS)
+			{
+				ASSERT(0);
+				return FALSE;
+			}
 
 			do 
 			{
@@ -2620,6 +2622,8 @@ void CToDoCtrlData::FixupParentCompletion(DWORD dwParentID)
 			while(pTDS);
 		}
 	}
+
+	return TRUE;
 }
 
 BOOL CToDoCtrlData::MoveTasks(const CDWordArray& aTaskIDs, DWORD dwDestParentID, DWORD dwDestPrevSiblingID)
@@ -2703,6 +2707,14 @@ BOOL CToDoCtrlData::SetTaskModified(DWORD dwTaskID)
 	
 	pTDI->SetModified();
 	return TRUE;
+}
+
+BOOL CToDoCtrlData::TaskHasSubtasks(DWORD dwTaskID) const
+{
+	const TODOSTRUCTURE* pTDS = LocateTask(dwTaskID);
+	ASSERT(pTDS);
+
+	return (pTDS && pTDS->HasSubTasks());
 }
 
 BOOL CToDoCtrlData::TaskHasIncompleteSubtasks(DWORD dwTaskID, BOOL bExcludeRecurring) const

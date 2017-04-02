@@ -1277,7 +1277,6 @@ int CTDLTaskCtrlBase::SortTasks(LPARAM lParam1,
 		
 		return (sort.bAscending ? nCompare : -nCompare);
 	}
-	// handle custom attribute
 	else if (sort.IsSortingByCustom())
 	{
 		TDCCUSTOMATTRIBUTEDEFINITION attribDef;
@@ -3094,7 +3093,11 @@ void CTDLTaskCtrlBase::DrawColumnText(CDC* pDC, const CString& sText, const CRec
 		break;
 	}
 	
-	UINT nFlags = (nAlign | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | (bTaskTitle ? DT_END_ELLIPSIS : 0) | GraphicsMisc::GetRTLDrawTextFlags(Tasks()));
+	UINT nFlags = (nAlign | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | GraphicsMisc::GetRTLDrawTextFlags(Tasks()));
+
+	if (bTaskTitle)
+		nFlags |= DT_END_ELLIPSIS;
+
 	COLORREF crOld = pDC->SetTextColor(crText);
 	
 	pDC->SetBkMode(TRANSPARENT);
@@ -4409,6 +4412,9 @@ BOOL CTDLTaskCtrlBase::AttribMatchesSort(TDC_ATTRIBUTE nAttrib) const
 {
 	if (!m_sort.IsSorting())
 		return FALSE;
+
+	if (nAttrib == TDCA_ALL)
+		return TRUE;
 	
 	BOOL bNeedSort = FALSE;
 	

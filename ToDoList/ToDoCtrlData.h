@@ -75,7 +75,7 @@ public:
 	BOOL CanMoveTask(DWORD dwTaskID, DWORD dwDestParentID) const;
 	BOOL MoveTask(DWORD dwTaskID, DWORD dwDestParentID, DWORD dwDestPrevSiblingID);
 	BOOL MoveTasks(const CDWordArray& aTaskIDs, DWORD dwDestParentID, DWORD dwDestPrevSiblingID);
-	void FixupParentCompletion(DWORD dwParentID);
+	BOOL FixupParentCompletion(DWORD dwParentID);
 
 	// undo/redo
 	BOOL BeginNewUndoAction(TDCUNDOACTIONTYPE nType);
@@ -168,6 +168,7 @@ public:
 	BOOL TaskHasIncompleteSubtasks(DWORD dwTaskID, BOOL bExcludeRecurring) const;
 	BOOL TaskHasCompletedSubtasks(DWORD dwTaskID) const;
 	BOOL TaskHasRecurringParent(DWORD dwTaskID) const;
+	BOOL TaskHasSubtasks(DWORD dwTaskID) const;
 	BOOL TaskHasFileRef(DWORD dwTaskID) const;
 
 	BOOL IsTaskStarted(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, BOOL bToday = FALSE) const;
@@ -246,7 +247,7 @@ public:
 
 	BOOL ApplyLastChangeToSubtasks(DWORD dwTaskID, TDC_ATTRIBUTE nAttrib, BOOL bIncludeBlank = TRUE);
 	void ApplyLastInheritedChangeToSubtasks(DWORD dwTaskID, TDC_ATTRIBUTE nAttrib);
-	void ResetRecurringSubtaskOcurrences(DWORD dwTaskID);
+	BOOL ResetRecurringSubtaskOccurrences(DWORD dwTaskID);
 	
 	int CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, TDC_COLUMN nSortBy, BOOL bAscending, 
 					BOOL bSortDueTodayHigh, BOOL bIncTime = FALSE) const;
