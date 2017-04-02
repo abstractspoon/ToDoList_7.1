@@ -1897,17 +1897,19 @@ TDC_SET CToDoCtrlData::OffsetTaskDate(DWORD dwTaskID, TDC_DATE nDate, int nAmoun
 	DH_UNITS nDHUnits = TDC::MapUnitsToDHUnits(nUnits);
 	COleDateTime date = pTDI->GetDate(nDate);
 
-	if (!CDateHelper::IsDateSet(date))
-		return SET_FAILED;
-
-	CDateHelper::OffsetDate(date, nAmount, nDHUnits);
-
-	// Special case: Task is recurring and therefore must fall on a valid date
-	if (pTDI->IsRecurring() && bFitToRecurringScheme)
-		pTDI->trRecurrence.FitDayToScheme(date);
-
-	TDC_SET nRes = SetTaskDate(dwTaskID, pTDI, nDate, date);
+	TDC_SET nRes = SET_NOCHANGE;
 	
+	if (CDateHelper::IsDateSet(date))
+	{
+		CDateHelper::OffsetDate(date, nAmount, nDHUnits);
+
+		// Special case: Task is recurring and therefore must fall on a valid date
+		if (pTDI->IsRecurring() && bFitToRecurringScheme)
+			pTDI->trRecurrence.FitDayToScheme(date);
+
+		nRes = SetTaskDate(dwTaskID, pTDI, nDate, date);
+	}
+
 	// children
 	if (bAndSubtasks)
 	{
