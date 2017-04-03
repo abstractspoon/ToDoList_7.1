@@ -4233,12 +4233,14 @@ void CTDLTaskCtrlBase::SetModified(TDC_ATTRIBUTE nAttrib)
 		
 		if (!m_sCompletionStatus.IsEmpty())
 			AccumulateRecalcColumn(TDCC_STATUS, nRecalcColID);
-		
 		break;
 		
 	case TDCA_DUEDATE:
 		if (!AccumulateRecalcColumn(TDCC_DUEDATE, nRecalcColID))
 			bRedrawCols = IsColumnShowing(TDCC_PRIORITY);
+
+		if (HasStyle(TDCS_SYNCTIMEESTIMATESANDDATES))
+			AccumulateRecalcColumn(TDCC_TIMEEST, nRecalcColID);
 		break;
 		
 	case TDCA_PRIORITY:
