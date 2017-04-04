@@ -230,13 +230,12 @@ HRESULT CRulerRichEdit::GetDragDropEffect(BOOL fDrag, DWORD grfKeyState, LPDWORD
 
 CLIPFORMAT CRulerRichEdit::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFORMAT format) 
 { 
-#ifdef _DEBUG
-	CString sFormat = CClipboard::GetFormatName(format);
-#endif
+	// check for outlook first
+	if (CMSOutlookHelper::IsOutlookObject(lpDataOb))
+		return CMSOutlookHelper::CF_OUTLOOK;
 
 	CLIPFORMAT formats[] = 
 	{ 
-		CMSOutlookHelper::CF_OUTLOOK,
 		CF_HDROP,
 		(CLIPFORMAT)CBF_RTF,
 		(CLIPFORMAT)CBF_RETEXTOBJ, 
