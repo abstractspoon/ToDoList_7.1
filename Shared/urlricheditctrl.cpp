@@ -601,9 +601,13 @@ HRESULT CUrlRichEditCtrl::QueryAcceptData(LPDATAOBJECT lpdataobj, CLIPFORMAT* lp
 
 CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFORMAT format)
 { 
+	// check for outlook first
+	if (CMSOutlookHelper::IsOutlookObject(lpDataOb))
+		return CMSOutlookHelper::CF_OUTLOOK;
+
+	// else
 	CLIPFORMAT formats[] = 
 	{ 
-		CMSOutlookHelper::CF_OUTLOOK,
 		CF_HDROP,
 			
 #ifndef _UNICODE
