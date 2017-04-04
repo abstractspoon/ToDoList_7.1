@@ -141,6 +141,7 @@ BEGIN_MESSAGE_MAP(CKanbanListCtrl, CListCtrl)
 	ON_WM_KEYDOWN()
 	ON_WM_KEYUP()
 	ON_WM_SIZE()
+	ON_NOTIFY(TTN_SHOW, 0, OnShowTooltip)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1157,4 +1158,29 @@ void CKanbanListCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 	m_dwSelectingTask = 0;
 
 	CListCtrl::OnKeyUp(nChar, nRepCnt, nFlags);
+}
+
+void CKanbanListCtrl::OnShowTooltip(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	*pResult = TRUE; // we do the positioning
+
+	CPoint ptScreen(::GetMessagePos());
+	int nHit = FindTask(ptScreen);
+	ASSERT(nHit != -1);
+
+	// Always position the tooltip at the top of the item
+	CRect rLabel;
+	VERIFY(GetItemRect(nHit, rLabel, LVIR_BOUNDS));
+
+	rLabel.bottom = (rLabel.top + CalcRequiredItemHeight(1));
+
+	ClientToScreen(rLabel);
+	rLabel.InflateRect(0, 1, 0, 0);
+
+	// Calculate exact width required
+	CString sTip = GetItemText(nHit, 0);
+	rLabel.right = (rLabel.left + GraphicsMisc::GetTextWidth(sTip, pNMHDR->hwndFrom));
+
+	::SetWindowPos(pNMHDR->hwndFrom, NULL, rLabel.left, rLabel.top, rLabel.Width(), rLabel.Height(), 
+		(SWP_NOACTIVATE | SWP_NOZORDER));
 }
