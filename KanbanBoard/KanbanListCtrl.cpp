@@ -41,6 +41,7 @@ const int MIN_LABEL_EDIT_WIDTH	= 200;
 const int BAR_WIDTH				= 6;
 const int LV_PADDING			= 3;
 const int ATTRIB_INDENT			= 6;
+const int TIP_PADDING			= 4;
 
 const CRect TEXT_BORDER			= CRect(4, 1, 3, 2);
 
@@ -1170,17 +1171,16 @@ void CKanbanListCtrl::OnShowTooltip(NMHDR* pNMHDR, LRESULT* pResult)
 
 	// Always position the tooltip at the top of the item
 	CRect rLabel;
+
 	VERIFY(GetItemRect(nHit, rLabel, LVIR_BOUNDS));
-
-	rLabel.bottom = (rLabel.top + CalcRequiredItemHeight(1));
-
 	ClientToScreen(rLabel);
-	rLabel.InflateRect(0, 1, 0, 0);
 
-	// Calculate exact width required
-	CString sTip = GetItemText(nHit, 0);
-	rLabel.right = (rLabel.left + GraphicsMisc::GetTextWidth(sTip, pNMHDR->hwndFrom));
+	CRect rTip(rLabel);
+	::SendMessage(pNMHDR->hwndFrom, TTM_ADJUSTRECT, TRUE, (LPARAM)&rTip);
 
-	::SetWindowPos(pNMHDR->hwndFrom, NULL, rLabel.left, rLabel.top, rLabel.Width(), rLabel.Height(), 
-		(SWP_NOACTIVATE | SWP_NOZORDER));
+	rTip.top = rLabel.top;
+	rTip.bottom = rLabel.bottom;
+	rTip.left += TIP_PADDING;
+
+	::SetWindowPos(pNMHDR->hwndFrom, NULL, rTip.left, rTip.top, 0, 0, (SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE));
 }
