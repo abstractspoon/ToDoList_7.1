@@ -27,7 +27,7 @@ CDragDropMgr::CDragDropMgr() : m_hInstOle32(NULL)
 	m_hwndTracking = NULL;
 	m_hCursorSave = NULL;
 	m_pDragImage = NULL;
-	m_iState = 0;
+	m_iState = NONE;
 
 	memset(&m_ddi,0,sizeof(m_ddi));
 }
@@ -91,25 +91,51 @@ UINT CDragDropMgr::ProcessMessage(const MSG* pMsg, BOOL bAllowNcDrag)
 
 	if (IsSourceWnd(msg.hwnd)) 
     {
-		if (msg.message == WM_LBUTTONDOWN || (bAllowNcDrag && msg.message == WM_NCLBUTTONDOWN) ||
-			msg.message == WM_RBUTTONDOWN || (bAllowNcDrag && msg.message == WM_NCRBUTTONDOWN)) 
-			return OnButtonDown(msg);
+		BOOL bAbort = FALSE;
 
-        else if (msg.message == WM_MOUSEMOVE) 
+		switch (msg.message)
+		{
+		case WM_LBUTTONDOWN:
+		case WM_RBUTTONDOWN:
+			return OnButtonDown(msg);
+			
+		case WM_NCLBUTTONDOWN:
+		case WM_NCRBUTTONDOWN:
+			if (bAllowNcDrag) 
+				return OnButtonDown(msg);
+			break;
+
+		case WM_MOUSEMOVE:
 			return OnMouseMove(msg);
 
-        else if (msg.message == WM_LBUTTONUP || msg.message == WM_RBUTTONUP) 
+		case WM_LBUTTONUP:
+		case WM_RBUTTONUP:
 			return OnButtonUp(msg);
 
-        else if (m_iState && ((msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) ||
-							   msg.message == WM_CONTEXTMENU || msg.message == WM_KILLFOCUS)) 
-        {
+		case WM_KEYDOWN:
+			bAbort = ((m_iState != NONE) && (msg.wParam == VK_ESCAPE));
+			break;
+
+		case WM_CONTEXTMENU:
+		case WM_KILLFOCUS:
+			bAbort = TRUE;
+			break;
+
+		case WM_ENABLE:
+			bAbort = (pMsg->wParam == FALSE);
+			break;
+		}
+
+		if (bAbort)
+		{
 			SendDragMessage(WM_DD_DRAGABORT);
 			SetState(NONE);
 
 			return TRUE;
 		}
 	}
+
+	// not handled
 	return FALSE;
 }
 
@@ -152,7 +178,9 @@ BOOL CDragDropMgr::OnButtonDown(const MSG& msg)
 		m_ptOrg = pt;
 	}
 	else
+	{
 		m_ptOrg = GETPOINT(msg.lParam);
+	}
 	
 	m_hwndTracking = msg.hwnd;
 	SetState(CAPTURED);
@@ -478,8 +506,8 @@ void CDragDropText::OnDrawData(CDC& dc, CRect& rc, COLORREF& crMask)
 void CDragDropMgr::CancelDrag()
 {
     if (IsDragging())
-    {
         SendDragMessage(WM_DD_DRAGABORT);
-        SetState(NONE);
-    }
+
+	// Always
+	SetState(NONE);
 }
