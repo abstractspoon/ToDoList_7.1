@@ -29,6 +29,10 @@ static char THIS_FILE[] = __FILE__;
 #	define LVS_EX_LABELTIP		0x00004000
 #endif
 
+#ifndef TTM_ADJUSTRECT
+#	define TTM_ADJUSTRECT       (WM_USER + 31)
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef WM_THEMECHANGED
