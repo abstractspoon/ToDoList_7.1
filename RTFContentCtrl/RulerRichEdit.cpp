@@ -44,8 +44,35 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CFindReplaceDialogEx
 
+static const CLIPFORMAT CF_PREFERRED[] = 
+{ 
+	CF_HDROP,
+	(CLIPFORMAT)CBF_RTF,
+	(CLIPFORMAT)CBF_RETEXTOBJ, 
+	CF_BITMAP,
+
+#ifndef _UNICODE
+	CF_TEXT,
+#else
+	CF_UNICODETEXT,
+#endif
+	CF_METAFILEPICT,    
+	CF_SYLK,            
+	CF_DIF,             
+	CF_TIFF,            
+	CF_OEMTEXT,         
+	CF_DIB,             
+	CF_PALETTE,         
+	CF_PENDATA,         
+	CF_RIFF,            
+	CF_WAVE,            
+	CF_ENHMETAFILE
+};
+const long NUM_PREF = sizeof(CF_PREFERRED) / sizeof(CLIPFORMAT);
+
+/////////////////////////////////////////////////////////////////////////////
+// CFindReplaceDialogEx
 
 // for some reason (that I cannot divine) dialog keyboard handling 
 // is not working so we install a keyboard hook and handle
@@ -234,49 +261,7 @@ CLIPFORMAT CRulerRichEdit::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFO
 	if (CMSOutlookHelper::IsOutlookObject(lpDataOb))
 		return CMSOutlookHelper::CF_OUTLOOK;
 
-	CLIPFORMAT formats[] = 
-	{ 
-		CF_HDROP,
-		(CLIPFORMAT)CBF_RTF,
-		(CLIPFORMAT)CBF_RETEXTOBJ, 
-		CF_BITMAP,
-
-#ifndef _UNICODE
-		CF_TEXT,
-#else
-		CF_UNICODETEXT,
-#endif
-		CF_METAFILEPICT,    
-		CF_SYLK,            
-		CF_DIF,             
-		CF_TIFF,            
-		CF_OEMTEXT,         
-		CF_DIB,             
-		CF_PALETTE,         
-		CF_PENDATA,         
-		CF_RIFF,            
-		CF_WAVE,            
-		CF_ENHMETAFILE
-	};
-	
-	const long nNumFmts = sizeof(formats) / sizeof(CLIPFORMAT);
-	
-	COleDataObject dataobj;
-    dataobj.Attach(lpDataOb, FALSE);
-    
-	for (int nFmt = 0; nFmt < nNumFmts; nFmt++)
-	{
-		if (format && (format == formats[nFmt]))
-			return format;
-		
-		FORMATETC fmtEtc = { formats[nFmt], 0 };
-
-		if (dataobj.IsDataAvailable(formats[nFmt], &fmtEtc))
-			return formats[nFmt];
-	}
-	
-	// all else
-	return CUrlRichEditCtrl::GetAcceptableClipFormat(lpDataOb, format);
+	return CRichEditBaseCtrl::GetAcceptableClipFormat(lpDataOb, format, CF_PREFERRED, NUM_PREF);
 }
 
 UINT CRulerRichEdit::OnGetDlgCode() 
