@@ -1467,6 +1467,8 @@ BOOL CTaskCalendarCtrl::GetValidDragDate(const CPoint& ptCursor, COleDateTime& d
 	// dtDrag as TASKCALITEM::dtStart/dtEnd offset by the
 	// difference between the current drag pos and the
 	// initial drag pos
+	BOOL bEndOfDay = m_bDraggingEnd;
+
 	if (m_bDragging)
 	{
 		COleDateTime dtOrg;
@@ -1476,11 +1478,15 @@ BOOL CTaskCalendarCtrl::GetValidDragDate(const CPoint& ptCursor, COleDateTime& d
 		double dOffset = dtDrag.m_dt - dtOrg.m_dt;
 
 		if (m_tciPreDrag.IsStartDateSet())
+		{
 			dtDrag = m_tciPreDrag.GetAnyStartDate().m_dt + dOffset;
+			bEndOfDay = FALSE;
+		}
 		else
 		{
 			ASSERT(m_tciPreDrag.IsEndDateSet());
 			dtDrag = m_tciPreDrag.GetAnyEndDate().m_dt + dOffset;
+			bEndOfDay = TRUE;
 		}
 		
 		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEALL));
@@ -1490,15 +1496,15 @@ BOOL CTaskCalendarCtrl::GetValidDragDate(const CPoint& ptCursor, COleDateTime& d
 	switch (GetSnapMode())
 	{
 	case TCCSM_NEARESTHOUR:
-		dtDrag = CDateHelper::GetNearestHour(dtDrag, m_bDraggingEnd);
+		dtDrag = CDateHelper::GetNearestHour(dtDrag, bEndOfDay);
 		break;
 
 	case TCCSM_NEARESTDAY:
-		dtDrag = CDateHelper::GetNearestDay(dtDrag, m_bDraggingEnd);
+		dtDrag = CDateHelper::GetNearestDay(dtDrag, bEndOfDay);
 		break;
 
 	case TCCSM_NEARESTHALFDAY:
-		dtDrag = CDateHelper::GetNearestHalfDay(dtDrag, m_bDraggingEnd);
+		dtDrag = CDateHelper::GetNearestHalfDay(dtDrag, bEndOfDay);
 		break;
 
 	case TCCSM_FREE:
@@ -1792,6 +1798,7 @@ BOOL CTaskCalendarCtrl::ValidateDragPoint(CPoint& ptDrag) const
 	if (!IsDragging())
 		return FALSE;
 
+	// Validate against client rect
 	CRect rClient;
 	GetClientRect(rClient);
 
@@ -1967,6 +1974,9 @@ int CTaskCalendarCtrl::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 
 void CTaskCalendarCtrl::OnShowTooltip(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 {
+	if (IsDragging())
+		return;
+
 	DWORD dwTaskID = m_tooltip.GetToolInfo().uId;
 
 	if (dwTaskID == 0)
@@ -1979,8 +1989,13 @@ void CTaskCalendarCtrl::OnShowTooltip(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 
 	// Set the font first, bold for top level items
 	const TASKCALITEM* pTCI = GetTaskCalItem(dwTaskID);
-	ASSERT(pTCI);
-	
+
+	if (!pTCI)
+	{
+		ASSERT(0);
+		return;
+	}
+
 	m_tooltip.SetFont(m_fonts.GetFont(pTCI->bTopLevel ? GMFS_BOLD : 0));
 
 	// Calculate exact width required
