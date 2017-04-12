@@ -197,24 +197,33 @@ LRESULT CRulerRichEdit::OnDropFiles(WPARAM wp, LPARAM /*lp*/)
 	::DragFinish((HDROP)wp);
 	::CloseClipboard();
 
-	if (nNumFiles > 0)
+	switch (nNumFiles)
 	{
+	case -1: // error
+		AfxMessageBox(IDS_PASTE_ERROR, MB_OK | MB_ICONERROR);
+		break;
+
+	case 0:
+		break;
+
+	default:
+		// Only ever link to folders so no need to prompt
+		if (FileMisc::FolderExists(aFiles[0]))
+			return CRichEditHelper::PasteFiles(*this, aFiles, REP_ASFILEURL);
+
+		// else
 		if (!m_bLinkOptionIsDefault)
 		{
 			CCreateFileLinkDlg dialog(aFiles[0], m_nFileLinkOption, FALSE);
-
+			
 			if (dialog.DoModal() != IDOK)
 				return 0L;
-
+			
 			m_nFileLinkOption = dialog.GetLinkOption();
 			m_bLinkOptionIsDefault = dialog.GetMakeLinkOptionDefault();
 		}
-
+		
 		return CRichEditHelper::PasteFiles(*this, aFiles, m_nFileLinkOption);
-	}
-	else if (nNumFiles == -1) // error
-	{
-		AfxMessageBox(IDS_PASTE_ERROR, MB_OK | MB_ICONERROR);
 	}
 
 	// else
@@ -229,16 +238,14 @@ HRESULT CRulerRichEdit::GetDragDropEffect(BOOL fDrag, DWORD grfKeyState, LPDWORD
 		
 		if (bEnable)
 		{
-			BOOL bFileDrop = (!CMSOutlookHelper::IsOutlookObject(m_lpDragObject) &&
-								Misc::HasFlag(*pdwEffect, DROPEFFECT_LINK));
-			
-			if (bFileDrop)
+			CLIPFORMAT cf = GetAcceptableClipFormat(m_lpDragObject, 0);
+
+			if (cf == CF_HDROP)
 			{
-				DWORD dwEffect = DROPEFFECT_NONE;
+				// if SHIFT is down then show this as a copy because we are embedding
 				BOOL bShift = Misc::HasFlag(grfKeyState, MK_SHIFT);
 
-				// if SHIFT is down then show this as a copy because we are embedding
-				dwEffect = (DROPEFFECT_MOVE | (bShift ? DROPEFFECT_COPY : 0));
+				DWORD dwEffect = (DROPEFFECT_MOVE | (bShift ? DROPEFFECT_COPY : 0));
 				
 				TrackDragCursor();
 				
