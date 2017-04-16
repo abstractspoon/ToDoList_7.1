@@ -525,7 +525,7 @@ IUIExtensionWindow* CTabbedToDoCtrl::GetCreateExtensionWnd(FTC_VIEW nView)
 	
 	pExtWnd->SetUITheme(&m_theme);
 	pExtWnd->SetReadOnly(HasStyle(TDCS_READONLY) != FALSE);
-	
+
 	// update focus first because initializing views can take time
 	::SetFocus(hWnd);
 	
@@ -1339,7 +1339,7 @@ BOOL CTabbedToDoCtrl::ProcessUIExtensionMod(const IUITASKMOD& mod)
 
 	case IUI_OFFSETTASK:
 		if (GetSelectedCount() == 1)
-			return MoveSelectedTaskDates(CDateHelper::GetDate(mod.tValue), TRUE);
+			return ExtensionMoveTaskStartAndDueDates(GetSelectedTaskID(), CDateHelper::GetDate(mod.tValue));
 		break;
 		
 	// not supported
@@ -1352,6 +1352,40 @@ BOOL CTabbedToDoCtrl::ProcessUIExtensionMod(const IUITASKMOD& mod)
 	// all else
 	ASSERT(0);
 	return FALSE;
+}
+
+BOOL CTabbedToDoCtrl::ExtensionMoveTaskStartAndDueDates(DWORD dwTaskID, const COleDateTime& dtNewStart)
+{
+	if (IsReadOnly())
+	{
+		ASSERT(0);
+		return FALSE;
+	}
+
+	Flush();
+
+	IMPLEMENT_UNDO_EDIT(m_data);
+
+	POSITION pos = TSH().GetFirstItemPos();
+	DWORD dwModTaskID = 0;
+
+	TDC_SET nRes = m_data.MoveTaskStartAndDueDates(dwTaskID, dtNewStart);
+
+	if (nRes != SET_CHANGE)
+		return FALSE;
+
+	// else
+	COleDateTime dtDue = GetSelectedTaskDate(TDCD_DUE);
+
+	if (CDateHelper::IsDateSet(dtDue))
+		m_eRecurrence.SetDefaultDate(dtDue);
+
+	SetModified(TRUE, TDCA_STARTDATE, dwTaskID); 
+	SetModified(TRUE, TDCA_DUEDATE, dwTaskID); 
+
+	UpdateControls(FALSE); // don't update comments
+
+	return TRUE;
 }
 
 LRESULT CTabbedToDoCtrl::OnUIExtModifySelectedTask(WPARAM wParam, LPARAM lParam)
@@ -1367,10 +1401,10 @@ LRESULT CTabbedToDoCtrl::OnUIExtModifySelectedTask(WPARAM wParam, LPARAM lParam)
 
 	HandleUnsavedComments();
 
+	IMPLEMENT_UNDO_EDIT(m_data);
+
 	BOOL bDependChange = FALSE, bMoveTask = FALSE, bSuccess = TRUE;
 	
-	CUndoAction ua(m_data, TDCUAT_EDIT);
-
 	try
 	{
 		const IUITASKMOD* pMods = (const IUITASKMOD*)lParam;

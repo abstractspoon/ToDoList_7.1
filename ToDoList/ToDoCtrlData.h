@@ -29,17 +29,23 @@ typedef CMap<DWORD, DWORD, TODOITEM*, TODOITEM*&> CMapIDToTDI;
 //////////////////////////////////////////////////////////////////////
 
 // class to help start and end undo actions
-// only one can be active at one time
+// CToDoCtrlData only allows a single action to be active at any one time
 class CUndoAction
 {
 public:
-	CUndoAction(CToDoCtrlData& data, TDCUNDOACTIONTYPE nType = TDCUAT_EDIT, BOOL bExtendLastAction = FALSE);
+	CUndoAction(CToDoCtrlData& data, TDCUNDOACTIONTYPE nType, BOOL bExtendLastAction);
 	~CUndoAction();
 
 protected:
 	CToDoCtrlData& m_data;
 	BOOL m_bActive;
 };
+
+//////////////////////////////////////////////////////////////////////
+
+#define IMPLEMENT_UNDO(data, type)					CUndoAction ua(m_data, type, FALSE)
+#define IMPLEMENT_UNDO_EDIT(data)					CUndoAction ua(m_data, TDCUAT_EDIT, FALSE)
+#define IMPLEMENT_UNDO_EXTEND(data, type, extend)	CUndoAction ua(m_data, type, extend)
 
 //////////////////////////////////////////////////////////////////////
 
@@ -237,7 +243,7 @@ public:
 	TDC_SET ClearTaskColor(DWORD dwTaskID) { SetTaskColor(dwTaskID, CLR_NONE); }
 	TDC_SET OffsetTaskDate(DWORD dwTaskID, TDC_DATE nDate, int nAmount, TDC_UNITS nUnits, BOOL bAndSubtasks, BOOL bFitToRecurringScheme);
 	TDC_SET InitMissingTaskDate(DWORD dwTaskID, TDC_DATE nDate, const COleDateTime& date, BOOL bAndSubtasks);
-	TDC_SET MoveTaskDates(DWORD dwTaskID, const COleDateTime& dtNewStart);
+	TDC_SET MoveTaskStartAndDueDates(DWORD dwTaskID, const COleDateTime& dtNewStart);
 
 	BOOL TaskMatches(DWORD dwTaskID, const SEARCHPARAMS& params, SEARCHRESULT& result) const;
 	BOOL TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, const SEARCHPARAMS& params, SEARCHRESULT& result) const;
@@ -370,6 +376,7 @@ protected:
 	static double CalcDuration(const COleDateTime& dateStart, const COleDateTime& dateDue, TDC_UNITS nUnits);
 	static COleDateTime AddDuration(COleDateTime& dateStart, double dDuration, TDC_UNITS nUnits);
 	static BOOL IsEndOfDay(const COleDateTime& date);
+	static BOOL IsValidDateRange(const COleDateTime& dateStart, const COleDateTime& dateDue);
 
 };
 
