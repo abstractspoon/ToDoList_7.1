@@ -56,10 +56,6 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 Msimg32.lib msimg32.lib Winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /nodefaultlib:"libc" /pdbtype:sept
-# Begin Special Build Tool
-SOURCE="$(InputPath)"
-PostBuild_Cmds=mkdir ..\..\ToDoList_Plugins	mkdir ..\..\ToDoList_Plugins\Debug	copy unicode_debug\ToDoList.exe ..\..\todolist_Plugins\debug /y	copy unicode_debug\ToDoList.pdb ..\..\todolist_Plugins\debug /y
-# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "ToDoList - Win32 Unicode Release"
 
@@ -90,10 +86,6 @@ LINK32=link.exe
 # SUBTRACT BASE LINK32 /pdb:none /debug
 # ADD LINK32 /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /machine:I386 /nodefaultlib:"libc" /pdbtype:con /MAPINFO:LINES /MAPINFO:EXPORTS
 # SUBTRACT LINK32 /pdb:none /map /debug
-# Begin Special Build Tool
-SOURCE="$(InputPath)"
-PostBuild_Cmds=mkdir ..\..\ToDoList_Plugins	mkdir ..\..\ToDoList_Plugins\Release	copy unicode_release\ToDoList.exe ..\..\todolist_Plugins\release /y
-# End Special Build Tool
 
 !ENDIF 
 
