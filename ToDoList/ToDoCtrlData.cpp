@@ -1938,6 +1938,7 @@ TDC_SET CToDoCtrlData::MoveTaskStartAndDueDates(DWORD dwTaskID, const COleDateTi
 	TODOITEM* pTDI = NULL;
 	EDIT_GET_TDI(dwTaskID, pTDI);
 
+	// Sanity checks
 	if (!(pTDI->HasStart() && (pTDI->HasDue() || (pTDI->dTimeEstimate > 0.0))))
 	{
 		ASSERT(0);
@@ -1950,6 +1951,11 @@ TDC_SET CToDoCtrlData::MoveTaskStartAndDueDates(DWORD dwTaskID, const COleDateTi
 		return SET_NOCHANGE;
 	}
 
+	// Ignore tasks with dependencies where their dates 
+	// are automatically calculated
+	if (pTDI->aDependencies.GetSize() && HasStyle(TDCS_AUTOADJUSTDEPENDENCYDATES))
+		return SET_NOCHANGE;
+	
 	// Cache current time estimate before doing anything
 	double dDuration = pTDI->dTimeEstimate;
 	
@@ -1960,7 +1966,8 @@ TDC_SET CToDoCtrlData::MoveTaskStartAndDueDates(DWORD dwTaskID, const COleDateTi
 	COleDateTime dtStart(dtNewStart);
 	COleDateTime dtNewDue = AddDuration(dtStart, dDuration, pTDI->nTimeEstUnits);
 
-	TDC_SET nRes = SetTaskDate(dwTaskID, pTDI, TDCD_START, dtStart, TRUE);
+	// FALSE -> don't recalc time estimate until due date is set
+	TDC_SET nRes = SetTaskDate(dwTaskID, pTDI, TDCD_START, dtStart, FALSE);
 	ASSERT(nRes == SET_CHANGE);
 
 	if (nRes == SET_CHANGE)
@@ -2043,7 +2050,9 @@ TDC_SET CToDoCtrlData::SetTaskTimeEstimate(DWORD dwTaskID, double dTime, TDC_UNI
 			CalcMissingStartDateFromDue(pTDI);
 
 			COleDateTime dtNewDue = AddDuration(pTDI->dateStart, dTime, nUnits);
-			SetTaskDate(dwTaskID, pTDI, TDCD_DUE, dtNewDue, FALSE);
+
+			// FALSE = don't recalc time estimate
+			SetTaskDate(dwTaskID, pTDI, TDCD_DUE, dtNewDue, FALSE); 
 		}
 	}
 
