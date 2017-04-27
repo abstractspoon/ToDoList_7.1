@@ -112,10 +112,9 @@ void CToolTipCtrlEx::FilterToolTipMessage(MSG* pMsg)
 			//TRACE(_T("CToolTipCtrlEx::FilterToolTipMessage(%d -> %d)\n"), m_nLastHit, nHit);
 
 			// Delete the old tool
-			if (m_tiLast.cbSize)
+			if ((m_nLastHit != -1) && m_tiLast.cbSize)
 			{
  				Activate(FALSE);
- 				SendMessage(TTM_DELTOOL, 0, (LPARAM)&m_tiLast);
 			}
 			ASSERT(GetToolCount() == 0);
 
@@ -150,10 +149,6 @@ void CToolTipCtrlEx::FilterToolTipMessage(MSG* pMsg)
 			else
 			{
 				Activate(FALSE);
-				SendMessage(TTM_DELTOOL, 0, (LPARAM)&m_tiLast);
-
-				InitToolInfo(m_tiLast, FALSE);
-				m_nLastHit = -1;
 			}
 
 			CToolTipCtrl::RelayEvent(pMsg);
@@ -204,6 +199,19 @@ void CToolTipCtrlEx::FilterToolTipMessage(MSG* pMsg)
 		{
 			Activate(FALSE);
 		}
+	}
+}
+
+void CToolTipCtrlEx::Activate(BOOL bActivate)
+{
+	CToolTipCtrl::Activate(bActivate);
+
+	if (!bActivate)
+	{
+		SendMessage(TTM_DELTOOL, 0, (LPARAM)&m_tiLast);
+		
+		InitToolInfo(m_tiLast, FALSE);
+		m_nLastHit = -1;
 	}
 }
 
