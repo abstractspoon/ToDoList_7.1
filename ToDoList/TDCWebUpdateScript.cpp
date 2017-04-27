@@ -73,13 +73,10 @@ BOOL CTDCWebUpdateScript::CheckForUpdates()
 
 BOOL CTDCWebUpdateScript::CheckForUpdates(BOOL bPreRelease)
 {
-	// Only update pre-release with pre-release and
-	// stable-release with stable-release
+	// NEVER update stable-release with pre-release
 	CString sAppVer(FileMisc::GetAppVersion());
-	BOOL bAppIsPreRelease = IsPreRelease(sAppVer);
 
-	if ((bPreRelease && !bAppIsPreRelease) || 
-		(!bPreRelease && bAppIsPreRelease))
+	if (bPreRelease && !IsPreRelease(sAppVer))
 	{
 		return FALSE;
 	}
