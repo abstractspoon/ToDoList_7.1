@@ -211,21 +211,8 @@ void CToolTipCtrlEx::InitToolInfo(TOOLINFO& ti, BOOL bInitSize)
 		ti.cbSize = TOOLINFO_SIZE;
 }
 
-const TOOLINFO& CToolTipCtrlEx::GetToolInfo() const 
+const TOOLINFO& CToolTipCtrlEx::GetLastHitToolInfo() const 
 { 
-#ifdef _DEBUG
-// 	TOOLINFO ti;
-// 	InitToolInfo(ti, TRUE);
-// 
-// 	GetCurrentTool(&ti);
-// 
-// 	ASSERT(ti.cbSize == m_tiLast.cbSize);
-// 	ASSERT(ti.uId    == m_tiLast.uId);
-// 	ASSERT(ti.uFlags == m_tiLast.uFlags);
-// 	ASSERT(ti.hwnd   == m_tiLast.hwnd);
-// 	ASSERT(ti.lParam == m_tiLast.lParam);
-#endif
-
 	return m_tiLast; 
 }
 
