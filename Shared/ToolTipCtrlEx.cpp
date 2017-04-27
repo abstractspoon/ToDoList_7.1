@@ -78,11 +78,15 @@ void CToolTipCtrlEx::FilterToolTipMessage(MSG* pMsg)
 	// Adapted from CWnd::FilterToolTipMessage()
 	UINT message = pMsg->message;
 
-	if ((message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE ||
-		message == WM_LBUTTONUP || message == WM_RBUTTONUP ||
-		message == WM_MBUTTONUP) &&
-		(GetKeyState(VK_LBUTTON) >= 0 && GetKeyState(VK_RBUTTON) >= 0 &&
-		GetKeyState(VK_MBUTTON) >= 0))
+	if (message == WM_MOUSELEAVE)
+	{
+		Activate(FALSE);
+	}
+	else if ((message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE ||
+				message == WM_LBUTTONUP || message == WM_RBUTTONUP ||
+				message == WM_MBUTTONUP) &&
+				(GetKeyState(VK_LBUTTON) >= 0 && GetKeyState(VK_RBUTTON) >= 0 &&
+				GetKeyState(VK_MBUTTON) >= 0))
 	{
 		// Check it's within our owner's rect
 		CWnd* pOwner = GetOwner();
