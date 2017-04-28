@@ -550,6 +550,7 @@ protected:
 	void OnTimerTimeTracking();
 	void OnTimerTimeTrackReminder();
 	void OnTimerAutoMinimize();
+
 	void OnChangeFilter(FTDCFILTER& filter, const CString& sCustom, DWORD dwCustomFlags);
 	void OnEditUndoRedo(BOOL bUndo);
 	void OnUpdateEditUndoRedo(CCmdUI* pCmdUI, BOOL bUndo);

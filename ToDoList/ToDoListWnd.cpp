@@ -2019,7 +2019,6 @@ void CToDoListWnd::HandleLoadTasklistError(TDC_FILE& nErr, LPCTSTR szTaskList)
 		FileMisc::LogText(_T("Loading of the file '%s' failed with the error code: %d"), szTaskList, nErr);
 		MessageBox(sMessage, CEnString(IDS_OPENTASKLIST_TITLE), MB_OK);
 	}
-	
 }
 
 void CToDoListWnd::SaveSettings()
@@ -2737,9 +2736,7 @@ BOOL CToDoListWnd::CreateNewTaskList(BOOL bAddDefTask)
 
 void CToDoListWnd::OnUpdateDeletetask(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	
-	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.HasSelection());	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());
 }
 
 void CToDoListWnd::OnUpdateEditTasktext(CCmdUI* pCmdUI) 
@@ -2747,15 +2744,12 @@ void CToDoListWnd::OnUpdateEditTasktext(CCmdUI* pCmdUI)
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 	int nSelCount = tdc.GetSelectedCount();
 	
-	pCmdUI->Enable(nSelCount == 1 && !tdc.IsReadOnly());	
+	pCmdUI->Enable(tdc.CanEditSelectedTask() && (nSelCount == 1));	
 }
 
 void CToDoListWnd::OnUpdateTaskcolor(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	
-	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.HasSelection() && 
-		Prefs().GetTextColorOption() == COLOROPT_DEFAULT);	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask() && (Prefs().GetTextColorOption() == COLOROPT_DEFAULT));	
 }
 
 void CToDoListWnd::OnUpdateEditTaskdone(CCmdUI* pCmdUI) 
@@ -2766,14 +2760,14 @@ void CToDoListWnd::OnUpdateEditTaskdone(CCmdUI* pCmdUI)
 	if (nSelCount == 1)
 		pCmdUI->SetCheck(tdc.IsSelectedTaskDone() ? 1 : 0);
 	
-	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.HasSelection());	
+	pCmdUI->Enable(tdc.CanEditSelectedTask());	
 }
 
 void CToDoListWnd::OnUpdateDeletealltasks(CCmdUI* pCmdUI) 
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 	
-	pCmdUI->Enable(!tdc.IsReadOnly() && GetToDoCtrl().GetTaskCount());	
+	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.GetTaskCount());	
 }
 
 void CToDoListWnd::OnUpdateSave(CCmdUI* pCmdUI) 
@@ -3050,9 +3044,9 @@ void CToDoListWnd::OnUpdateEditCleartaskcolor(CCmdUI* pCmdUI)
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 	
-	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.HasSelection() && 
-					Prefs().GetTextColorOption() == COLOROPT_DEFAULT &&
-					tdc.GetSelectedTaskColor() != 0);	
+	pCmdUI->Enable(tdc.CanEditSelectedTask() && 
+					(Prefs().GetTextColorOption() == COLOROPT_DEFAULT) &&
+					(tdc.GetSelectedTaskColor() != 0));	
 }
 
 void CToDoListWnd::OnEditTaskdone() 
@@ -5516,10 +5510,7 @@ void CToDoListWnd::OnEditCut()
 
 void CToDoListWnd::OnUpdateEditCut(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
-	
-	pCmdUI->Enable(!tdc.IsReadOnly() && nSelCount);	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());	
 }
 
 void CToDoListWnd::OnEditPasteSub() 
@@ -7407,14 +7398,12 @@ CFilteredToDoCtrl* CToDoListWnd::NewToDoCtrl(BOOL bVisible, BOOL bEnabled)
 
 void CToDoListWnd::OnTabCtrlCloseTab(NMHDR* pNMHDR, LRESULT* pResult) 
 {
-	*pResult = 0;
+	NMTABCTRLEX* pNMTCE = (NMTABCTRLEX*)pNMHDR;
 
 	// don't close the tab if only one is open and it is pristine
 	if ((GetTDCCount() == 1) && m_mgrToDoCtrls.IsPristine(0))
 		return;
 
-	NMTABCTRLEX* pNMTCE = (NMTABCTRLEX*)pNMHDR;
-	
 	// check valid tab
 	if (pNMTCE->iTab >= 0)
 	{
@@ -7426,6 +7415,7 @@ void CToDoListWnd::OnTabCtrlCloseTab(NMHDR* pNMHDR, LRESULT* pResult)
 		if (!GetTDCCount())
 			CreateNewTaskList(FALSE);
 	}
+
 	*pResult = 0;
 }
 
@@ -8441,9 +8431,8 @@ void CToDoListWnd::OnSetPriority(UINT nCmdID)
 void CToDoListWnd::OnUpdateSetPriority(CCmdUI* pCmdUI) 
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
 	
-	pCmdUI->Enable(!tdc.IsReadOnly() && nSelCount);
+	pCmdUI->Enable(tdc.CanEditSelectedTask());
 	
 	int nPriority = pCmdUI->m_nID - ID_EDIT_SETPRIORITY0;
 	
@@ -8482,7 +8471,7 @@ void CToDoListWnd::OnUpdateEditAddFileLink(CCmdUI* pCmdUI)
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 	
-	pCmdUI->Enable(!tdc.IsReadOnly() && (tdc.GetSelectedCount() == 1));
+	pCmdUI->Enable(tdc.CanEditSelectedTask() && (tdc.GetSelectedCount() == 1));
 }
 
 void CToDoListWnd::OnEditOpenfileref(UINT nCmdID) 
@@ -9830,6 +9819,12 @@ LRESULT CToDoListWnd::OnFindSelectAll(WPARAM /*wp*/, LPARAM /*lp*/)
 	if (!m_findDlg.GetResultCount())
 		return 0;
 	
+	// if find dialog is floating then hide it
+	if (!m_findDlg.IsDocked())
+		m_findDlg.Show(FALSE);
+	
+	CFilteredToDoCtrl& tdc = GetToDoCtrl();
+	CHoldRedraw hr(tdc);
 	CWaitCursor cursor;
 	
 	for (int nTDC = 0; nTDC < GetTDCCount(); nTDC++)
@@ -9841,32 +9836,28 @@ LRESULT CToDoListWnd::OnFindSelectAll(WPARAM /*wp*/, LPARAM /*lp*/)
 			tdc.SelectTasks(aTaskIDs);
 	}
 
-	// if find dialog is floating then hide it
-	if (!m_findDlg.IsDocked())
-	{
-		m_findDlg.Show(FALSE);
-		GetToDoCtrl().SetFocusToTasks();
-	}
-	
+	tdc.SetFocusToTasks();
+
 	return 0;
 }
 
 LRESULT CToDoListWnd::OnFindApplyAsFilter(WPARAM /*wp*/, LPARAM lp)
 {
+	// if find dialog is floating then hide it
+	if (!m_findDlg.IsDocked())
+		m_findDlg.Show(FALSE);
+	
 	FTDCCUSTOMFILTER filter((LPCTSTR)lp);
 	m_findDlg.GetSearchParams(filter);
 
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 	tdc.SetCustomFilter(filter);
-	tdc.SetFocusToTasks();
 	
 	RefreshFilterBarCustomFilters();
 	m_filterBar.RefreshFilterControls(tdc);
 
-	// if find dialog is floating then hide it
-	if (!m_findDlg.IsDocked())
-		m_findDlg.Show(FALSE);
-	
+	tdc.SetFocusToTasks();
+
 	return 0;
 }
 
@@ -10054,8 +10045,7 @@ void CToDoListWnd::OnSpellchecktitle()
 
 void CToDoListWnd::OnUpdateSpellchecktitle(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	pCmdUI->Enable(!tdc.GetSelectedTaskTitle().IsEmpty());
+	pCmdUI->Enable(!GetToDoCtrl().GetSelectedTaskTitle().IsEmpty());
 }
 
 void CToDoListWnd::OnFileEncrypt() 
@@ -10561,10 +10551,7 @@ void CToDoListWnd::OnEditInctaskpercentdone()
 
 void CToDoListWnd::OnUpdateEditInctaskpercentdone(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
-	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly());	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());	
 }
 
 void CToDoListWnd::OnEditDectaskpercentdone() 
@@ -10574,10 +10561,7 @@ void CToDoListWnd::OnEditDectaskpercentdone()
 
 void CToDoListWnd::OnUpdateEditDectaskpercentdone(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
-	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly());	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());	
 }
 
 void CToDoListWnd::OnEditDectaskpriority() 
@@ -10587,10 +10571,7 @@ void CToDoListWnd::OnEditDectaskpriority()
 
 void CToDoListWnd::OnUpdateEditDectaskpriority(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
-	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly());	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());	
 }
 
 void CToDoListWnd::OnEditInctaskpriority() 
@@ -10600,10 +10581,7 @@ void CToDoListWnd::OnEditInctaskpriority()
 
 void CToDoListWnd::OnUpdateEditInctaskpriority(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
-	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly());	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());	
 }
 
 void CToDoListWnd::OnEditFlagtask() 
@@ -10616,9 +10594,8 @@ void CToDoListWnd::OnEditFlagtask()
 void CToDoListWnd::OnUpdateEditFlagtask(CCmdUI* pCmdUI) 
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
 	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly());	
+	pCmdUI->Enable(tdc.CanEditSelectedTask());	
 	pCmdUI->SetCheck(tdc.IsSelectedTaskFlagged() ? 1 : 0);
 }
 
@@ -10643,7 +10620,7 @@ void CToDoListWnd::OnUpdateEditRecurrence(CCmdUI* pCmdUI)
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
 
-	pCmdUI->Enable(!tdc.IsReadOnly() && tdc.GetSelectedCount() && !tdc.IsSelectedTaskDone());	
+	pCmdUI->Enable(tdc.CanEditSelectedTask() && !tdc.IsSelectedTaskDone());	
 }
 
 void CToDoListWnd::OnFileOpenarchive() 
@@ -10956,10 +10933,7 @@ void CToDoListWnd::OnEditOffsetdates()
 
 void CToDoListWnd::OnUpdateEditOffsetdates(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
-	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly());	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());	
 }
 
 void CToDoListWnd::OnPrintpreview() 
@@ -11934,10 +11908,7 @@ void CToDoListWnd::OnEditSettaskicon()
 
 void CToDoListWnd::OnUpdateEditSettaskicon(CCmdUI* pCmdUI) 
 {
-	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
-	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly());	
+	pCmdUI->Enable(GetToDoCtrl().CanEditSelectedTask());	
 }
 
 LRESULT CToDoListWnd::OnToDoCtrlGetTaskReminder(WPARAM wParam, LPARAM lParam)
@@ -12074,9 +12045,8 @@ void CToDoListWnd::OnEditCleartaskicon()
 void CToDoListWnd::OnUpdateEditCleartaskicon(CCmdUI* pCmdUI) 
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	int nSelCount = tdc.GetSelectedCount();
 	
-	pCmdUI->Enable(nSelCount && !tdc.IsReadOnly() && tdc.SelectedTasksHaveIcons());	
+	pCmdUI->Enable(tdc.CanEditSelectedTask() && tdc.SelectedTasksHaveIcons());	
 }
 
 void CToDoListWnd::OnSortMulti() 

@@ -316,6 +316,7 @@ void CKanbanWnd::LoadPreferences(const IPreferences* pPrefs, LPCTSTR szKey, bool
 				m_nTrackedAttrib = IUI_STATUS;
 			break;
 		}
+
 		m_cbAttributes.ShowFixedColumns(m_dlgPrefs.HasFixedColumns());
 		UpdateData(FALSE);
 

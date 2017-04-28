@@ -5068,34 +5068,34 @@ BOOL CToDoCtrl::SplitSelectedTask(int nNumSubtasks)
 		
 		for (int nSubtask = 0; nSubtask < nNumSubtasks; nSubtask++)
 		{
-			TODOITEM* tdiSub = m_data.NewTask(*pTDI); // copy parent
+			TODOITEM* pTDISub = m_data.NewTask(*pTDI); // copy parent
 			nNewTaskCount++;
 			
 			// allocate time slice and dates
-			tdiSub->dTimeEstimate = dSubEst;
+			pTDISub->dTimeEstimate = dSubEst;
 			
 			if (dSubTime)
 			{
-				tdiSub->dateStart += (nSubtask * dSubTime);
-				tdiSub->dateDue = tdiSub->dateStart + COleDateTime(dSubTime);
+				pTDISub->dateStart += (nSubtask * dSubTime);
+				pTDISub->dateDue = pTDISub->dateStart + COleDateTime(dSubTime);
 
 				// clear due time if parent didn't have any
 				if (!bHasDueTime)
-					tdiSub->dateDue = CDateHelper::GetDateOnly(tdiSub->dateDue);
+					pTDISub->dateDue = CDateHelper::GetDateOnly(pTDISub->dateDue);
 			}
 			else if (nSubtask) // not the first
 			{
-				tdiSub->ClearStart();
-				tdiSub->ClearDue();
+				pTDISub->ClearStart();
+				pTDISub->ClearDue();
 			}
 
 			// clear time spent from all but first task
 			if (nSubtask)
-				tdiSub->dTimeSpent = 0;
+				pTDISub->dTimeSpent = 0;
 
 			// map it
 			DWORD dwChildID = m_dwNextUniqueID++;
-			m_data.AddTask(dwChildID, tdiSub, dwTaskID, dwPrevSiblingID);
+			m_data.AddTask(dwChildID, pTDISub, dwTaskID, dwPrevSiblingID);
 			
 			// create tree item
 			HTREEITEM htiSub = m_taskTree.InsertItem(dwChildID, hti, NULL);
