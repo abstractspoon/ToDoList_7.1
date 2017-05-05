@@ -7,6 +7,7 @@
 #include "imageprocessors.h"
 #include "osversion.h"
 #include "graphicsmisc.h"
+#include "themed.h"
 
 #include <afxpriv.h>
 
@@ -243,6 +244,10 @@ void CEnToolBar::RefreshDisabledImageList(CEnBitmapEx* pBitmap, COLORREF crMask)
 void CEnToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
     *pResult = CDRF_DODEFAULT;
+
+	if (!CThemed::AreControlsThemed())
+		return;
+
     LPNMTBCUSTOMDRAW lpNMCustomDraw = ( LPNMTBCUSTOMDRAW )pNMHDR;
     
     switch ( lpNMCustomDraw->nmcd.dwDrawStage )
