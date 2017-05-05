@@ -402,17 +402,32 @@ BOOL CGanttItemMap::RemoveKey(DWORD dwKey)
 	return FALSE;
 }
 
-BOOL CGanttItemMap::HasTask(DWORD dwKey) const
+BOOL CGanttItemMap::HasItem(DWORD dwKey) const
+{
+	return (GetItem(dwKey) != NULL);
+}
+
+GANTTITEM* CGanttItemMap::GetItem(DWORD dwKey) const
 {
 	GANTTITEM* pGI = NULL;
 	
 	if (Lookup(dwKey, pGI))
-	{
 		ASSERT(pGI);
+	
+	return pGI;
+}
+
+BOOL CGanttItemMap::RestoreItem(const GANTTITEM& giPrev)
+{
+	GANTTITEM* pGI = NULL;
+
+	if (Lookup(giPrev.dwTaskID, pGI) && pGI)
+	{
+		*pGI = giPrev;
 		return TRUE;
 	}
-	
-	// else
+
+	ASSERT(0);
 	return FALSE;
 }
 
@@ -520,7 +535,7 @@ BOOL CGanttDisplayMap::RemoveKey(DWORD dwKey)
 	return FALSE;
 }
 
-BOOL CGanttDisplayMap::HasTask(DWORD dwKey) const
+BOOL CGanttDisplayMap::HasItem(DWORD dwKey) const
 {
 	GANTTDISPLAY* pGD = NULL;
 	
@@ -532,6 +547,30 @@ BOOL CGanttDisplayMap::HasTask(DWORD dwKey) const
 
 	// else
 	return FALSE;
+}
+
+GANTTDISPLAY* CGanttDisplayMap::GetAddItem(DWORD dwKey)
+{
+	GANTTDISPLAY* pGD = GetItem(dwKey);
+
+	if (!pGD)
+	{
+		pGD = new GANTTDISPLAY;
+		SetAt(dwKey, pGD);
+	}
+
+	ASSERT(pGD);
+	return pGD;
+}
+
+GANTTDISPLAY* CGanttDisplayMap::GetItem(DWORD dwKey) const
+{
+	GANTTDISPLAY* pGD = NULL;
+	
+	if (Lookup(dwKey, pGD))
+		ASSERT(pGD);
+
+	return pGD;
 }
 
 //////////////////////////////////////////////////////////////////////

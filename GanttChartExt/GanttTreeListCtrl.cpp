@@ -645,7 +645,7 @@ BOOL CGanttTreeListCtrl::UpdateTask(const ITaskList15* pTasks, HTASKITEM hTask,
 	m_dwMaxTaskID = max(m_dwMaxTaskID, dwTaskID);
 
 	// This can be a new task
-	if (!m_data.HasTask(dwTaskID))
+	if (!m_data.HasItem(dwTaskID))
 	{
 		ASSERT(nUpdate == IUI_NEW);
 
@@ -655,7 +655,7 @@ BOOL CGanttTreeListCtrl::UpdateTask(const ITaskList15* pTasks, HTASKITEM hTask,
 
 		if (dwParentID)
 		{
-			if (!m_data.HasTask(dwParentID))
+			if (!m_data.HasItem(dwParentID))
 			{
 				ASSERT(0);
 				return FALSE;
@@ -840,13 +840,13 @@ void CGanttTreeListCtrl::RemoveDeletedTasks(HTREEITEM hti, const ITaskList15* pT
 
 GANTTITEM* CGanttTreeListCtrl::GetGanttItem(DWORD dwTaskID, BOOL bCopyRefID) const
 {
-	GANTTITEM* pGI = NULL;
+	GANTTITEM* pGI = m_data.GetItem(dwTaskID);
+	ASSERT(pGI);
 
-	if (dwTaskID && m_data.Lookup(dwTaskID, pGI))
+	if (pGI)
 	{
-		ASSERT(pGI);
-
-		// handle reference tasks
+		// For references we use the 'real' task but with the 
+		// original reference reference ID copied over
 		DWORD dwRefID = pGI->dwRefID;
 
 		if (dwRefID && (dwRefID != dwTaskID) && m_data.Lookup(dwRefID, pGI))
@@ -867,18 +867,23 @@ GANTTITEM* CGanttTreeListCtrl::GetGanttItem(DWORD dwTaskID, BOOL bCopyRefID) con
 	return pGI;
 }
 
-GANTTDISPLAY* CGanttTreeListCtrl::GetGanttDisplay(DWORD dwTaskID)
+BOOL CGanttTreeListCtrl::RestoreGanttItem(const GANTTITEM& giPrev)
 {
-	GANTTDISPLAY* pGD = NULL;
-
-	if (!m_display.Lookup(dwTaskID, pGD))
+	if (m_data.RestoreItem(giPrev))
 	{
-		pGD = new GANTTDISPLAY;
-		m_display[dwTaskID] = pGD;
+		m_display.RemoveKey(giPrev.dwTaskID); // recalc start/end
+		RedrawList();
+	
+		return TRUE;
 	}
 
-	ASSERT(pGD);
-	return pGD;
+	// else
+	return FALSE;
+}
+
+GANTTDISPLAY* CGanttTreeListCtrl::GetGanttDisplay(DWORD dwTaskID)
+{
+	return m_display.GetAddItem(dwTaskID);
 }
 
 void CGanttTreeListCtrl::RebuildTree(const ITaskList15* pTasks)
@@ -997,7 +1002,7 @@ void CGanttTreeListCtrl::BuildTreeItem(const ITaskList15* pTasks, HTASKITEM hTas
 	}
 	
 	DWORD dwTaskID = pTasks->GetTaskID(hTask);
-	ASSERT(!m_data.HasTask(dwTaskID));
+	ASSERT(!m_data.HasItem(dwTaskID));
 
 	m_data[dwTaskID] = pGI;
 	
@@ -3608,11 +3613,11 @@ BOOL CGanttTreeListCtrl::CalcDependencyEndPos(int nItem, GANTTDEPENDENCY& depend
 	DWORD dwTaskID = GetTaskID(nItem);
 	ASSERT(dwTaskID);
 	
-	GANTTDISPLAY* pGD = NULL;
+	GANTTDISPLAY* pGD = m_display.GetItem(dwTaskID);
 	
-	if (!m_display.Lookup(dwTaskID, pGD))
+	if (!pGD)
 	{
-		//ASSERT(0);
+		// Just means it's out of view and hasn't been drawn yet
 		return FALSE;
 	}
 
@@ -5456,13 +5461,7 @@ BOOL CGanttTreeListCtrl::EndDragging(const CPoint& ptCursor)
 		if (DragDatesDiffer(*pGI, m_giPreDrag))
 		{
 			if (!NotifyParentDateChange(nDragWhat))
-			{
-				GANTTITEM* pGI = GetGanttItem(dwTaskID);
-				ASSERT(pGI);
-				
-				(*pGI) = m_giPreDrag;
-				RedrawList();
-			}
+				RestoreGanttItem(m_giPreDrag);
 
 			NotifyParentDragChange();
 		}

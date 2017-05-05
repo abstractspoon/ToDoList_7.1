@@ -267,6 +267,7 @@ protected:
 
 	GANTTITEM* GetGanttItem(DWORD dwTaskID, BOOL bCopyRefID = TRUE) const;
 	GANTTDISPLAY* GetGanttDisplay(DWORD dwTaskID);
+	BOOL RestoreGanttItem(const GANTTITEM& giPrev);
 
 	HTREEITEM TreeHitTestItem(const CPoint& point, BOOL bScreen) const;
 	DWORD TreeHitTestTask(const CPoint& point, BOOL bScreen) const;
