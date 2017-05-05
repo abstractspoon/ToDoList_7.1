@@ -2194,7 +2194,6 @@ LRESULT CToDoListWnd::OnPostOnCreate(WPARAM /*wp*/, LPARAM /*lp*/)
 	if (userPrefs.GetUseStickies(sStickiesPath))
 		VERIFY(m_reminders.UseStickies(TRUE, sStickiesPath));
 	
-
 	// add outstanding translated items to dictionary
 	if (CLocalizer::GetTranslationOption() == ITTTO_ADD2DICTIONARY)
 	{
@@ -2240,8 +2239,9 @@ LRESULT CToDoListWnd::OnPostOnCreate(WPARAM /*wp*/, LPARAM /*lp*/)
 		//	TODO
 	}
 
-	// cache empty flag for later
+	// cache flags for later
 	BOOL bStartupEmpty = m_startupOptions.HasFlag(TLD_STARTEMPTY);
+	BOOL bLogModules = m_startupOptions.HasFlag(TLD_LOG_MODULES);
 
 	// what to (re)load?
 	BOOL bReloadTasklists = (!bStartupEmpty && userPrefs.GetReloadTasklists());
@@ -2391,7 +2391,8 @@ LRESULT CToDoListWnd::OnPostOnCreate(WPARAM /*wp*/, LPARAM /*lp*/)
 	}
 
 	// log the app and its dlls for debugging
-	FileMisc::LogAppModuleState(FBM_SORTBY_FILENAME);
+	if (bLogModules)
+		FileMisc::LogAppModuleState(FBM_SORTBY_FILENAME);
 
 	return 0L;
 }
