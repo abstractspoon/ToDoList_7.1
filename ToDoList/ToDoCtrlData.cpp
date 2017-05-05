@@ -487,11 +487,9 @@ int CToDoCtrlData::GetTaskTags(DWORD dwTaskID, CStringArray& aTags) const
 
 CString CToDoCtrlData::FormatTaskPosition(DWORD dwTaskID) const
 {
-	const TODOITEM* pTDI = NULL;
-	const TODOSTRUCTURE* pTDS = NULL;
-	GET_TDI_TDS(dwTaskID, pTDI, pTDS, EMPTY_STR);
+	const TODOSTRUCTURE* pTDS = LocateTask(dwTaskID);
 	
-	return FormatTaskPosition(pTDI, pTDS);
+	return FormatTaskPosition(pTDS);
 }
 
 CString CToDoCtrlData::FormatTaskPath(DWORD dwTaskID, int nMaxLen) const
@@ -2858,34 +2856,29 @@ double CToDoCtrlData::CalcTaskSubtaskCompletion(const TODOITEM* pTDI, const TODO
 	return ((double)nSubtasksDone / (double)nSubtasksCount);
 }
 
-CString CToDoCtrlData::FormatTaskPosition(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS) const
+CString CToDoCtrlData::FormatTaskPosition(const TODOSTRUCTURE* pTDS) const
 {
-	ASSERT (pTDI && pTDS && pTDS->GetParentTask());
+	ASSERT (pTDS && pTDS->GetParentTask());
 	
-	if (!pTDI || !pTDS)
+	if (!pTDS)
 		return EMPTY_STR;
-	
+
 	const TODOSTRUCTURE* pTDSParent = pTDS->GetParentTask();
 
 	if (!pTDSParent)
 		return EMPTY_STR;
 
 	CString sPosition;
-	
+	int nPos = pTDS->GetPosition();
+
 	if (pTDSParent->IsRoot())
 	{
-		sPosition = Misc::Format(pTDS->GetPosition() + 1);
+		sPosition = Misc::Format(nPos + 1); // one-based
 	}
 	else
 	{
-		TODOITEM* pTDIParent = GetTask(pTDSParent);
-		ASSERT (pTDIParent);
-		
-		if (!pTDIParent)
-			return EMPTY_STR;
-		
-		CString sParentPos = FormatTaskPosition(pTDIParent, pTDSParent);
-		sPosition.Format(_T("%s.%d"), sParentPos, pTDS->GetPosition() + 1);
+		CString sParentPos = FormatTaskPosition(pTDSParent);
+		sPosition.Format(_T("%s.%d"), sParentPos, (nPos + 1));
 	}
 
 	return sPosition;
@@ -4120,7 +4113,7 @@ int CToDoCtrlData::CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, TDC_COLUMN nSo
 		switch (nSortBy)
 		{
 		case TDCC_POSITION:
-			nCompare = Compare(FormatTaskPosition(pTDI1, pTDS1), FormatTaskPosition(pTDI2, pTDS2));
+			nCompare = Compare(FormatTaskPosition(pTDS1), FormatTaskPosition(pTDS2));
 			break;
 			
 		case TDCC_PATH:
@@ -4896,7 +4889,7 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 			if (bMatch)
 			{
 				// replace the default 'int' with full position path
-				Misc::ReplaceLastT(resTask.aMatched, FormatTaskPosition(pTDI, pTDS));
+				Misc::ReplaceLastT(resTask.aMatched, FormatTaskPosition(pTDS));
 			}
 			break;
 			

@@ -9360,7 +9360,7 @@ BOOL CToDoCtrl::SetTaskAttributes(const TODOITEM* pTDI, const TODOSTRUCTURE* pTD
 		if (filter.WantAttribute(TDCA_POSITION))
 		{
 			tasks.SetTaskPosition(hTask, pTDS->GetPosition());
-			tasks.SetTaskPosition(hTask, m_data.FormatTaskPosition(pTDI, pTDS));
+			tasks.SetTaskPosition(hTask, m_data.FormatTaskPosition(pTDS));
 		}
 		
 		if (pTDI->bFlagged && filter.WantAttribute(TDCA_FLAG))
