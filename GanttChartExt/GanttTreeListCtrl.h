@@ -262,6 +262,7 @@ protected:
 	void ValidateMonthDisplay(GTLC_MONTH_DISPLAY& nDisplay, int& nWidth) const;
 	BOOL CanSetMonthDisplay(GTLC_MONTH_DISPLAY nDisplay, int nWidth) const;
 	void RecalcDateRange();
+	void IncrementItemPositions(HTREEITEM htiParent, int nFromPos);
 
 	inline BOOL HasGridlines() const { return (m_crGridLine != CLR_NONE); }
 

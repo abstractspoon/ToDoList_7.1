@@ -468,6 +468,8 @@ void CGanttTreeListCtrl::UpdateTasks(const ITaskList* pTasks, IUI_UPDATETYPE nUp
 			else
 				ScrollToToday();
 
+			// Note: Tasks should arrive 'unsorted' so we only need to
+			// resort if an attribute is set
 			bResort = (m_nSortBy != GTLCC_NONE);
 		}
 		break;
@@ -498,7 +500,10 @@ void CGanttTreeListCtrl::UpdateTasks(const ITaskList* pTasks, IUI_UPDATETYPE nUp
 					UpdateListColumns();
 				}
 
-				bResort = ((m_nSortBy != GTLCC_NONE) && attrib.HasKey(MapColumnToAttrib(m_nSortBy)));
+				if (nUpdate == IUI_NEW)
+					bResort = TRUE;
+				else
+					bResort = ((m_nSortBy != GTLCC_NONE) && attrib.HasKey(MapColumnToAttrib(m_nSortBy)));
 			}
 		}
 		break;
@@ -607,6 +612,7 @@ BOOL CGanttTreeListCtrl::WantSortUpdate(IUI_ATTRIBUTE nAttrib)
 	case IUI_STARTDATE:
 	case IUI_ALLOCTO:
 	case IUI_PERCENT:
+	case IUI_POSITION:
 	case IUI_NONE:
 		return TRUE;
 	}
@@ -670,9 +676,15 @@ BOOL CGanttTreeListCtrl::UpdateTask(const ITaskList15* pTasks, HTASKITEM hTask,
 			}
 		}
 
-		CTreeCtrl* pTree = (CTreeCtrl*)CWnd::FromHandle(m_hwndTree);
+		// Before anything else we increment the position of 
+		// any tasks having the same position of this new task 
+		// or greater within the parent
+		int nPos = pTasks->GetTaskPosition(hTask);
+		IncrementItemPositions(htiParent, nPos);
 
+		CTreeCtrl* pTree = (CTreeCtrl*)CWnd::FromHandle(m_hwndTree);
 		BuildTreeItem(pTasks, hTask, *pTree, htiParent, FALSE);
+
 		return TRUE;
 	}
 	
@@ -966,6 +978,9 @@ void CGanttTreeListCtrl::BuildTreeItem(const ITaskList15* pTasks, HTASKITEM hTas
 	// Only save data for non-references
 	pGI->dwRefID = pTasks->GetTaskReferenceID(hTask);
 
+	// Except for position
+	pGI->nPosition = pTasks->GetTaskPosition(hTask);
+
 	if (pGI->dwRefID == 0)
 	{
 		pGI->sTitle = pTasks->GetTaskTitle(hTask);
@@ -974,7 +989,6 @@ void CGanttTreeListCtrl::BuildTreeItem(const ITaskList15* pTasks, HTASKITEM hTas
 		pGI->sAllocTo = GetTaskAllocTo(pTasks, hTask);
 		pGI->bParent = pTasks->IsTaskParent(hTask);
 		pGI->nPercent = pTasks->GetTaskPercentDone(hTask, TRUE);
-		pGI->nPosition = pTasks->GetTaskPosition(hTask);
 
 		time64_t tDate = 0;
 
@@ -1025,6 +1039,22 @@ void CGanttTreeListCtrl::BuildTreeItem(const ITaskList15* pTasks, HTASKITEM hTas
 			
 			hSibling = pTasks->GetNextTask(hSibling);
 		}
+	}
+}
+
+void CGanttTreeListCtrl::IncrementItemPositions(HTREEITEM htiParent, int nFromPos)
+{
+	HTREEITEM htiChild = TreeView_GetChild(m_hwndTree, htiParent);
+
+	while (htiChild)
+	{
+		DWORD dwTaskID = GetTaskID(htiChild);
+		GANTTITEM* pGI = m_data.GetItem(dwTaskID);
+
+		if (pGI && (pGI->nPosition >= nFromPos))
+			pGI->nPosition++;
+		
+		htiChild = TreeView_GetNextItem(m_hwndTree, htiChild, TVGN_NEXT);
 	}
 }
 
