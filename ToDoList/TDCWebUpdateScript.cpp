@@ -32,10 +32,9 @@ const LPCTSTR DESCRIPTION_KEY		= _T("DESCRIPTION");
 
 enum PRE_RELEASE_VER
 {
-	DEV_PREVIEW_VER	= 996,
+	DEV_PREVIEW_VER	= 997,
 	ALPHA_RELEASE_VER,
 	BETA_RELEASE_VER,
-	RELEASE_CANDIDATE_VER
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -175,7 +174,6 @@ BOOL CTDCWebUpdateScript::IsPreRelease(const CString& sVer)
 		case DEV_PREVIEW_VER:
 		case ALPHA_RELEASE_VER:
 		case BETA_RELEASE_VER:
-		case RELEASE_CANDIDATE_VER:
 			return TRUE;
 		}
 	}
