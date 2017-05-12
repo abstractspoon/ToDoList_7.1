@@ -6561,6 +6561,7 @@ BOOL CToDoListWnd::WantCheckReloadFiles(int nOption) const
 	case RO_ASK:
 		return (IsWindowVisible() && !IsIconic());
 
+	case RO_AUTO:   // Means reload silently
 	case RO_NOTIFY: // Means reload and notify
 		return TRUE;
 	}
