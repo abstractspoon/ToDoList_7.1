@@ -95,7 +95,6 @@ CRTFContentControl::~CRTFContentControl()
 {
 }
 
-
 BEGIN_MESSAGE_MAP(CRTFContentControl, CRulerRichEditCtrl)
 	//{{AFX_MSG_MAP(CRTFContentControl)
 	ON_WM_CONTEXTMENU()

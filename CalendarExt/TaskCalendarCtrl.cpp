@@ -1602,11 +1602,7 @@ BOOL CTaskCalendarCtrl::UpdateDragging(const CPoint& ptCursor)
 			*pTCI = m_tciPreDrag;
 		}
 
-		// always recalc dates
-		if (pTCI->IsEndDateSet() && !pTCI->IsStartDateSet() && (pTCI->GetAnyEndDate() < pTCI->GetAnyStartDate()))
-		{
-			int breakpoint = 0;
-		}
+		// Recalc dates if either start/end is not set
 		pTCI->RecalcDates(m_dwOptions);
 			
 		Invalidate();

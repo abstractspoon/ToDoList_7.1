@@ -361,8 +361,6 @@ BOOL CDateHelper::DecodeLocalShortDate(const CString& sDate, COleDateTime& date)
 		Misc::Split(sDate, aDateParts, sDelim, TRUE);
 		Misc::Split(sFormat, aFmtParts, sDelim, TRUE);
 
-		//ASSERT (aDateParts.GetSize() == aFmtParts.GetSize());
-
 		if (aDateParts.GetSize() != aFmtParts.GetSize())
 			return FALSE;
 
@@ -1370,7 +1368,6 @@ COleDateTime CDateHelper::GetNearestQuarter(const COleDateTime& date, BOOL bEnd)
 	{
 		// beginning of next year
 		dtQuarter.SetDate(nYear+1, 1, 1);
-
 	}
 	else if (date > COleDateTime(nYear, 8, 15, 0, 0, 0))
 	{

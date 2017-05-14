@@ -68,7 +68,6 @@ void CHMXChart::OnPaint()
 	DrawAxes(dc);
 	DrawYScale(dc);
 	DrawXScale(dc);
-
 }
 
 void CHMXChart::OnSize(UINT nType, int cx, int cy)

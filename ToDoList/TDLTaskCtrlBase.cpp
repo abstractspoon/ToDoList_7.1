@@ -2370,9 +2370,6 @@ void CTDLTaskCtrlBase::DrawColumnsRowText(CDC* pDC, int nItem, DWORD dwTaskID, c
 		switch (nColID)
 		{
 		case TDCC_POSITION:
-			DrawColumnText(pDC, sTaskColText, rSubItem, pCol->nTextAlignment, crText);
-			break;
-			
 		case TDCC_RISK:
 		case TDCC_RECURRENCE:
 		case TDCC_ID:
@@ -4233,6 +4230,7 @@ void CTDLTaskCtrlBase::SetModified(TDC_ATTRIBUTE nAttrib)
 		
 		if (!m_sCompletionStatus.IsEmpty())
 			AccumulateRecalcColumn(TDCC_STATUS, nRecalcColID);
+		
 		break;
 		
 	case TDCA_DUEDATE:
