@@ -361,7 +361,6 @@ void CToDoCtrl::DoDataExchange(CDataExchange* pDX)
 		m_cbAllocTo.SetChecked(m_aAllocTo);
 		m_cbTags.SetChecked(m_aTags);
 		m_cbFileRef.SetFileList(m_aFileRefs);
-
 		m_eRecurrence.SetRecurrenceOptions(m_tRecurrence);
 
 		if (m_mapCustomCtrlData.GetCount() == 0)
@@ -6731,7 +6730,6 @@ BOOL CToDoCtrl::ArchiveTasks(const CString& sArchivePath, const CTaskFile& tasks
 HTREEITEM CToDoCtrl::AddTaskToTreeItem(const CTaskFile& tasks, HTASKITEM hTask, HTREEITEM htiParent, HTREEITEM htiAfter, TDC_RESETIDS nResetID)
 {
 	HTREEITEM hti = TVI_ROOT; // default for root item
-	TODOITEM* pTDI = NULL;
 	
 	if (hTask)
 	{
@@ -6772,11 +6770,14 @@ HTREEITEM CToDoCtrl::AddTaskToTreeItem(const CTaskFile& tasks, HTASKITEM hTask, 
 		DWORD dwParentID = GetTaskID(htiParent);
 		DWORD dwPrevTaskID = GetTaskID(htiAfter);
 		
-		pTDI = m_data.NewTask(tasks, hTask);
+		TODOITEM* pTDI = m_data.NewTask(tasks, hTask);
 		ASSERT(pTDI);
 
 		if (!pTDI)
+		{
+			ASSERT(0);
 			return NULL;
+		}
 		
 		// add this item to data structure
 		m_data.AddTask(dwTaskID, pTDI, dwParentID, dwPrevTaskID);
@@ -6908,10 +6909,16 @@ void CToDoCtrl::SetModified(BOOL bMod, TDC_ATTRIBUTE nAttrib, DWORD /*dwModTaskI
 
 		GetParent()->SendMessage(WM_TDCN_MODIFY, (WPARAM)GetSafeHwnd(), (LPARAM)nAttrib);
 
-		// special case: if this was the project name being edited make sure
-		// the focus is set back to the name
-		if (nAttrib == TDCA_PROJNAME)
+		// special cases: 
+		switch (nAttrib)
+		{
+		case TDCA_PROJNAME:
+			// if this was the project name being edited make sure
+			// the focus is set back to the name
 			GetDlgItem(IDC_PROJECTNAME)->SetFocus();
+			break;
+
+		}
 	}
 }
 
@@ -9248,7 +9255,7 @@ BOOL CToDoCtrl::InsertTasks(const CTaskFile& tasks, TDC_INSERTWHERE nWhere, BOOL
 {
 	if (IsReadOnly())
 		return FALSE;
-	
+
 	HTREEITEM htiParent = NULL, htiAfter = NULL;
 
 	if (!m_taskTree.GetInsertLocation(nWhere, htiParent, htiAfter))

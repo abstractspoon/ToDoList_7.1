@@ -115,7 +115,7 @@ protected:
 	virtual void SetModified(BOOL bMod, TDC_ATTRIBUTE nAttrib, DWORD dwModTaskID);
 	virtual BOOL SetStyle(TDC_STYLE nStyle, BOOL bOn, BOOL bWantUpdate); // one style at a time only 
 
-	virtual BOOL LoadTasks(const CTaskFile& file);
+	virtual BOOL LoadTasks(const CTaskFile& tasks);
 	virtual BOOL RemoveArchivedTask(DWORD dwTaskID);
 	virtual BOOL CopyCurrentSelection() const;
 	virtual void EndTimeTracking(BOOL bAllowConfirm, BOOL bNotify);
@@ -147,6 +147,7 @@ protected:
 
 	void RebuildList(const void* pContext); 
 	void RebuildList(const SEARCHPARAMS& filter);
+
 	virtual void AddTreeItemToList(HTREEITEM hti, const void* pContext);
 	virtual DWORD RecreateRecurringTaskInTree(const CTaskFile& task, const COleDateTime& dtNext, BOOL bDueDate);
 

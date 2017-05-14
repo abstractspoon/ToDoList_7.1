@@ -601,14 +601,16 @@ LRESULT CTabbedToDoCtrl::OnPreTabViewChange(WPARAM nOldTab, LPARAM nNewTab)
 	switch (nNewView)
 	{
 	case FTCV_TASKTREE:
-		// update sort
-		if (m_bTreeNeedResort)
 		{
-			m_bTreeNeedResort = FALSE;
-			CToDoCtrl::Resort();
+			// update sort
+			if (m_bTreeNeedResort)
+			{
+				m_bTreeNeedResort = FALSE;
+				CToDoCtrl::Resort();
+			}
+			
+			m_taskTree.EnsureSelectionVisible();
 		}
-
-		m_taskTree.EnsureSelectionVisible();
 		break;
 
 	case FTCV_TASKLIST:
@@ -690,6 +692,8 @@ LRESULT CTabbedToDoCtrl::OnPreTabViewChange(WPARAM nOldTab, LPARAM nNewTab)
 			
 			if (pData->bNeedFullTaskUpdate)
 			{
+				pData->bNeedFullTaskUpdate = FALSE;
+
 				// start progress if not already
 				// will be cleaned up in OnPostTabViewChange
 				if (nProgressMsg == 0)
@@ -699,8 +703,6 @@ LRESULT CTabbedToDoCtrl::OnPreTabViewChange(WPARAM nOldTab, LPARAM nNewTab)
 
 				if (GetAllTasksForExtensionViewUpdate(tasks, pData->mapWantedAttrib))
 					UpdateExtensionView(pExtWnd, tasks, IUI_ALL, pData->mapWantedAttrib);
-				
-				pData->bNeedFullTaskUpdate = FALSE;
 			}
 				
 			ResyncExtensionSelection(nNewView);
@@ -1291,7 +1293,7 @@ LRESULT CTabbedToDoCtrl::OnUIExtEditSelectedTaskTitle(WPARAM /*wParam*/, LPARAM 
 	return bEdit;
 }
 
-BOOL CTabbedToDoCtrl::ProcessUIExtensionMod(const IUITASKMOD& mod)
+BOOL CTabbedToDoCtrl::ProcessUIExtensionMod(const IUITASKMOD& mod, BOOL& bDependChange, BOOL& bMoveTask)
 {
 	CStringArray aValues;
 	CBinaryData bdEmpty;
@@ -1335,12 +1337,30 @@ BOOL CTabbedToDoCtrl::ProcessUIExtensionMod(const IUITASKMOD& mod)
 		
 	case IUI_DEPENDENCY: 
 		Misc::Split(mod.szValue, aValues);
-		return SetSelectedTaskDependencies(aValues);
+		
+		if (SetSelectedTaskDependencies(aValues))
+		{
+			bDependChange = TRUE;
+			return TRUE;
+		}
+		// else
+		return FALSE;
 
 	case IUI_OFFSETTASK:
 		if (GetSelectedCount() == 1)
-			return ExtensionMoveTaskStartAndDueDates(GetSelectedTaskID(), CDateHelper::GetDate(mod.tValue));
-		break;
+		{
+			if (ExtensionMoveTaskStartAndDueDates(GetSelectedTaskID(), CDateHelper::GetDate(mod.tValue)))
+			{
+				if (HasStyle(TDCS_AUTOADJUSTDEPENDENCYDATES))
+					bDependChange = TRUE;
+				else
+					bMoveTask = TRUE;
+				
+				return TRUE;
+			}
+		}
+		// else
+		return FALSE;
 		
 	// not supported
 	case IUI_RECURRENCE: 
@@ -1417,7 +1437,7 @@ LRESULT CTabbedToDoCtrl::OnUIExtModifySelectedTask(WPARAM wParam, LPARAM lParam)
 			// back to itself
 			m_nExtModifyingAttrib = mod.nAttrib;
 
-			if (!ProcessUIExtensionMod(mod))
+			if (!ProcessUIExtensionMod(mod, bDependChange, bMoveTask))
 			{
 				ASSERT(0);
 				bSuccess = FALSE;
@@ -2722,6 +2742,7 @@ void CTabbedToDoCtrl::UpdateExtensionViews(TDC_ATTRIBUTE nAttrib, DWORD dwTaskID
 	case TDCA_RECURRENCE: 
 	case TDCA_VERSION:
 	case TDCA_CUSTOMATTRIBDEFS:
+	case TDCA_ICON:
 		UpdateExtensionViewsSelection(nAttrib);
 		break;
 		

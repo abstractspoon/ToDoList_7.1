@@ -330,8 +330,6 @@ void CCalendarCtrl::DrawCells(CDC* pDC)
 {
 	CRect rc;
 	GetClientRect(&rc);
-// 	int ncHeight = (rc.Height()-CALENDAR_HEADER_HEIGHT)/GetVisibleWeeks();
-// 	int ncWidth = rc.Width()/CALENDAR_NUM_COLUMNS;
 
 	CFont* pOldFont = pDC->SelectObject(&m_DefaultFont);
 
@@ -424,15 +422,12 @@ void CCalendarCtrl::DrawCell(CDC* pDC, const CCalendarCell* pCell, const CRect& 
 	// Draw the selection
 	if (bSelected)
 	{	
-		CBrush br;
-		br.CreateSolidBrush(GetFadedThemeColour(40));
-
 		CRect selRect(rCell);
 
 		if (bToday)	
 			selRect.top += CALENDAR_DAY_HEADER_CY;
 
-		pDC->FillRect(&selRect, &br);
+		pDC->FillSolidRect(selRect, GetFadedThemeColour(40));
 	}
 	
 	// Out of range
@@ -442,21 +437,17 @@ void CCalendarCtrl::DrawCell(CDC* pDC, const CCalendarCell* pCell, const CRect& 
 		CRect selRect(rCell);
 		CBrush br;
 
-		br.CreateSolidBrush(RGB(255,225,225));
-		pDC->FillRect(&selRect, &br);
+		pDC->FillSolidRect(selRect, RGB(255,225,225));
 	}
 	
 	if (pCell->bMark)
 	{
-		CBrush br;
-		br.CreateSolidBrush(RGB(255,104,4));
-
 		CRect rcMark(rCell);
 		rcMark.DeflateRect(3,3);
 		rcMark.right = rcMark.left +6;
 		rcMark.bottom = rcMark.top +6;
 
-		pDC->FillRect(&rcMark, &br);
+		pDC->FillSolidRect(rcMark, RGB(255,104,4));
 	}
 	
 	// draw day/month numbers
@@ -622,14 +613,37 @@ bool CCalendarCtrl::GetGridCellFromPoint(const CPoint& point, int &nRow, int &nC
 	return false;
 }
 
-const COleDateTime& CCalendarCtrl::GetMinDate() const 
+COleDateTime CCalendarCtrl::GetMinDate() const 
 { 
-	return m_dayCells[0][0].date; 
+	return GetMinDate(0);
 }
 
-const COleDateTime& CCalendarCtrl::GetMaxDate() const 
+COleDateTime CCalendarCtrl::GetMaxDate() const 
 { 
-	return m_dayCells[GetVisibleWeeks()-1][CALENDAR_NUM_COLUMNS-1].date; 
+	return GetMaxDate(m_nVisibleWeeks - 1); 
+}
+
+COleDateTime CCalendarCtrl::GetMinDate(int nRow) const
+{
+	if (nRow < 0 || nRow >= m_nVisibleWeeks)
+	{
+		ASSERT(0);
+		return CDateHelper::NullDate();
+	}
+
+	return m_dayCells[nRow][0].date; 
+}
+
+COleDateTime CCalendarCtrl::GetMaxDate(int nRow) const
+{
+	if (nRow < 0 || nRow >= m_nVisibleWeeks)
+	{
+		ASSERT(0);
+		return CDateHelper::NullDate();
+	}
+
+	// else
+	return m_dayCells[nRow][CALENDAR_NUM_COLUMNS-1].date; 
 }
 
 BOOL CCalendarCtrl::IsDateVisible(const COleDateTime& date) const
@@ -1317,7 +1331,7 @@ int CCalendarCtrl::GetSelectedItems(CDWordArray& dwaSelection) const
 
 			while(dcur <= dmax)
 			{	
-				dwaSelection.Add(DateToSeconds(dcur));
+				dwaSelection.Add((DWORD)DateToSeconds(dcur));
 				dcur = dmin + COleDateTimeSpan(nDays,0,0,0);				
 				dcur = COleDateTime(DateToSeconds(dcur));
 

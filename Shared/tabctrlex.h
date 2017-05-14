@@ -28,22 +28,22 @@ enum
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef TCN_CLOSETAB
-#	define TCN_CLOSETAB (TCN_FIRST-11)
+#	define TCN_CLOSETAB		(TCN_FIRST-11)
 #endif
 
 #ifndef TCN_MCLICK
-#	define TCN_MCLICK (TCN_FIRST-12)
+#	define TCN_MCLICK		(TCN_FIRST-12)
 #endif
 
 #ifndef TCN_ENDDRAG
-#	define TCN_ENDDRAG (TCN_FIRST-13)
+#	define TCN_ENDDRAG		(TCN_FIRST-13)
 #endif
 
 struct NMTABCTRLEX
 {
     NMHDR hdr;
     int iTab;
-	UINT nExtra;
+	DWORD dwExtra;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ public:
 
 	int HitTest(const CPoint& point) const;
 	int HitTest(TCHITTESTINFO* pHitTestInfo) const;
-
+	
 	BOOL ModifyFlags(DWORD dwRemove, DWORD dwAdd);
 
 // Attributes
@@ -133,6 +133,7 @@ protected:
 	BOOL NeedCustomPaint() const;
 	void UpdateTabItemWidths(BOOL bSel = FALSE);
 	CString GetRequiredTabText(int nTab);
+	BOOL GetTabRect(int nTab, BOOL bSelected, CRect& rTab);
 
 };
 

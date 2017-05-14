@@ -17,7 +17,7 @@ static char THIS_FILE[] = __FILE__;
 
 const LPCTSTR  STR_CLOSEBTN	= _T("r");
 const COLORREF RED			= RGB(200, 90, 90);
-const COLORREF WHITE		= RGB(240, 240, 240);
+const COLORREF WHITE		= RGB(255, 255, 255);
 
 const UINT WM_TCMUPDATETABWIDTH = (WM_USER + 1);
 
@@ -58,7 +58,6 @@ BEGIN_MESSAGE_MAP(CTabCtrlEx, CXPTabCtrl)
 	ON_WM_ERASEBKGND()
 	ON_NOTIFY_REFLECT_EX(TCN_SELCHANGING, OnTabSelChange)
 	ON_NOTIFY_REFLECT_EX(TCN_SELCHANGE, OnTabSelChange)
-//	ON_MESSAGE(TCM_SETCURSEL, OnTabSelChange)
 	ON_MESSAGE(TCM_INSERTITEM, OnChangeTabItem)
 	ON_MESSAGE(TCM_SETITEM, OnChangeTabItem)
 	ON_MESSAGE(TCM_DELETEITEM, OnChangeTabItem)
@@ -174,7 +173,7 @@ CString CTabCtrlEx::GetRequiredTabText(int nTab)
 
 	if (nExtra)
 	{
-		// calculate the sixe of a space char
+		// calculate the size of a space char
 		const LPCTSTR SPACE = _T(" ");
 
 		int nSpaceWidth = GraphicsMisc::GetTextWidth(SPACE, *this, GetTabFont(nTab));
@@ -255,7 +254,6 @@ void CTabCtrlEx::OnPaint()
 	DrawTabDropMark(&dc);
 }
 
-
 CFont* CTabCtrlEx::GetTabFont(int nTab)
 {
 	// first time init of selected tab font
@@ -292,12 +290,7 @@ void CTabCtrlEx::PostDrawTab(CDC& dc, int nTab, BOOL bSelected, const CRect& rCl
 	
 	// check for anything to draw
 	CRect rTab;
-	VERIFY(GetItemRect(nTab, rTab));
-
-	if (bSelected)
-		rTab.bottom += 2;
-	else
-		rTab.DeflateRect(2, 2);
+	VERIFY(GetTabRect(nTab, bSelected, rTab));
 				
 	if (!CRect().IntersectRect(rClip, rTab))
 		return;
@@ -322,6 +315,19 @@ void CTabCtrlEx::PostDrawTab(CDC& dc, int nTab, BOOL bSelected, const CRect& rCl
 	// then close button
 	if (bCloseBtn)
 		DrawTabCloseButton(dc, nTab);
+}
+
+BOOL CTabCtrlEx::GetTabRect(int nTab, BOOL bSelected, CRect& rTab)
+{
+	if (!GetItemRect(nTab, rTab))
+		return FALSE;
+
+	if (bSelected)
+		rTab.bottom += 2;
+	else
+		rTab.DeflateRect(2, 2);
+
+	return TRUE;
 }
 
 void CTabCtrlEx::DrawTabCloseButton(CDC& dc, int nTab)
@@ -357,10 +363,6 @@ void CTabCtrlEx::DrawTabCloseButton(CDC& dc, int nTab)
 	else
 	{
 		dc.SetTextColor(GetSysColor(COLOR_3DDKSHADOW));
-		
-#ifdef _DEBUG
-//		dc.FillSolidRect(rBtn, 0);
-#endif
 	}
 	
 	dc.SetTextAlign(TA_TOP | TA_LEFT);
@@ -522,10 +524,10 @@ void CTabCtrlEx::OnButtonUp(UINT nBtn, UINT nFlags, CPoint point)
 			nmtce.hdr.code = TCN_ENDDRAG;
 
 			// calculating number of positions needs care
-			nmtce.nExtra = (m_nDropTab - m_nDragTab);
+			nmtce.dwExtra = (m_nDropTab - m_nDragTab);
 
 			if (m_nDropTab > m_nDragTab)
-				nmtce.nExtra--;
+				nmtce.dwExtra--;
 		}
 		// fall thru
 	}	
@@ -588,7 +590,7 @@ void CTabCtrlEx::OnButtonUp(UINT nBtn, UINT nFlags, CPoint point)
 					else if (HasFlag(TCE_MBUTTONCLICK))
 					{
 						nmtce.iTab = nTab;
-						nmtce.nExtra = nFlags;
+						nmtce.dwExtra = nFlags;
 						nmtce.hdr.code = TCN_MCLICK;
 					}
 				}
@@ -657,27 +659,17 @@ BOOL CTabCtrlEx::GetTabCloseButtonRect(int nTab, CRect& rBtn) const
 		rBtn.bottom = rBtn.top + m_sizeClose.cy;
 		
 		if (bSel)
-		{
 			rBtn.OffsetRect(0, 1);
-		}
 		else
-		{
  			rBtn.OffsetRect(-2, 3);
-		}
 		break;
 
 	case e_tabBottom:
 		rBtn.left = rBtn.right - m_sizeClose.cx;
 		rBtn.top = rBtn.bottom - m_sizeClose.cy;
 		
-		if (bSel)
-		{
-			// rBtn.OffsetRect(0, 1);
-		}
-		else
-		{
+		if (!bSel)
 			rBtn.OffsetRect(-2, -2);
-		}
 		break;
 		
 	case e_tabLeft:
@@ -690,7 +682,10 @@ BOOL CTabCtrlEx::GetTabCloseButtonRect(int nTab, CRect& rBtn) const
 	default:
 		return FALSE;
 	}
-	
+
+	if (nTab == (nSel - 1))
+		rBtn.OffsetRect(-1, 0);
+		
 	return TRUE;
 }
 

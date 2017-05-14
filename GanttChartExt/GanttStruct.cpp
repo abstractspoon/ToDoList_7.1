@@ -19,7 +19,12 @@ static char THIS_FILE[]=__FILE__;
 
 int GANTTDEPENDENCY::STUB = 0;
 
-GANTTDEPENDENCY::GANTTDEPENDENCY() : ptFrom(0), ptTo(0), dwFromID(0), dwToID(0)
+GANTTDEPENDENCY::GANTTDEPENDENCY() 
+	: 
+	ptFrom(0), 
+	ptTo(0), 
+	dwFromID(0), 
+	dwToID(0)
 {
 }
 
@@ -574,4 +579,5 @@ GANTTDISPLAY* CGanttDisplayMap::GetItem(DWORD dwKey) const
 }
 
 //////////////////////////////////////////////////////////////////////
+
 

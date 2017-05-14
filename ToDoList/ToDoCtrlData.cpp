@@ -287,12 +287,17 @@ BOOL CToDoCtrlData::Locate(DWORD dwParentID, DWORD dwPrevSiblingID, TODOSTRUCTUR
 	nPos = -1;
 	
 	if (dwPrevSiblingID)
+	{
 		m_struct.FindTask(dwPrevSiblingID, pTDSParent, nPos);
-	
+	}
 	else if (dwParentID)
+	{
 		pTDSParent = m_struct.FindTask(dwParentID);
+	}
 	else
+	{
 		pTDSParent = const_cast<CToDoCtrlStructure*>(&m_struct); // root
+	}
 	
 	ASSERT (pTDSParent);
 	return (pTDSParent != NULL);
@@ -901,6 +906,10 @@ BOOL CToDoCtrlData::CalcTaskCustomAttributeData(const TODOITEM* pTDI, const TODO
 
 		if (dCalcValue >= DBL_MAX)
 			dCalcValue = TODOITEM::NULL_VALUE;
+	}
+	else
+	{
+		dCalcValue = Misc::Atof(sTaskVal);
 	}
 
 	if (dCalcValue == TODOITEM::NULL_VALUE)

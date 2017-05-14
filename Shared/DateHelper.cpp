@@ -536,6 +536,14 @@ void CDateHelper::ClearDate(COleDateTime& date)
 	date.m_status = COleDateTime::null;
 }
 
+COleDateTime CDateHelper::NullDate()
+{
+	COleDateTime null;
+	ClearDate(null);
+
+	return null;
+}
+
 int CDateHelper::GetISODayOfWeek(const COleDateTime& date) 
 {
 	int nDOW = date.GetDayOfWeek(); // 1-7 = Sun-Sat
@@ -924,20 +932,26 @@ BOOL CDateHelper::OffsetDate(COleDateTime& date, int nAmount, DH_UNITS nUnits)
 			BOOL bEndOfMonth = (st.wDay == nDaysInMonth);
 
 			// convert amount to years and months
-			st.wYear = (WORD)((int)st.wYear + (nAmount / 12));
-			st.wMonth = (WORD)((int)st.wMonth + (nAmount % 12));
+			int nYear = st.wYear, nMonth = st.wMonth;
 
-			// handle overflow
-			if (st.wMonth > 12)
+			nYear = (nYear + (nAmount / 12));
+			nMonth = (nMonth + (nAmount % 12));
+
+			// handle over/underflow
+			while (nMonth > 12)
 			{
-				st.wYear++;
-				st.wMonth -= 12;
+				nYear++;
+				nMonth -= 12;
 			}
-			else if (st.wMonth < 1)
+			
+			while (nMonth < 1)
 			{
-				st.wYear--;
-				st.wMonth += 12;
+				nYear--;
+				nMonth += 12;
 			}
+
+			st.wYear = (WORD)nYear;
+			st.wMonth = (WORD)nMonth;
 
 			// if our start date was the end of the month make
 			// sure out end date is too
@@ -1407,10 +1421,14 @@ void CDateHelper::IncrementMonth(SYSTEMTIME& st, int nBy)
 
 	IncrementMonth(nMonth, nYear, nBy);
 
-	// convert back
+	// Validate day
+	int nDayInMonth = GetDaysInMonth(nMonth, nYear);
+
+	st.wDay = max(st.wDay, 1);
+	st.wDay = min(st.wDay, nDayInMonth);
+
 	st.wMonth = (WORD)nMonth;
 	st.wYear = (WORD)nYear;
-
 }
 
 void CDateHelper::IncrementMonth(int& nMonth, int& nYear, int nBy)

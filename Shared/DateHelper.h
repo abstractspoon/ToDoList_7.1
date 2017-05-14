@@ -77,6 +77,7 @@ class CDateHelper
 public:
 	static BOOL IsDateSet(const COleDateTime& date);
 	static void ClearDate(COleDateTime& date);
+	static COleDateTime NullDate();
 
 	static BOOL IsValidDayInMonth(int nDay, int nMonth, int nYear);
 	static BOOL IsValidDayOfMonth(int nDOW, int nWhich, int nMonth);

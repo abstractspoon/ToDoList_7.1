@@ -98,7 +98,7 @@ BOOL CFilteredToDoCtrl::OnInitDialog()
 	return FALSE;
 }
 
-BOOL CFilteredToDoCtrl::LoadTasks(const CTaskFile& file)
+BOOL CFilteredToDoCtrl::LoadTasks(const CTaskFile& tasks)
 {
 	// handle reloading of tasklist with a filter present
 	if (GetTaskCount() && m_filter.HasAnyFilter())
@@ -108,7 +108,7 @@ BOOL CFilteredToDoCtrl::LoadTasks(const CTaskFile& file)
 
 	BOOL bViewWasSet = IsViewSet();
 
-	if (!CTabbedToDoCtrl::LoadTasks(file))
+	if (!CTabbedToDoCtrl::LoadTasks(tasks))
 		return FALSE;
 
 	FTC_VIEW nView = GetTaskView();
@@ -466,7 +466,7 @@ void CFilteredToDoCtrl::GetCompletedTasks(const TODOSTRUCTURE* pTDS, CTaskFile& 
 		if (!pTDI)
 			return;
 
-		// we add the task if it is completed (and optionally selected) or it has children
+		// we add the task if it is completed or it has children
 		if (pTDI->IsDone() || pTDS->HasSubTasks())
 		{
 			HTASKITEM hTask = tasks.NewTask(_T(""), hTaskParent, dwTaskID, 0);
@@ -1614,3 +1614,4 @@ DWORD CFilteredToDoCtrl::RecreateRecurringTaskInTree(const CTaskFile& task, cons
 	// all else
 	return CTabbedToDoCtrl::RecreateRecurringTaskInTree(task, dtNext, bDueDate);
 }
+

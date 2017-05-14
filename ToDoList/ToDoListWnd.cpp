@@ -823,8 +823,10 @@ int CToDoListWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL CToDoListWnd::InitTabCtrl()
 {
-	if (m_tabCtrl.Create(WS_CHILD | WS_VISIBLE | TCS_HOTTRACK | TCS_TABS | TCS_SINGLELINE | TCS_RIGHTJUSTIFY | TCS_TOOLTIPS, 
-		CRect(0, 0, 10, 10), this, IDC_TABCONTROL))
+	UINT nFlags = (WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | TCS_HOTTRACK | TCS_TABS | 
+					TCS_SINGLELINE | TCS_RIGHTJUSTIFY | TCS_TOOLTIPS);
+
+	if (m_tabCtrl.Create(nFlags, CRect(0, 0, 10, 10), this, IDC_TABCONTROL))
 	{
 		m_tabCtrl.GetToolTips()->ModifyStyle(0, TTS_ALWAYSTIP);
 		CLocalizer::EnableTranslation(m_tabCtrl, FALSE);
@@ -6561,7 +6563,7 @@ BOOL CToDoListWnd::WantCheckReloadFiles(int nOption) const
 	case RO_ASK:
 		return (IsWindowVisible() && !IsIconic());
 
-	case RO_AUTO:   // Means reload silently
+	case RO_AUTO:   // Means reload
 	case RO_NOTIFY: // Means reload and notify
 		return TRUE;
 	}
@@ -7372,9 +7374,10 @@ CFilteredToDoCtrl* CToDoListWnd::NewToDoCtrl(BOOL bVisible, BOOL bEnabled)
 		// set font to our font
 		CDialogHelper::SetFont(pTDC, m_fontMain, FALSE);
 		
-		// set the 'save ui to tasklist' flag once only
-		// allowing the taskfile itself to override
+		// set global styles once only allowing the taskfile 
+		// itself to override from this point on
 		pTDC->SetStyle(TDCS_SAVEUIVISINTASKLIST, m_bSaveUIVisInTaskList);
+		// Set initial theme before it becomes visible
 		pTDC->SetUITheme(m_theme);
 		
 		// rest of runtime preferences
@@ -7426,11 +7429,11 @@ void CToDoListWnd::OnTabCtrlEndDrag(NMHDR* pNMHDR, LRESULT* pResult)
 	NMTABCTRLEX* pNMTCE = (NMTABCTRLEX*)pNMHDR;
 	
 	// check valid tab indices
-	ASSERT((pNMTCE->iTab != -1) && (pNMTCE->nExtra != 0));
+	ASSERT((pNMTCE->iTab != -1) && (pNMTCE->dwExtra != 0));
 
-	if ((pNMTCE->iTab != -1) && (pNMTCE->nExtra != 0))
+	if ((pNMTCE->iTab != -1) && (pNMTCE->dwExtra != 0))
 	{
-		m_mgrToDoCtrls.MoveToDoCtrl(pNMTCE->iTab, pNMTCE->nExtra);
+		m_mgrToDoCtrls.MoveToDoCtrl(pNMTCE->iTab, pNMTCE->dwExtra);
 		
 		// disable alpha-sorting on tabs
 		if (Prefs().GetKeepTabsOrdered())
@@ -11431,6 +11434,8 @@ BOOL CToDoListWnd::PreCreateWindow(CREATESTRUCT& cs)
 			if (!::RegisterClass(&wndcls))
 			{
 				ASSERT(0);
+
+				::DestroyIcon(wndcls.hIcon);
 				return FALSE;
 			}
 		}
