@@ -20,6 +20,8 @@
 
 #include <afxtempl.h>
 
+//////////////////////////////////////////////////////////////////////
+
 class TODOITEM
 {
 	friend class CToDoCtrlData;
@@ -134,6 +136,8 @@ private:
 	static COleDateTimeSpan s_dtsRecentModPeriod;
 };
 
+//////////////////////////////////////////////////////////////////////
+
 class TODOSTRUCTURE
 {
 	friend class CToDoCtrlStructure;
@@ -185,6 +189,8 @@ protected:
 	TODOSTRUCTURE* AddSubTask(DWORD dwID);
 };
 
+//////////////////////////////////////////////////////////////////////
+
 class CToDoCtrlStructure : public TODOSTRUCTURE
 {
 public:
@@ -215,8 +221,9 @@ protected:
 	void AddToMap(const TODOSTRUCTURE* pTDS);
 	void RemoveFromMap(const TODOSTRUCTURE* pTDS);
 	const CToDoCtrlStructure& operator=(const CToDoCtrlStructure& tds); 
-	
 };
+
+//////////////////////////////////////////////////////////////////////
 
 
 #endif // !defined(AFX_TODOITEM_H__02C3C360_45AB_45DC_B1BF_BCBEA472F0C7__INCLUDED_)
