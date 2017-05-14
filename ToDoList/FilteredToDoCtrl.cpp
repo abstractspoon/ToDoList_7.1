@@ -1291,7 +1291,7 @@ BOOL CFilteredToDoCtrl::ModNeedsRefilter(TDC_ATTRIBUTE nModType, FTC_VIEW nView,
 
 	if (!m_filter.HasAnyFilter())
 		return FALSE;
-	
+
 	// we only need to refilter if the modified attribute
 	// actually affects the filter
 	BOOL bNeedRefilter = m_filter.ModNeedsRefilter(nModType, m_aCustomAttribDefs);
@@ -1570,4 +1570,47 @@ BOOL CFilteredToDoCtrl::GetAllTasksForExtensionViewUpdate(CTaskFile& tasks, cons
 
 	// else
 	return CTabbedToDoCtrl::GetAllTasksForExtensionViewUpdate(tasks, mapAttrib);
+}
+DWORD CFilteredToDoCtrl::MergeNewTaskIntoTree(const CTaskFile& tasks, HTASKITEM hTask, DWORD dwParentTaskID, DWORD dwPrevSiblingID, BOOL bAndSubtasks)
+{
+	TODOITEM* pTDI = m_data.NewTask(tasks, hTask);
+
+	DWORD dwTaskID = m_dwNextUniqueID++;
+	m_data.AddTask(dwTaskID, pTDI, dwParentTaskID, dwPrevSiblingID);
+
+	if (bAndSubtasks)
+	{
+		HTASKITEM hSubtask = tasks.GetFirstTask(hTask);
+		DWORD dwSubtaskID = 0;
+
+		while (hSubtask)
+		{
+			dwSubtaskID = MergeNewTaskIntoTree(tasks, hSubtask, dwTaskID, dwSubtaskID, TRUE);
+			hSubtask = tasks.GetNextTask(hSubtask);
+		}
+	}
+
+	return dwTaskID;
+}
+
+DWORD CFilteredToDoCtrl::RecreateRecurringTaskInTree(const CTaskFile& task, const COleDateTime& dtNext, BOOL bDueDate)
+{
+	// We only need handle this if the existing task has been filtered out
+	DWORD dwTaskID = task.GetTaskID(task.GetFirstTask());
+
+	if (HasAnyFilter() && (m_taskTree.GetItem(dwTaskID) == NULL))
+	{
+		// Merge task into data structure after the existing task
+		DWORD dwParentID = m_data.GetTaskParentID(dwTaskID);
+		DWORD dwNewTaskID = MergeNewTaskIntoTree(task, task.GetFirstTask(), dwParentID, dwTaskID, TRUE);
+
+		InitialiseNewRecurringTask(dwTaskID, dwNewTaskID, dtNext, bDueDate);
+		RefreshFilter();
+		
+		ASSERT(m_taskTree.GetItem(dwNewTaskID) != NULL);
+		return dwNewTaskID;
+	}
+
+	// all else
+	return CTabbedToDoCtrl::RecreateRecurringTaskInTree(task, dtNext, bDueDate);
 }

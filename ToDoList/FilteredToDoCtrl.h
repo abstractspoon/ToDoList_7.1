@@ -148,6 +148,10 @@ protected:
 	void RebuildList(const void* pContext); 
 	void RebuildList(const SEARCHPARAMS& filter);
 	virtual void AddTreeItemToList(HTREEITEM hti, const void* pContext);
+	virtual DWORD RecreateRecurringTaskInTree(const CTaskFile& task, const COleDateTime& dtNext, BOOL bDueDate);
+
+	// Helper allowing insert position to be specified
+	DWORD MergeNewTaskIntoTree(const CTaskFile& tasks, HTASKITEM hTask, DWORD dwParentTaskID, DWORD dwPrevSiblingID, BOOL bAndSubtasks);
 
 	virtual VIEWDATA* NewViewData() { return new VIEWDATA2(); }
 };

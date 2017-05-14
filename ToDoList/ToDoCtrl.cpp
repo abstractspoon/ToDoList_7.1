@@ -3568,7 +3568,7 @@ BOOL CToDoCtrl::SetSelectedTaskDone(const COleDateTime& date, BOOL bDateEdited)
 		}
 
 		// FALSE == Don't update the dates of any already-completed subtasks
-		TDC_SET nItemRes = SetTaskDone(hti, dtDone, bAndSubtasks, FALSE, FALSE);
+		TDC_SET nItemRes = SetTaskDone(dwTaskID, dtDone, bAndSubtasks, FALSE, FALSE);
 
 		// handle recreation of recurring task
 		if (bRecurring)
@@ -3579,7 +3579,7 @@ BOOL CToDoCtrl::SetSelectedTaskDone(const COleDateTime& date, BOOL bDateEdited)
 
 				VERIFY (m_data.GetTaskNextOccurrence(dwTaskID, dtNext, bDueDate));
 
-				InitialiseNewRecurringTask(dwTaskID, dwTaskID, hti, dtNext, bDueDate);
+				InitialiseNewRecurringTask(dwTaskID, dwTaskID, dtNext, bDueDate);
 
 				// notify parent
 				GetParent()->SendMessage(WM_TDCN_RECREATERECURRINGTASK, dwTaskID, dwTaskID);
@@ -3688,15 +3688,6 @@ LRESULT CToDoCtrl::OnRecreateRecurringTask(WPARAM /*wParam*/, LPARAM lParam)
 	{
 		DWORD dwTaskID = m_aRecreateTaskIDs[nTask];
 
-		const TODOITEM* pTDI = NULL;
-		const TODOSTRUCTURE* pTDS = NULL;
-
-		if (!m_data.GetTask(dwTaskID, pTDI, pTDS))
-		{
-			ASSERT(0);
-			return 0L;
-		}
-
 		// next occurrence can fail if we've run out of occurrences
 		COleDateTime dtNext;
 		BOOL bDueDate = TRUE;
@@ -3704,24 +3695,17 @@ LRESULT CToDoCtrl::OnRecreateRecurringTask(WPARAM /*wParam*/, LPARAM lParam)
 		if (!m_data.GetTaskNextOccurrence(dwTaskID, dtNext, bDueDate))
 			continue;
 
-		// take copy of existing task
 		CTaskFile task;
-		VERIFY(AddTaskToTaskFile(pTDI, pTDS, task, NULL, FALSE));
-	
-		// insert below existing
-		DWORD dwNewTaskID = m_dwNextUniqueID;
+		VERIFY(AddTaskToTaskFile(dwTaskID, task, NULL, FALSE));
 
-		HTREEITEM hti = m_taskTree.GetItem(dwTaskID);
-		ASSERT(hti);
+		DWORD dwNewTaskID = RecreateRecurringTaskInTree(task, dtNext, bDueDate);
 
-		HTREEITEM htiParent = m_taskTree.GetParentItem(hti);
-		HTREEITEM htiNew = AddTaskToTreeItem(task, task.GetFirstTask(), htiParent, hti, TDCR_YES);
-
-		InitialiseNewRecurringTask(dwTaskID, dwNewTaskID, htiNew, dtNext, bDueDate);
-
-		// Save off taskIDs for the end
-		aTaskIDs.Add(dwTaskID);
-		aNewTaskIDs.Add(dwNewTaskID);
+		if (dwNewTaskID)
+		{
+			// Save off taskIDs for the end
+			aTaskIDs.Add(dwTaskID);
+			aNewTaskIDs.Add(dwNewTaskID);
+		}
 	}
 
 	// mark as changed
@@ -3743,14 +3727,27 @@ LRESULT CToDoCtrl::OnRecreateRecurringTask(WPARAM /*wParam*/, LPARAM lParam)
 	return 0L;
 }
 
-void CToDoCtrl::InitialiseNewRecurringTask(DWORD dwPrevTaskID, DWORD dwNewTaskID, 
-											HTREEITEM htiNew, const COleDateTime& dtNext, BOOL bDueDate)
+DWORD CToDoCtrl::RecreateRecurringTaskInTree(const CTaskFile& task, const COleDateTime& dtNext, BOOL bDueDate)
 {
-	ASSERT(htiNew);
-	ASSERT(GetTaskID(htiNew) == dwNewTaskID);
+	DWORD dwTaskID = task.GetTaskID(task.GetFirstTask()); // existing task ID
 
+	// insert below existing
+	HTREEITEM hti = m_taskTree.GetItem(dwTaskID);
+	ASSERT(hti);
+
+	HTREEITEM htiParent = m_taskTree.GetParentItem(hti);
+	HTREEITEM htiNew = AddTaskToTreeItem(task, task.GetFirstTask(), htiParent, hti, TDCR_YES);
+
+	DWORD dwNewTaskID = GetTaskID(htiNew);
+	InitialiseNewRecurringTask(dwTaskID, dwNewTaskID, dtNext, bDueDate);
+
+	return dwNewTaskID;
+}
+
+void CToDoCtrl::InitialiseNewRecurringTask(DWORD dwPrevTaskID, DWORD dwNewTaskID, const COleDateTime& dtNext, BOOL bDueDate)
+{
 	// reset new task(s) state to 'undone' including all children
-	SetTaskDone(htiNew, 0.0, TRUE, TRUE, FALSE);
+	SetTaskDone(dwNewTaskID, 0.0, TRUE, TRUE, FALSE);
 
 	// we need to move both the due date and the start date forward
 	AdjustNewRecurringTasksDates(dwPrevTaskID, dwNewTaskID, dtNext, bDueDate);
@@ -3777,14 +3774,12 @@ void CToDoCtrl::InitialiseNewRecurringTask(DWORD dwPrevTaskID, DWORD dwNewTaskID
 	}
 }
 
-TDC_SET CToDoCtrl::SetTaskDone(HTREEITEM hti, const COleDateTime& date, 
-						   BOOL bAndSubtasks, BOOL bUpdateAllSubtaskDates,
-						   BOOL bIsSubtask)
+TDC_SET CToDoCtrl::SetTaskDone(DWORD dwTaskID, const COleDateTime& date, 
+								BOOL bAndSubtasks, BOOL bUpdateAllSubtaskDates, BOOL bIsSubtask)
 {
 	ASSERT(bAndSubtasks || !bIsSubtask);
 	ASSERT(!CDateHelper::IsDateSet(date) || !bUpdateAllSubtaskDates);
 
-	DWORD dwTaskID = GetTaskID(hti);
 	TDC_SET nRes = SET_NOCHANGE;
 
 	// If bUpdateAllSubtaskDates == FALSE, we only update a subtask's 
@@ -3821,16 +3816,17 @@ TDC_SET CToDoCtrl::SetTaskDone(HTREEITEM hti, const COleDateTime& date,
 		UpdateControls(FALSE); // don't update comments
 	}
 
-	if (bAndSubtasks)
+	if (bAndSubtasks && m_data.TaskHasSubtasks(dwTaskID))
 	{
-		HTREEITEM htiChild = m_taskTree.GetChildItem(hti);
-		
-		while (htiChild)
+		const TODOSTRUCTURE* pTDS = m_data.LocateTask(dwTaskID);
+		ASSERT(pTDS);
+
+		for (int nSubtask = 0; nSubtask < pTDS->GetSubTaskCount(); nSubtask++)
 		{
-			if (SetTaskDone(htiChild, date, TRUE, bUpdateAllSubtaskDates, TRUE) == SET_CHANGE)
+			DWORD dwSubtaskID = pTDS->GetSubTaskID(nSubtask);
+
+			if (SetTaskDone(dwSubtaskID, date, TRUE, bUpdateAllSubtaskDates, TRUE) == SET_CHANGE)
 				nRes = SET_CHANGE;
-			
-			htiChild = m_taskTree.GetNextItem(htiChild, TVGN_NEXT);
 		}
 	}
 
@@ -8922,6 +8918,20 @@ BOOL CToDoCtrl::AddSubTasksToTaskFile(const TODOSTRUCTURE* pTDSParent, CTaskFile
 	}
 	
 	return TRUE;
+}
+
+BOOL CToDoCtrl::AddTaskToTaskFile(DWORD dwTaskID, CTaskFile& tasks, HTASKITEM hParentTask, BOOL bIncDuplicateCompletedRecurringSubtasks) const
+{
+	const TODOITEM* pTDI = NULL;
+	const TODOSTRUCTURE* pTDS = NULL;
+
+	if (!m_data.GetTask(dwTaskID, pTDI, pTDS))
+	{
+		ASSERT(0);
+		return FALSE;
+	}
+
+	return AddTaskToTaskFile(pTDI, pTDS, tasks, hParentTask, bIncDuplicateCompletedRecurringSubtasks);
 }
 
 BOOL CToDoCtrl::AddTaskToTaskFile(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS, CTaskFile& tasks, 
