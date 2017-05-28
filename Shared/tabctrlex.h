@@ -112,6 +112,8 @@ protected:
 	afx_msg LRESULT OnChangeTabItem(WPARAM wp, LPARAM lp);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg LRESULT OnUpdateTabItemWidth(WPARAM wp, LPARAM lp);
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
 	DECLARE_MESSAGE_MAP()
 
@@ -134,6 +136,9 @@ protected:
 	void UpdateTabItemWidths(BOOL bSel = FALSE);
 	CString GetRequiredTabText(int nTab);
 	BOOL GetTabRect(int nTab, BOOL bSelected, CRect& rTab);
+
+	// pseudo message handler
+	void InvalidateTabs(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
 };
 
