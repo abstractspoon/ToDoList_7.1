@@ -1567,7 +1567,10 @@ BOOL CTaskFile::SetTaskAttributes(HTASKITEM hTask, const TODOITEM* pTDI)
 			SetTaskString(hTask, TDL_TASKEXTERNALID, pTDI->sExternalID);
 		
 		if (!pTDI->sIcon.IsEmpty())
+		{
+			ASSERT(pTDI->sIcon != _T("-1")); // Historical bug
 			SetTaskString(hTask, TDL_TASKICONINDEX, pTDI->sIcon);
+		}
 		
 		// rest of non-string attributes
 		SetTaskPriority(hTask, pTDI->nPriority);
@@ -1677,6 +1680,10 @@ BOOL CTaskFile::GetTaskAttributes(HTASKITEM hTask, TODOITEM* pTDI) const
 		pTDI->sVersion = GetTaskVersion(hTask);
 		pTDI->sIcon = GetTaskIcon(hTask);
 
+		// Historical bug
+		if ((pTDI->sIcon.GetLength() == 2) && (pTDI->sIcon == _T("-1")))
+			pTDI->sIcon.Empty();
+		
 		GetTaskCategories(hTask, pTDI->aCategories);
 		GetTaskTags(hTask, pTDI->aTags);
 		GetTaskAllocatedTo(hTask, pTDI->aAllocTo);
@@ -2106,7 +2113,14 @@ LPCTSTR CTaskFile::GetTaskTitle(HTASKITEM hTask) const
 
 LPCTSTR CTaskFile::GetTaskIcon(HTASKITEM hTask) const
 {
-	return GetTaskString(hTask, TDL_TASKICONINDEX);
+	const CString& sIcon = GetTaskString(hTask, TDL_TASKICONINDEX);
+
+	// Historical bug
+	if ((sIcon.GetLength() == 2) && (sIcon == _T("-1")))
+		return NULLSTRING;
+
+	// else
+	return sIcon;
 }
 
 LPCTSTR CTaskFile::GetTaskSubtaskCompletion(HTASKITEM hTask) const
@@ -3291,6 +3305,7 @@ BOOL CTaskFile::SetTaskTextColor(HTASKITEM hTask, COLORREF color)
 
 bool CTaskFile::SetTaskIcon(HTASKITEM hTask, LPCTSTR szIcon)
 {
+	ASSERT(lstrcmp(szIcon, _T("-1")) != 0); // Historical bug
 	return SetTaskString(hTask, TDL_TASKICONINDEX, szIcon);
 }
 
@@ -3452,7 +3467,7 @@ int CTaskFile::GetTaskInt(HTASKITEM hTask, const CString& sIntItem) const
 	return pXITask->GetItemValueI(sIntItem);
 }
 
-CString CTaskFile::GetTaskString(HTASKITEM hTask, const CString& sStringItem) const
+const CString& CTaskFile::GetTaskString(HTASKITEM hTask, const CString& sStringItem) const
 {
 	const CXmlItem* pXITask = NULL;
 	GET_TASK(pXITask, hTask, NULLSTRING);
