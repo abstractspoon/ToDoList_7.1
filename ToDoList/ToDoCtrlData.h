@@ -276,6 +276,8 @@ protected:
 	CToDoCtrlUndo m_undo;
 	CToDoCtrlStructure m_struct;
 
+	BOOL m_bUndoRedoing;
+
 	static CString s_cfDefault;
 	static TDC_UNITS s_nDefTimeEstUnits, s_nDefTimeSpentUnits;
 	static CTDCAttributeMap s_mapParentAttribs; // inheritable attribs
