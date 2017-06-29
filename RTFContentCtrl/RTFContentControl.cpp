@@ -568,57 +568,67 @@ BOOL CRTFContentControl::Paste(BOOL bSimple)
 	// No file paths
 	if (nNumFiles == 0)
 	{
-		// If the clipboard contains a bitmap, copy it and reduce its colour depth to 8-bit. 
-		// This also allows us to prevent richedit's default resizing by using paste special
-		if (CClipboard::HasFormat(CF_BITMAP))
-		{
-			CEnBitmap bmp;
-			{
-				CClipboard cb;
-				bmp.CopyImage(cb.GetBitmap());
-			}
+		CWaitCursor cursor;
 
-			if (bmp.GetSafeHandle() && bmp.CopyToClipboard(m_rtf, 8))
-			{
-				return m_rtf.PasteSpecial(CF_BITMAP);
-			}
-
-			// else 
-			return FALSE; //??
-		}
-
-		// if there is HTML but not RTF or an image then convert the 
-		// HTML to RTF and add it to the current clipboard contents
 		CClipboardBackup cbb(*this);
 		BOOL bClipboardSaved = FALSE;
 
-		CString sHtml, sSourceUrl;
-
-		if (GetClipboardHtmlForPasting(sHtml, sSourceUrl))
+		// If there isn't Rich Text on the clipboard...
+		if (!CClipboard::HasFormat(CBF_RTF) && 
+			!CClipboard::HasFormat(CBF_RETEXTOBJ) && 
+			!CClipboard::HasFormat(CBF_EMBEDDEDOBJ))
 		{
-			CWaitCursor cursor;
-
-			// Always set this to make sure it is current
-			m_rtfHtml.SetAllowUseOfMSWord(s_bConvertWithMSWord);
-
-			CString sRTF;
-
-			if (m_rtfHtml.ConvertHtmlToRtf((LPCSTR)(LPCTSTR)sHtml, NULL, sRTF, NULL))
+			// If the clipboard contains a bitmap, copy it and reduce its 
+			// colour depth to 8-bit, and use 'paste special' to prevent 
+			// richedit's default resizing
+			if (CClipboard::HasFormat(CF_BITMAP))
 			{
-#ifdef _UNICODE
-				// convert back to Ansi (not UTF8) for clipboard
-				Misc::EncodeAsMultiByte(sRTF);
-#endif
-				// backup the current clipboard
-				bClipboardSaved = cbb.Backup();
-				ASSERT(bClipboardSaved);
+				CEnBitmap bmp;
+				CClipboard cb;
 
-				// overwrite with RTF
-				CClipboard(*this).SetText(sRTF, CBF_RTF);
+				if (bmp.CopyImage(cb.GetBitmap()) && cb.Close() &&
+					bmp.CopyToClipboard(m_rtf, 8))
+				{
+					return m_rtf.PasteSpecial(CF_BITMAP);
+				}
+
+				// else fall through
+				ASSERT(0);
+			}
+			else
+			{
+				// If there is HTML then convert the 
+				// HTML to RTF and add it to the current clipboard contents
+				CString sHtml, sSourceUrl;
+
+				if (GetClipboardHtmlForPasting(sHtml, sSourceUrl))
+				{
+					// Always set this to make sure it is current
+					m_rtfHtml.SetAllowUseOfMSWord(s_bConvertWithMSWord);
+
+					CString sRTF;
+
+					if (m_rtfHtml.ConvertHtmlToRtf((LPCSTR)(LPCTSTR)sHtml, NULL, sRTF, NULL))
+					{
+		#ifdef _UNICODE
+						// convert back to Ansi (not UTF8) for clipboard
+						Misc::EncodeAsMultiByte(sRTF);
+		#endif
+						// backup the current clipboard
+						bClipboardSaved = cbb.Backup();
+						ASSERT(bClipboardSaved);
+
+						// overwrite with RTF
+						VERIFY(CClipboard(*this).SetText(sRTF, CBF_RTF));
+					}
+
+					// else fall through
+					ASSERT(0);
+				}
 			}
 		}
 
-		// do the actual paste
+		// All else do default paste
 		m_rtf.Paste(s_bPasteSourceUrls);
 
 		// restore the clipboard if necessary
