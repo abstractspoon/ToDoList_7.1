@@ -2278,6 +2278,8 @@ void CToDoCtrl::UpdateTask(TDC_ATTRIBUTE nAttrib, DWORD dwFlags)
 
 			if (m_mapCustomCtrlData.Lookup(sAttribID, sData))
 				SetSelectedTaskCustomAttributeData(sAttribID, sData, TRUE);
+			else
+				ClearSelectedTaskCustomAttributeData(sAttribID, TRUE);
 		}
 	}
 }
@@ -2407,6 +2409,11 @@ BOOL CToDoCtrl::SetSelectedTaskCustomAttributeData(const CString& sAttribID, con
 	}
 	
 	return (nRes != SET_FAILED);
+}
+
+BOOL CToDoCtrl::ClearSelectedTaskCustomAttributeData(const CString& sAttribID, BOOL bCtrlEdited)
+{
+	return SetSelectedTaskCustomAttributeData(sAttribID, _T(""), bCtrlEdited);
 }
 
 void CToDoCtrl::DrawSplitter(CDC* pDC) 
@@ -11880,7 +11887,7 @@ BOOL CToDoCtrl::ClearSelectedTaskAttribute(TDC_ATTRIBUTE nAttrib)
 	CString sCustomAttribID = CTDCCustomAttributeHelper::GetAttributeTypeID(nAttrib, m_aCustomAttribDefs);
 
 	if (!sCustomAttribID.IsEmpty())
-		return SetSelectedTaskCustomAttributeData(sCustomAttribID, _T(""), FALSE);
+		return ClearSelectedTaskCustomAttributeData(sCustomAttribID, FALSE);
 
 	// else something we've missed
 	ASSERT(0);
