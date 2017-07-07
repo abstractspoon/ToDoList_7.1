@@ -161,16 +161,16 @@ END_MESSAGE_MAP()
 
 LRESULT CRTFContentControl::OnPrefsHelp(WPARAM /*wp*/, LPARAM /*lp*/)
 {
-	OnHelp();
+	CString sHelpID(GetTypeID());
+	sHelpID += _T("_PREFS");
+	
+	GetParent()->SendMessage(WM_ICC_DOHELP, 0, (LPARAM)(LPCTSTR)sHelpID);
 	return 0L;
 }
 
 void CRTFContentControl::OnHelp()
 {
-	CString sHelpID(GetTypeID());
-	sHelpID += _T("_PREFS");
-	
-	GetParent()->SendMessage(WM_ICC_DOHELP, 0, (LPARAM)(LPCTSTR)sHelpID);
+	GetParent()->SendMessage(WM_ICC_DOHELP, 0, (LPARAM)(LPCTSTR)GetTypeID());
 }
 
 BOOL CRTFContentControl::OnHelpInfo(HELPINFO* /*lpHelpInfo*/)
