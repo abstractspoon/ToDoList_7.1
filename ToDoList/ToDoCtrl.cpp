@@ -3294,6 +3294,29 @@ TDC_SET CToDoCtrl::OffsetTaskStartAndDueDates(DWORD dwTaskID, int nAmount, TDC_U
 	if (mapProcessed.HasKey(dwTaskID))
 		return SET_NOCHANGE;
 
+	const TODOITEM* pTDI = GetTask(dwTaskID);
+
+	if (!pTDI)
+	{
+		ASSERT(0);
+		return SET_FAILED;
+	}
+
+	// Fallback if either start or due date is not set
+	if (!pTDI->HasStart())
+	{
+		if (pTDI->HasDue())
+			return m_data.OffsetTaskDate(dwTaskID, TDCD_DUE, nAmount, nUnits, bAndSubtasks, FALSE);
+
+		// else both not set
+		return SET_FAILED;
+	}
+	else if (!pTDI->HasDue())
+	{
+		return m_data.OffsetTaskDate(dwTaskID, TDCD_START, nAmount, nUnits, bAndSubtasks, FALSE);
+	}
+
+	// else both are set
 	COleDateTime dtStart = m_data.GetTaskDate(dwTaskID, TDCD_START);
 	ASSERT(CDateHelper::IsDateSet(dtStart));
 

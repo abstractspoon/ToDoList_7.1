@@ -9135,9 +9135,8 @@ void CToDoListWnd::OnExport()
 						m_mgrToDoCtrls.GetFilePath(nSelTDC, FALSE), 
 						userPrefs.GetAutoExportFolderPath());
 	
-	// keep showing the dialog until either the user
-	// selects a filename which does not match a tasklist
-	// or they confirm that they want to overwrite the tasklist
+	// keep showing the dialog until the user selects a non-existing 
+	// filename OR they confirm that they want to overwrite the file(s)
 	CString sExportPath;
 	BOOL bOverWrite = FALSE;
 	int nFormat = -1;
@@ -9150,26 +9149,20 @@ void CToDoListWnd::OnExport()
 		sExportPath = dialog.GetExportPath();
 		nFormat = dialog.GetExportFormat();
 
+		UINT nMsgFlags = (MB_OKCANCEL | MB_ICONWARNING);
+
 		// interested in overwriting single files
 		if (nTDCCount == 1 || !dialog.GetExportAllTasklists() || dialog.GetExportOneFile())
 		{
-			// check with user if they are about to override a tasklist
-			if (m_mgrToDoCtrls.FindToDoCtrl(sExportPath) != -1)
-			{
-				UINT nRet = MessageBox(IDS_CONFIRM_EXPORT_OVERWRITE, 0, MB_YESNOCANCEL, sExportPath);
-
-				if (nRet == IDCANCEL)
-					return;
-
-				// else
-				bOverWrite = (nRet == IDYES);
-			}
+			if (FileMisc::FileExists(sExportPath))
+				bOverWrite = (IDOK == MessageBox(sExportPath, IDS_CONFIRM_EXPORT_OVERWRITE, nMsgFlags));
 			else
-				bOverWrite = TRUE; // nothing to fear
+				bOverWrite = TRUE;
 		}
 		else // check all open tasklists
 		{
 			CString sFilePath, sExt = m_mgrImportExport.GetExporterFileExtension(nFormat);
+			CStringArray aExistPaths;
 		
 			for (int nCtrl = 0; nCtrl < nTDCCount; nCtrl++)
 			{
@@ -9179,21 +9172,14 @@ void CToDoListWnd::OnExport()
 				FileMisc::SplitPath(sPath, NULL, NULL, &sFName);
 				FileMisc::MakePath(sFilePath, NULL, sExportPath, sFName, sExt);
 
-				if (m_mgrToDoCtrls.FindToDoCtrl(sFilePath) != -1)
-				{
-					UINT nRet = MessageBox(IDS_CONFIRM_EXPORT_OVERWRITE, 0, MB_YESNOCANCEL, sFilePath);
-
-					if (nRet == IDCANCEL)
-						return;
-
-					// else
-					bOverWrite = (nRet == IDYES);
-					break;
-				}
+				if (FileMisc::FileExists(sFilePath))
+					aExistPaths.Add(sFilePath);
 			}
 
-			// no matches?
-			bOverWrite = TRUE; // nothing to fear
+			if (aExistPaths.GetSize())
+				bOverWrite = (IDOK == MessageBox(Misc::FormatArray(aExistPaths, _T("\n\n")), IDS_CONFIRM_EXPORT_OVERWRITE, nMsgFlags));
+			else
+				bOverWrite = TRUE;
 		}
 	}
 

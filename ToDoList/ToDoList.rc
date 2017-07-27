@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 7,1,3,4
+ FILEVERSION 7,1,3,5
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -47,7 +47,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "7, 1, 3, 4\0"
+            VALUE "FileVersion", "7, 1, 3, 5\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2003-17\0"
             VALUE "LegalTrademarks", "\0"
@@ -4791,7 +4791,7 @@ BEGIN
     IDS_CUSTOMCOLUMN        "%s (Custom)"
     IDS_TDC_MULTIFILE       "Merge"
     IDS_CONFIRM_EXPORT_OVERWRITE 
-                            "Are you sure you want to overwrite '%s' with the results of this export?"
+                            "The following files will be be overwritten by the export"
     IDS_MULTIPLEUNIQUEIDSEXIST 
                             "Two or more attributes shared the unique ID '%s'.\n\nYou will need to resolve this before closing the dialog."
     IDS_PPREVIEWPROGRESS    "Preparing print preview..."

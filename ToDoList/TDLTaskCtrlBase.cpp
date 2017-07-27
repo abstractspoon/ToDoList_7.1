@@ -2948,7 +2948,7 @@ BOOL CTDLTaskCtrlBase::FormatDate(const COleDateTime& date, TDC_DATE nDate, CStr
 		
 		BOOL bWantDrawTime = WantDrawColumnTime(nDate, bCustomWantsTime);
 
-		if (bWantDrawTime)
+		if (bWantDrawTime && CDateHelper::DateHasTime(date))
 			dwFmt |= DHFD_TIME | DHFD_NOSEC;
 		
 		if (CDateHelper::FormatDate(date, dwFmt, sDate, sTime, sDow))
