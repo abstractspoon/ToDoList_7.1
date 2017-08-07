@@ -1188,3 +1188,11 @@ void CKanbanListCtrl::OnShowTooltip(NMHDR* pNMHDR, LRESULT* pResult)
 
 	::SetWindowPos(pNMHDR->hwndFrom, NULL, rTip.left, rTip.top, 0, 0, (SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE));
 }
+
+BOOL CKanbanListCtrl::AttributeValuesMatch(const CKanbanListCtrl& other) const
+{
+	CStringArray aOtherValues;
+	other.GetAttributeValues(aOtherValues);
+
+	return Misc::MatchAll(m_columnDef.aAttribValues, aOtherValues);
+}

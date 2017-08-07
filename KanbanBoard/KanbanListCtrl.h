@@ -35,6 +35,7 @@ public:
 	BOOL HasMultipleValues() const;
 	BOOL HasAnyValues() const;
 	BOOL IsBacklog() const;
+	BOOL AttributeValuesMatch(const CKanbanListCtrl& other) const;
 
 	BOOL Create(UINT nID, CWnd* pParentWnd);
 	int AddTask(LPCTSTR szTitle, DWORD dwTaskID, BOOL bSelect);
