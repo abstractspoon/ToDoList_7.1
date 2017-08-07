@@ -1385,7 +1385,7 @@ CKanbanListCtrl* CKanbanCtrl::NewListCtrl(const KANBANCOLUMN& colDef)
 	{
 		pList->SetTextColorIsBackground(HasOption(KBCF_TASKTEXTCOLORISBKGND));
 		pList->SetStrikeThruDoneTasks(HasOption(KBCF_STRIKETHRUDONETASKS));
-		pList->SetColorTasksByPriority(HasOption(KBCF_COLORBARBYPRIORITY));
+		pList->SetColorTaskBarByPriority(HasOption(KBCF_COLORBARBYPRIORITY));
 		pList->SetShowTaskColorAsBar(HasOption(KBCF_SHOWTASKCOLORASBAR));
 
 		if (pList->Create(IDC_LISTCTRL, this))
@@ -1684,7 +1684,7 @@ void CKanbanCtrl::SetOption(DWORD dwOption, BOOL bSet)
 						ASSERT(pList);
 
 						if (pList)
-							pList->SetColorTasksByPriority(bSet);
+							pList->SetColorTaskBarByPriority(bSet);
 					}
 				}
 				break;
