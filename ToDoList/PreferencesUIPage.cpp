@@ -74,7 +74,6 @@ void CPreferencesUIPage::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMMENTSFORMAT, m_nDefaultCommentsFormat);
 	DDX_Check(pDX, IDC_SORTDONETASKSATBOTTOM, m_bSortDoneTasksAtBottom);
 	DDX_Check(pDX, IDC_INCLUDEWEBLINKINCOMMENTSPASTE, m_bIncludeWebLinksInCommentsPaste);
-//	DDX_Check(pDX, IDC_RTLCOMMENTS, m_bRTLComments);
 
 	if (pDX->m_bSaveAndValidate)
 		m_sUIThemeFile = m_cbThemes.GetThemePath();
@@ -246,6 +245,8 @@ void CPreferencesUIPage::SavePreferences(IPreferences* pPrefs, LPCTSTR szKey) co
 	}
 
 	// task views
+	pPrefs->DeleteProfileSection(_T("Preferences\\ViewVisibility"));
+
 	CStringArray aViews;
 	int nView = m_lbTaskViews.GetHiddenViews(aViews);
 

@@ -10008,9 +10008,14 @@ void CToDoListWnd::ResetPrefs()
 	
 	// Update Filter bar colours
 	CDWordArray aPriorityColors;
-	m_pPrefs->GetPriorityColors(aPriorityColors);
 
+	m_pPrefs->GetPriorityColors(aPriorityColors);
 	m_filterBar.SetPriorityColors(aPriorityColors);
+
+	CStringArray aDefTaskViews;
+
+	m_pPrefs->GetDefaultTaskViews(aDefTaskViews);
+	CFilteredToDoCtrl::SetDefaultTaskViews(aDefTaskViews);
 }
 
 const CPreferencesDlg& CToDoListWnd::Prefs() const
