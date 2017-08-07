@@ -57,6 +57,7 @@ protected:
 	virtual BOOL CanEditSelectedCell() const;
 	virtual void InitState();
 	virtual void DrawCellText(CDC* pDC, int nRow, int nCol, const CRect& rText, const CString& sText, COLORREF crText, UINT nDrawTextFlags);
+	virtual DWORD GetNewItemData() const { return CLR_NONE; }
 
 	void PrepareEdit(int nRow, int nCol);
 

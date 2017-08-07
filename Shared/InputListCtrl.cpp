@@ -1440,7 +1440,7 @@ void CInputListCtrl::OnEndEdit(UINT /*uIDCtrl*/, int* pResult)
 			else
 			{
 				SetItemText(m_nEditItem, m_nEditCol, sText);
-				SetItemData(m_nEditItem, 0);
+				SetItemData(m_nEditItem, GetNewItemData());
 
 				// reinsert prompt
 				nIndex = InsertItem(nLastRow + 1, m_sAutoRowPrompt, -1);
