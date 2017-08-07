@@ -1322,12 +1322,13 @@ BOOL CKanbanCtrl::TrackAttribute(IUI_ATTRIBUTE nAttrib, const CString& sCustomAt
 
 				while (nCol--)
 				{
-					const KANBANCOLUMN& colDef = aColumnDefs[nCol];
 					CKanbanListCtrl* pList = m_aListCtrls[nCol];
 					ASSERT(pList);
 
 					if (pList)
 					{
+						const KANBANCOLUMN& colDef = aColumnDefs[nCol];
+
 						pList->SetBackgroundColor(colDef.crBackground);
 						//pList->SetExcessColor(colDef.crExcess);
 						//pList->SetMaximumTaskCount(colDef.nMaxTaskCount);
@@ -1336,7 +1337,7 @@ BOOL CKanbanCtrl::TrackAttribute(IUI_ATTRIBUTE nAttrib, const CString& sCustomAt
 				return TRUE;
 			}
 		}
-		else if (aColumnDefs.IsEmpty()) // not switching to fixed columns
+		else if (aColumnDefs.GetSize() == 0) // not switching to fixed columns
 		{
 			return TRUE;
 		}
