@@ -4298,14 +4298,15 @@ int CToDoCtrlData::CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, TDC_COLUMN nSo
 				int nPriority2 = pTDI2->nPriority; // default
 				
 				BOOL bUseHighestPriority = HasStyle(TDCS_USEHIGHESTPRIORITY);
+				BOOL bDoneHaveLowestPriority = HasStyle(TDCS_DONEHAVELOWESTPRIORITY);
+				BOOL bDueHaveHighestPriority = HasStyle(TDCS_DUEHAVEHIGHESTPRIORITY);
 				
 				// item1
-				if (bDone1)
+				if (bDone1 && bDoneHaveLowestPriority)
 				{
 					nPriority1 = -1;
 				}
-				else if (HasStyle(TDCS_DUEHAVEHIGHESTPRIORITY) &&
-						IsTaskDue(pTDI1, pTDS1) && 
+				else if (bDueHaveHighestPriority &&	IsTaskDue(pTDI1, pTDS1) && 
 						(bSortDueTodayHigh || !IsTaskDue(pTDI1, pTDS1, TRUE)))
 				{
 					nPriority1 = pTDI1->nPriority + 11;
@@ -4316,12 +4317,11 @@ int CToDoCtrlData::CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, TDC_COLUMN nSo
 				}
 				
 				// item2
-				if (bDone2)
+				if (bDone2 && bDoneHaveLowestPriority)
 				{
 					nPriority2 = -1;
 				}
-				else if (HasStyle(TDCS_DUEHAVEHIGHESTPRIORITY) && 
-						IsTaskDue(pTDI2, pTDS2) && 
+				else if (bDueHaveHighestPriority && IsTaskDue(pTDI2, pTDS2) && 
 						(bSortDueTodayHigh || !IsTaskDue(pTDI2, pTDS2, TRUE)))
 				{
 					nPriority2 = pTDI2->nPriority + 11;
@@ -4343,9 +4343,10 @@ int CToDoCtrlData::CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, TDC_COLUMN nSo
 				int nRisk2 = pTDI2->nRisk; // default
 				
 				BOOL bUseHighestRisk = HasStyle(TDCS_USEHIGHESTRISK);
+				BOOL bDoneHaveLowestRisk = HasStyle(TDCS_DONEHAVELOWESTRISK);
 				
 				// item1
-				if (bDone1)
+				if (bDone1 && bDoneHaveLowestRisk)
 				{
 					nRisk1 = -1;
 				}
@@ -4355,7 +4356,7 @@ int CToDoCtrlData::CompareTasks(DWORD dwTask1ID, DWORD dwTask2ID, TDC_COLUMN nSo
 				}
 				
 				// item2
-				if (bDone2)
+				if (bDone2 && bDoneHaveLowestRisk)
 				{
 					nRisk2 = -1;
 				}
