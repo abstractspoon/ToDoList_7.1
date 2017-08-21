@@ -134,11 +134,13 @@ FILTER_SHOW CTDLFilterComboBox::GetSelectedFilter(CString& sCustom) const
 
 	if (nSelFilter == FS_CUSTOM)
 	{
-		CString sFilter = CDialogHelper::GetSelectedItem(*this);
-		sCustom = ExtractCustomFilterName(sFilter);
+		CString sDisplay = CDialogHelper::GetSelectedItem(*this);
+		VERIFY(ExtractCustomFilterName(sDisplay, sCustom));
 	}
 	else
+	{
 		sCustom.Empty();
+	}
 
 	return nSelFilter;
 }
@@ -259,27 +261,36 @@ CString CTDLFilterComboBox::FormatCustomFilterDisplayString(int nFilter, const C
 	return sDisplay;
 }
 
-CString CTDLFilterComboBox::ExtractCustomFilterName(const CString& sDisplay)
+BOOL CTDLFilterComboBox::ExtractCustomFilterName(const CString& sDisplay, CString& sFilter)
 {
 	// if it doesn't have a tab then it's already done
 	int nTab = sDisplay.Find('\t');
 
 	if (nTab == -1)
-		return sDisplay;
+	{
+		sFilter = sDisplay;
+		return TRUE;
+	}
+
+	sFilter.Empty();
 
 	// check for custom filter string
 	CEnString sCustom(IDS_CUSTOMFILTER);
+	int nEnd = sDisplay.Find(sCustom);
+	
+	if (nEnd == -1)
+		return FALSE;
 
-	ASSERT(sDisplay.Find(sCustom) != -1);
-
-	int nEnd = sDisplay.Find(_T(" ("));
+	nEnd = sDisplay.Left(nEnd).ReverseFind('(');
 
 	if (nEnd == -1)
-		return _T("");
+		return FALSE;
 
 	// else
-	sCustom = sDisplay.Mid(nTab + 1, nEnd - nTab - 1);
-	return sCustom;
+	sFilter = sDisplay.Mid(nTab + 1, nEnd - nTab - 1);
+	Misc::Trim(sFilter);
+
+	return !sFilter.IsEmpty();
 }
 
 void CTDLFilterComboBox::DrawItemText(CDC& dc, const CRect& rect, int nItem, UINT nItemState,
@@ -291,9 +302,9 @@ void CTDLFilterComboBox::DrawItemText(CDC& dc, const CRect& rect, int nItem, UIN
 	// remove the (Find Tasks Filter) bit
 	if ((FS_CUSTOM == dwItemData) && !bList)
 	{
-		CString sFilter = ExtractCustomFilterName(sItem);
+		CString sFilter;
 
-		if (!sFilter.IsEmpty())
+		if (ExtractCustomFilterName(sItem, sFilter))
 		{
 			int nFilter = nItem;
 		

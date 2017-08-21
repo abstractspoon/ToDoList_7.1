@@ -64,7 +64,7 @@ protected:
 	int AddDefaultFilterItem(int nItem);
 
 	static CString FormatCustomFilterDisplayString(int nFilter, const CString& sFilter, BOOL bIncCustomLabel = TRUE);
-	static CString ExtractCustomFilterName(const CString& sDisplay);
+	static BOOL ExtractCustomFilterName(const CString& sDisplay, CString& sFilter);
 };
 
 /////////////////////////////////////////////////////////////////////////////
