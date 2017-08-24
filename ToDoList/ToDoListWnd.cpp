@@ -1855,7 +1855,14 @@ BOOL CToDoListWnd::GetAutoExportExtension(CString& sExt) const
 	sExt.Empty();
 
 	if (Prefs().GetExportToHTML())
-		sExt = ".html";
+	{
+		CXslFile xsl;
+		
+		if (xsl.Load(Prefs().GetSaveExportStylesheet()))
+			sExt = xsl.GetOutputFileExtension();
+		else
+			sExt = _T(".html");
+	}
 	else
 	{
 		int nExporter = Prefs().GetOtherExporter();
@@ -3581,7 +3588,7 @@ BOOL CToDoListWnd::Export2Html(const CTaskFile& tasks, const CString& sFilePath,
 	
 	if (FileMisc::FileExists(sStylesheet))
 	{
-		return tasks.TransformToFile(sStylesheet, sFilePath, SFEF_UTF8);
+		return tasks.TransformToFile(sStylesheet, sFilePath);
 	}
 	
 	// else default export
@@ -4542,7 +4549,7 @@ UINT CToDoListWnd::DueTaskNotifyThreadProc(LPVOID pParam)
 	{
 		if (FileMisc::FileExists(pDDNotify->sStylesheet)) // bTransform
 		{
-			bSuccess = pDDNotify->tasks.TransformToFile(pDDNotify->sStylesheet, pDDNotify->sExportPath, SFEF_UTF8);
+			bSuccess = pDDNotify->tasks.TransformToFile(pDDNotify->sStylesheet, pDDNotify->sExportPath);
 		}
 		else
 		{
@@ -9520,13 +9527,13 @@ void CToDoListWnd::OnToolsTransformactivetasklist()
 	CString sStylesheet = dialog.GetStylesheet();
 	sTitle = dialog.GetTitle();
 	
-	CXslFile xsl;
-	VERIFY (xsl.Load(sStylesheet));
-	
 	// output path
 	CString sOutputPath(tdc.GetFilePath()); 
 	{
 		// Output file extension may be specified in the stylesheet
+		CXslFile xsl;
+		VERIFY (xsl.Load(sStylesheet));
+		
 		CString sExtOut = xsl.GetOutputFileExtension();
 
 		if (!sOutputPath.IsEmpty())
@@ -9568,7 +9575,7 @@ void CToDoListWnd::OnToolsTransformactivetasklist()
 	// save intermediate tasklist to file as required
 	LogIntermediateTaskList(tasks, tdc.GetFilePath());
 	
-	if (tasks.TransformToFile(sStylesheet, sOutputPath, xsl.GetOutputFileEncoding()))
+	if (tasks.TransformToFile(sStylesheet, sOutputPath))
 	{
 		// preview
 		if (Prefs().GetPreviewExport())

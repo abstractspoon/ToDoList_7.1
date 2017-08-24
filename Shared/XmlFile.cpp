@@ -1323,6 +1323,12 @@ BOOL CXmlFile::Transform(const CString& sTransformPath, CString& sOutput) const
 
 BOOL CXmlFile::TransformToFile(const CString& sTransformPath, const CString& sOutputPath, SFE_FORMAT nFormat) const
 {
+	if (nFormat == SFEF_AUTODETECT)
+	{
+		ASSERT(0);
+		return FALSE;
+	}
+
 	CString sOutput;
 	
 	if (Transform(sTransformPath, sOutput))
