@@ -2035,20 +2035,13 @@ void CToDoListWnd::SaveSettings()
 	CPreferences prefs;
 
 	// pos
-	WINDOWPLACEMENT wp;
-	GetWindowPlacement(&wp);
+	WINDOWPLACEMENT wp = { 0 };
+	VERIFY(GetWindowPlacement(&wp));
 	
 	prefs.WriteProfileInt(_T("Pos"), _T("Left"), wp.rcNormalPosition.left);
 	prefs.WriteProfileInt(_T("Pos"), _T("Top"), wp.rcNormalPosition.top);
 	prefs.WriteProfileInt(_T("Pos"), _T("Right"), wp.rcNormalPosition.right);
 	prefs.WriteProfileInt(_T("Pos"), _T("Bottom"), wp.rcNormalPosition.bottom);
-
-// 	FileMisc::LogText(_T("SavePosition: TopLeft=(%d,%d) BotRight=(%d,%d) MinPos=(%d,%d) MaxPos=(%d,%d)"), 
-// 						wp.rcNormalPosition.left, wp.rcNormalPosition.top,
-// 						wp.rcNormalPosition.right, wp.rcNormalPosition.bottom,
-// 						wp.ptMaxPosition.x, wp.ptMaxPosition.y,
-// 						wp.ptMinPosition.x, wp.ptMinPosition.y);
-
 	prefs.WriteProfileInt(_T("Pos"), _T("Hidden"), !m_bVisible);
 	prefs.WriteProfileInt(_T("Pos"), _T("Maximized"), IsZoomed());
 	
@@ -2657,16 +2650,10 @@ void CToDoListWnd::RestorePosition()
 	
 	if (rect.Width() > 0 && rect.Height() > 0)
 	{
-		// ensure this intersects with the closest screen by a decent amount
-		int BORDER = 200;
-		rect.DeflateRect(BORDER, BORDER);
+		CRect rScreen;
 
-		CRect rUnused;
-
-		if (GraphicsMisc::GetAvailableScreenSpace(rect, rUnused))
+		if (GraphicsMisc::GetAvailableScreenSpace(rect, rScreen))
 		{
-			rect.InflateRect(BORDER, BORDER);
-
 			// because the position was saved using the results of 
 			// GetWindowPlacement we must use SetWindowPlacement
 			// to restore the window
@@ -2677,12 +2664,6 @@ void CToDoListWnd::RestorePosition()
 			wp.ptMaxPosition.y = -1;
 			wp.ptMinPosition.x = -1;
 			wp.ptMinPosition.y = -1;
-
-// 			FileMisc::LogText(_T("RestorePosition: TopLeft=(%d,%d) BotRight=(%d,%d) MinPos=(%d,%d) MaxPos=(%d,%d)"), 
-// 								wp.rcNormalPosition.left, wp.rcNormalPosition.top,
-// 								wp.rcNormalPosition.right, wp.rcNormalPosition.bottom,
-// 								wp.ptMaxPosition.x, wp.ptMaxPosition.y,
-// 								wp.ptMinPosition.x, wp.ptMinPosition.y);
 
 			SetWindowPlacement(&wp);
 		}

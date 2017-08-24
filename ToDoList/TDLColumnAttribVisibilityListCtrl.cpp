@@ -281,24 +281,8 @@ COLORREF CTDLColumnAttribVisibilityListCtrl::GetItemBackColor(int nItem, int nCo
 {
 	if (!bSelected)
 	{
-		if (!IsWindowEnabled())
+		if (!IsWindowEnabled() || !IsButtonEnabled(nItem, nCol))
 			return GetSysColor(COLOR_3DLIGHT);
-
-		if (!IsTimeCellEnabled(nItem, nCol))
-			return GetSysColor(COLOR_3DLIGHT);
-		
-		switch (nCol)
-		{
-		case COL_EDITVIS:
-			if (m_vis.GetShowEditsAndFilters() != TDLSA_ANY)
-				return GetSysColor(COLOR_3DLIGHT);
-			break;
-
-		case COL_FILTERVIS:
-			if (m_vis.GetShowEditsAndFilters() != TDLSA_ANY)
-				return GetSysColor(COLOR_3DLIGHT);
-			break;
-		}
 	}
 	
 	// else
@@ -308,6 +292,9 @@ COLORREF CTDLColumnAttribVisibilityListCtrl::GetItemBackColor(int nItem, int nCo
 BOOL CTDLColumnAttribVisibilityListCtrl::IsButtonEnabled(int nRow, int nCol) const 
 { 
 	if (!CInputListCtrl::IsButtonEnabled(nRow, nCol))
+		return FALSE;
+
+	if (!IsTimeCellEnabled(nRow, nCol))
 		return FALSE;
 
 	switch (nCol)
