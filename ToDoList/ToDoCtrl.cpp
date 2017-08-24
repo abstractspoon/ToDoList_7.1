@@ -3302,27 +3302,28 @@ TDC_SET CToDoCtrl::OffsetTaskStartAndDueDates(DWORD dwTaskID, int nAmount, TDC_U
 		return SET_FAILED;
 	}
 
-	// Fallback if either start or due date is not set
-	if (!pTDI->HasStart())
+	TDC_SET nRes = SET_NOCHANGE;
+	
+	// Handle one or other of start/due not being set but only for the task itself
+	// because its subtasks may have different dates set to their parent
+	BOOL bHasStart = pTDI->HasStart();
+	BOOL bHasDue = pTDI->HasDue();
+
+	if (bHasStart && !bHasDue)
 	{
-		if (pTDI->HasDue())
-			return m_data.OffsetTaskDate(dwTaskID, TDCD_DUE, nAmount, nUnits, bAndSubtasks, FALSE);
-
-		// else both not set
-		return SET_FAILED;
+		nRes = m_data.OffsetTaskDate(dwTaskID, TDCD_START, nAmount, nUnits, FALSE, FALSE);
 	}
-	else if (!pTDI->HasDue())
+	else if (!bHasStart && bHasDue)
 	{
-		return m_data.OffsetTaskDate(dwTaskID, TDCD_START, nAmount, nUnits, bAndSubtasks, FALSE);
+		nRes = m_data.OffsetTaskDate(dwTaskID, TDCD_DUE, nAmount, nUnits, FALSE, FALSE);
 	}
-
-	// else both are set
-	COleDateTime dtStart = m_data.GetTaskDate(dwTaskID, TDCD_START);
-	ASSERT(CDateHelper::IsDateSet(dtStart));
-
-	CDateHelper::OffsetDate(dtStart, nAmount, TDC::MapUnitsToDHUnits(nUnits));
-
-	TDC_SET nRes = m_data.MoveTaskStartAndDueDates(dwTaskID, dtStart);
+	else if (bHasStart && bHasDue)
+	{
+		COleDateTime dtStart(pTDI->dateStart);
+		CDateHelper::OffsetDate(dtStart, nAmount, TDC::MapUnitsToDHUnits(nUnits));
+		
+		nRes = m_data.MoveTaskStartAndDueDates(dwTaskID, dtStart);
+	}
 
 	mapProcessed.AddKey(dwTaskID);
 

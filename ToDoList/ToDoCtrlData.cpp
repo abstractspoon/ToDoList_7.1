@@ -2017,23 +2017,43 @@ TDC_SET CToDoCtrlData::MoveTaskStartAndDueDates(DWORD dwTaskID, const COleDateTi
 	// are automatically calculated
 	if (pTDI->aDependencies.GetSize() && HasStyle(TDCS_AUTOADJUSTDEPENDENCYDATES))
 		return SET_NOCHANGE;
-	
-	// Cache current time estimate before doing anything
-	double dDuration = pTDI->dTimeEstimate;
-	
-	if (dDuration == 0.0)
-		dDuration = CalcDuration(pTDI->dateStart, pTDI->dateDue, pTDI->nTimeEstUnits);
 
-	// recalc due date
-	COleDateTime dtStart(dtNewStart);
-	COleDateTime dtNewDue = AddDuration(dtStart, dDuration, pTDI->nTimeEstUnits);
+	// Determine new due date
+	COleDateTime dtStart(dtNewStart); // Can get changed by AddDuration
+	COleDateTime dtDue(pTDI->dateDue);
 
-	// FALSE -> don't recalc time estimate until due date is set
+	BOOL bSyncTimeEst = HasStyle(TDCS_SYNCTIMEESTIMATESANDDATES);
+
+	if (bSyncTimeEst)
+	{
+		double dDuration = 0.0;
+
+		if (pTDI->dTimeEstimate > 0.0)
+		{
+			dDuration = pTDI->dTimeEstimate;
+		}
+		else
+		{
+			dDuration = CalcDuration(pTDI->dateStart, pTDI->dateDue, pTDI->nTimeEstUnits);
+		}
+
+		dtDue = AddDuration(dtStart, dDuration, pTDI->nTimeEstUnits);
+	}
+	else if (pTDI->HasDue())
+	{
+		// Shift the due task by exactly the same amount
+		dtDue.m_dt += (dtStart.m_dt - pTDI->dateStart.m_dt);
+	}
+		
+	// Set the start date WITHOUT recalculating the time estimate
 	TDC_SET nRes = SetTaskDate(dwTaskID, pTDI, TDCD_START, dtStart, FALSE);
 	ASSERT(nRes == SET_CHANGE);
 
 	if (nRes == SET_CHANGE)
-		SetTaskDate(dwTaskID, pTDI, TDCD_DUE, dtNewDue);
+	{
+		if (CDateHelper::IsDateSet(dtDue))
+			SetTaskDate(dwTaskID, pTDI, TDCD_DUE, dtDue, bSyncTimeEst);
+	}
 
 	return nRes;
 }
