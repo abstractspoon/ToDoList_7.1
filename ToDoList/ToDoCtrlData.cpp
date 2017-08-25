@@ -712,15 +712,15 @@ BOOL CToDoCtrlData::TaskHasLocalCircularDependencies(DWORD dwTaskID) const
 	// ultimately traces a path back to the task
 
 	// we only check dependents within the same tasklist
-	CDWordArray aDependents;
-	int nDepends = GetTaskLocalDependents(dwTaskID, aDependents);
+	CDWordArray aDependIDs;
+	int nDepends = GetTaskLocalDependencies(dwTaskID, aDependIDs);
 	
 	while (nDepends--)
 	{
 		// Keep each path separate
 		CID2IDMap mapVisited;
 
-		if (FindTaskLocalDependent(aDependents[nDepends], dwTaskID, mapVisited))
+		if (FindTaskLocalDependency(aDependIDs[nDepends], dwTaskID, mapVisited))
 			return TRUE;
 	}
 	
@@ -728,13 +728,13 @@ BOOL CToDoCtrlData::TaskHasLocalCircularDependencies(DWORD dwTaskID) const
 	return FALSE;
 }
 
-BOOL CToDoCtrlData::FindTaskLocalDependent(DWORD dwTaskID, DWORD dwDependentID, CID2IDMap& mapVisited) const
+BOOL CToDoCtrlData::FindTaskLocalDependency(DWORD dwTaskID, DWORD dwDependID, CID2IDMap& mapVisited) const
 {
 	// simple checks
 	if (!dwTaskID || !HasTask(dwTaskID))
 		return FALSE; // no such task == not found
 	
-	if (dwTaskID == dwDependentID)
+	if (dwTaskID == dwDependID)
 		return TRUE; // same task == circular
 	
 	// if we have been here before, we can stop
@@ -742,7 +742,7 @@ BOOL CToDoCtrlData::FindTaskLocalDependent(DWORD dwTaskID, DWORD dwDependentID, 
 	
 	if (mapVisited.Lookup(dwTaskID, dwDummy))
 	{
-		// Means some part of the dependents is circular 
+		// Means some part of the dependency path is circular 
 		// but not this task so we just don't continue
 		return FALSE;
 	}
@@ -751,8 +751,8 @@ BOOL CToDoCtrlData::FindTaskLocalDependent(DWORD dwTaskID, DWORD dwDependentID, 
 	mapVisited[dwTaskID] = TRUE;
 	
 	// and process its 'same file' dependents
-	CDWordArray aDependents;
-	int nDepends = GetTaskLocalDependents(dwTaskID, aDependents);
+	CDWordArray aDependIDs;
+	int nDepends = GetTaskLocalDependencies(dwTaskID, aDependIDs);
 	
 	while (nDepends--)
 	{
@@ -760,7 +760,7 @@ BOOL CToDoCtrlData::FindTaskLocalDependent(DWORD dwTaskID, DWORD dwDependentID, 
 		CID2IDMap mapNextVisited;
 		Misc::CopyT<DWORD, DWORD>(mapVisited, mapNextVisited);
 
-		if (FindTaskLocalDependent(aDependents[nDepends], dwDependentID, mapNextVisited))
+		if (FindTaskLocalDependency(aDependIDs[nDepends], dwDependID, mapNextVisited))
 			return TRUE;
 	}
 	
@@ -5885,10 +5885,6 @@ void CToDoCtrlData::FixupTaskLocalDependentsDates(DWORD dwTaskID, TDC_DATE nDate
 	if (!HasStyle(TDCS_AUTOADJUSTDEPENDENCYDATES))
 		return;
 	
-	// check for circular dependency before continuing
-	if (TaskHasLocalCircularDependencies(dwTaskID))
-		return;
-	
 	// who is dependent on us -> GetTaskDependents
 	CDWordArray aDependents;
 	int nDepend = GetTaskLocalDependents(dwTaskID, aDependents);
@@ -5896,6 +5892,11 @@ void CToDoCtrlData::FixupTaskLocalDependentsDates(DWORD dwTaskID, TDC_DATE nDate
 	while (nDepend--)
 	{
 		DWORD dwIDDependent = aDependents[nDepend];
+
+		// check for circular dependency before continuing
+		if (TaskHasLocalCircularDependencies(dwIDDependent))
+			return;
+		
 		UINT nAdjusted = UpdateTaskLocalDependencyDates(dwIDDependent, nDate);
 		
 		// then process this task's dependents
