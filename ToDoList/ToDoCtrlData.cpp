@@ -708,17 +708,19 @@ BOOL CToDoCtrlData::TaskHasLocalCircularDependencies(DWORD dwTaskID) const
 	if (!dwTaskID)
 		return FALSE;
 
-	// trace each of this tasks dependencies to see 
-	// if it ever comes back to itself.
-	CID2IDMap mapVisited;
+	// A circular dependency is where any one of a task's dependents
+	// ultimately traces a path back to the task
 
-	// we only check 'same file' links
-	CDWordArray aDependIDs;
-	int nDepends = GetTaskLocalDependencies(dwTaskID, aDependIDs);
+	// we only check dependents within the same tasklist
+	CDWordArray aDependents;
+	int nDepends = GetTaskLocalDependents(dwTaskID, aDependents);
 	
 	while (nDepends--)
 	{
-		if (FindTaskLocalDependency(aDependIDs[nDepends], dwTaskID, mapVisited))
+		// Keep each path separate
+		CID2IDMap mapVisited;
+
+		if (FindTaskLocalDependent(aDependents[nDepends], dwTaskID, mapVisited))
 			return TRUE;
 	}
 	
@@ -726,31 +728,39 @@ BOOL CToDoCtrlData::TaskHasLocalCircularDependencies(DWORD dwTaskID) const
 	return FALSE;
 }
 
-BOOL CToDoCtrlData::FindTaskLocalDependency(DWORD dwTaskID, DWORD dwDependsID, CID2IDMap& mapVisited) const
+BOOL CToDoCtrlData::FindTaskLocalDependent(DWORD dwTaskID, DWORD dwDependentID, CID2IDMap& mapVisited) const
 {
 	// simple checks
 	if (!dwTaskID || !HasTask(dwTaskID))
 		return FALSE; // no such task == not found
 	
-	if (dwTaskID == dwDependsID)
+	if (dwTaskID == dwDependentID)
 		return TRUE; // same task == circular
 	
 	// if we have been here before, we can stop
 	DWORD dwDummy;
 	
 	if (mapVisited.Lookup(dwTaskID, dwDummy))
-		return TRUE; // circular
+	{
+		// Means some part of the dependents is circular 
+		// but not this task so we just don't continue
+		return FALSE;
+	}
 	
 	// else mark this task as having been visited
 	mapVisited[dwTaskID] = TRUE;
 	
-	// and process its 'same file' dependencies
-	CDWordArray aDependIDs;
-	int nDepends = GetTaskLocalDependencies(dwTaskID, aDependIDs);
+	// and process its 'same file' dependents
+	CDWordArray aDependents;
+	int nDepends = GetTaskLocalDependents(dwTaskID, aDependents);
 	
 	while (nDepends--)
 	{
-		if (FindTaskLocalDependency(aDependIDs[nDepends], dwDependsID, mapVisited))
+		// Continue to keep each path separate
+		CID2IDMap mapNextVisited;
+		Misc::CopyT<DWORD, DWORD>(mapVisited, mapNextVisited);
+
+		if (FindTaskLocalDependent(aDependents[nDepends], dwDependentID, mapNextVisited))
 			return TRUE;
 	}
 	

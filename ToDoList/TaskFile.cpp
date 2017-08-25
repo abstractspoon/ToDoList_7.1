@@ -577,7 +577,10 @@ BOOL CTaskFile::CopyTask(const ITaskList* pTasksSrc, HTASKITEM hTaskSrc,
 		hTaskDest = pTasksDest->NewTask(pTasksSrc->GetTaskTitle(hTaskSrc), hTaskDestParent);
 
 		if (pMapID2ID)
-			pMapID2ID->SetAt(pTL8Dest->GetTaskID(hTaskDest), pTL8Src->GetTaskID(hTaskSrc));
+		{
+			DWORD dwSrcID = pTL8Src->GetTaskID(hTaskSrc);
+			pMapID2ID->SetAt(pTL8Dest->GetTaskID(hTaskDest), dwSrcID);
+		}
 	}
 
 	if (!hTaskDest)
