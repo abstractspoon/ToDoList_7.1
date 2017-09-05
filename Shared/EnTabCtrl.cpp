@@ -1,14 +1,3 @@
-//_ **********************************************************
-//_ 
-//_ Name: EnTabCtrl.cpp 
-//_ Purpose: 
-//_ Created: 15 September 1998 
-//_ Author: D.R.Godson
-//_ Modified By: 
-//_ 
-//_ Copyright (c) 1998 Brilliant Digital Entertainment Inc. 
-//_ 
-//_ **********************************************************
 
 // EnTabCtrl.cpp : implementation file
 //

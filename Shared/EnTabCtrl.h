@@ -1,14 +1,3 @@
-//_ **********************************************************
-//_ 
-//_ Name: EnTabCtrl.h 
-//_ Purpose: 
-//_ Created: 15 September 1998 
-//_ Author: D.R.Godson
-//_ Modified By: 
-//_ 
-//_ Copyright (c) 1998 Brilliant Digital Entertainment Inc. 
-//_ 
-//_ **********************************************************
 
 #if !defined(AFX_ENTABCTRL_H__38F5C380_E2DA_11D1_AB24_0000E8425C3E__INCLUDED_)
 #define AFX_ENTABCTRL_H__38F5C380_E2DA_11D1_AB24_0000E8425C3E__INCLUDED_

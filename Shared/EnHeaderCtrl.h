@@ -1,14 +1,3 @@
-//_ **********************************************************
-//_ 
-//_ Name: EnHeaderCtrl.h 
-//_ Purpose: 
-//_ Created: 15 September 1998 
-//_ Author: D.R.Godson
-//_ Modified By: 
-//_ 
-//_ Copyright (c) 1998 Brilliant Digital Entertainment Inc. 
-//_ 
-//_ **********************************************************
 
 // EnHeaderCtrl.h : header file
 //

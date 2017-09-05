@@ -1,14 +1,3 @@
-//_ **********************************************************
-//_ 
-//_ Name: InputListCtrlListbox.cpp 
-//_ Purpose: 
-//_ Created: 15 September 1998 
-//_ Author: D.R.Godson
-//_ Modified By: 
-//_ 
-//_ Copyright (c) 1998 Brilliant Digital Entertainment Inc. 
-//_ 
-//_ **********************************************************
 
 // InputListCtrlEdit.cpp : implementation file
 //
@@ -34,15 +23,6 @@ CPopupListBoxCtrl::CPopupListBoxCtrl()
 	m_pParent = NULL;
 	m_bAutoHide = TRUE;
 	m_bAutoTrack = TRUE;
-
-	// enter and cancel no longer work w/o accelerators
-/*
-	LPCTSTR lpszResourceName = MAKEINTRESOURCE(IDR_POPUPLISTCTRL);
-	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_ACCELERATOR);
-	m_hAccelerator = ::LoadAccelerators(hInst, lpszResourceName);
-
-	ASSERT (m_hAccelerator);
-*/
 }
 
 CPopupListBoxCtrl::~CPopupListBoxCtrl()

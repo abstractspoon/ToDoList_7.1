@@ -1,14 +1,3 @@
-//_ **********************************************************
-//_ 
-//_ Name: InputListCtrlEdit.cpp 
-//_ Purpose: 
-//_ Created: 15 September 1998 
-//_ Author: D.R.Godson
-//_ Modified By: 
-//_ 
-//_ Copyright (c) 1998 Brilliant Digital Entertainment Inc. 
-//_ 
-//_ **********************************************************
 
 // InputListCtrlEdit.cpp : implementation file
 //
@@ -76,10 +65,11 @@ protected:
 	{
 		if (uMouseMsg == WM_MOUSEWHEEL)
 		{
-			::SendMessage(m_hwndNotify, WM_PCANCELEDIT, m_nEditCtrlID, TRUE);
-			Release();
+// 			::SendMessage(m_hwndNotify, WM_PCANCELEDIT, m_nEditCtrlID, TRUE);
+// 			Release();
 
 			// fall thru to allow the scroll
+			return TRUE;
 		}
 
 		return FALSE;

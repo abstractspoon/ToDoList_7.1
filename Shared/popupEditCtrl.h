@@ -1,14 +1,3 @@
-//_ **********************************************************
-//_ 
-//_ Name: InputListCtrlEdit.h 
-//_ Purpose: 
-//_ Created: 15 September 1998 
-//_ Author: D.R.Godson
-//_ Modified By: 
-//_ 
-//_ Copyright (c) 1998 Brilliant Digital Entertainment Inc. 
-//_ 
-//_ **********************************************************
 
 #if !defined(AFX_POPUPEDITCTRL_H__2E5810B2_D7DF_11D1_AB19_0000E8425C3E__INCLUDED_)
 #define AFX_POPUPEDITCTRL_H__2E5810B2_D7DF_11D1_AB19_0000E8425C3E__INCLUDED_
