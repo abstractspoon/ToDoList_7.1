@@ -5023,6 +5023,8 @@ BEGIN
     IDS_BETA_RELEASE        "Beta Release"
     IDS_RC_RELEASE          "Release Candidate"
     IDS_SETUP_TITLE         "ToDoList Setup"
+    IDS_OA_DURATION         "Duration"
+    IDS_OA_ENDDATE          "End Date"
 END
 
 #endif    // English (Australia) resources
