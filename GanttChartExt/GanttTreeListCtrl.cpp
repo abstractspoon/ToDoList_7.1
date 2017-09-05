@@ -2817,11 +2817,7 @@ HFONT CGanttTreeListCtrl::GetTreeItemFont(HTREEITEM hti, const GANTTITEM& gi, in
 	BOOL bStrikThru = (HasOption(GTLCF_STRIKETHRUDONETASKS) && gi.IsDone(FALSE));
 	BOOL bBold = ((nCol == GTLCC_TITLE) && (TreeView_GetParent(m_hwndTree, hti) == NULL));
 
-	if (bStrikThru || bBold)
-		return m_fonts.GetHFont(bBold, FALSE, FALSE, bStrikThru);
-
-	// else
-	return NULL;
+	return m_tree.Fonts().GetHFont(bBold, FALSE, FALSE, bStrikThru);
 }
 
 void CGanttTreeListCtrl::GetTreeItemRect(HTREEITEM hti, int nCol, CRect& rItem, BOOL bText) const
@@ -3753,10 +3749,17 @@ void CGanttTreeListCtrl::DrawGanttBar(CDC* pDC, const CRect& rMonth, int nMonth,
 	{
 		CRect rProgress(rBar);
 
+		// Handle the fill colour being white ie. having no lighter shade
+		COLORREF crProgress = crFill;
+		COLORREF crRest = GraphicsMisc::Lighter(crFill, 0.8);
+
+		if (crRest == crProgress)
+			crProgress = GraphicsMisc::Darker(crFill, 0.2);
+
 		if (gi.nPercent <= 0)
 		{
 			// Whole bar is 'non-progress' color
-			crFill = GraphicsMisc::Lighter(crFill, 0.8);
+			crFill = crRest;
 		}
 		else
 		{
@@ -3769,11 +3772,12 @@ void CGanttTreeListCtrl::DrawGanttBar(CDC* pDC, const CRect& rMonth, int nMonth,
 			if (dtPercentDone <= dtMonthStart)
 			{
 				// Whole bar is 'non-progress' color
-				crFill = GraphicsMisc::Lighter(crFill, 0.8);
+				crFill = crRest;
 			}
 			else if (dtPercentDone >= dtMonthEnd)
 			{
 				// Whole bar is crFill
+				crFill = crProgress;
 			}
 			else // falls somewhere in between
 			{
@@ -3792,20 +3796,18 @@ void CGanttTreeListCtrl::DrawGanttBar(CDC* pDC, const CRect& rMonth, int nMonth,
 				if (rProgress.right > (rProgress.left + 1))
 				{
 					// Just fill, no borders
-					GraphicsMisc::DrawRect(pDC, rProgress, crFill, CLR_NONE, 0, 0);
+					GraphicsMisc::DrawRect(pDC, rProgress, crProgress, CLR_NONE, 0, 0);
 
-					// Draw the uncompleted part
+					// Draw the 'non-progress' part
 					rProgress.left = rProgress.right;
 					rProgress.right = rBar.right;
 
-					crFill = GraphicsMisc::Lighter(crFill, 0.8);
-					GraphicsMisc::DrawRect(pDC, rProgress, crFill, CLR_NONE, 0, 0);
-
+					GraphicsMisc::DrawRect(pDC, rProgress, crRest, CLR_NONE, 0, 0);
 					crFill = CLR_NONE;
 				}
 				else // no width -> no progress
 				{
-					crFill = GraphicsMisc::Lighter(crFill, 0.8);
+					crFill = crRest;
 				}
 			}
 		}
