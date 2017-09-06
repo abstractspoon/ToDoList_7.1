@@ -4257,7 +4257,6 @@ void CTDLTaskCtrlBase::SetModified(TDC_ATTRIBUTE nAttrib)
 		
 		if (!m_sCompletionStatus.IsEmpty())
 			AccumulateRecalcColumn(TDCC_STATUS, nRecalcColID);
-		
 		break;
 		
 	case TDCA_DUEDATE:
