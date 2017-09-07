@@ -4471,7 +4471,7 @@ int CGanttTreeListCtrl::CalcWidestItemTitle(HTREEITEM htiParent, CDC* pDC) const
 			
 			GET_GI_RET(dwTaskID, pGI, 0);
 			
-			int nTextWidth = GraphicsMisc::GetTextWidth(pDC, pGI->sTitle);
+			int nTextWidth = pDC->GetTextExtent(pGI->sTitle).cx;
 			int nWidth = max(nTextWidth, (rChild.left + nTextWidth));
 			
 			int nWidestChild = CalcWidestItemTitle(htiChild, pDC); // RECURSIVE CALL
@@ -4680,7 +4680,7 @@ void CGanttTreeListCtrl::CalculateMinMonthWidths()
 				{
 					CString sText = FormatColumnHeaderText(nDisplay, 1, 2013);
 
-					int nMinTextWidth = GraphicsMisc::GetTextWidth(&dcClient, sText);
+					int nMinTextWidth = dcClient.GetTextExtent(sText).cx;
 					nMinMonthWidth = (nMinTextWidth + COLUMN_PADDING) / 12;
 				}
 				break;
@@ -4689,7 +4689,7 @@ void CGanttTreeListCtrl::CalculateMinMonthWidths()
 				{
 					CString sText = FormatColumnHeaderText(nDisplay, 1, 2013);
 
-					int nMinTextWidth = GraphicsMisc::GetTextWidth(&dcClient, sText);
+					int nMinTextWidth = dcClient.GetTextExtent(sText).cx;
 					nMinMonthWidth = (nMinTextWidth + COLUMN_PADDING) / 3;
 				}
 				break;
@@ -4703,7 +4703,7 @@ void CGanttTreeListCtrl::CalculateMinMonthWidths()
 					{
 						CString sText = FormatColumnHeaderText(nDisplay, nMonth, 2013);
 
-						int nWidth = GraphicsMisc::GetTextWidth(&dcClient, sText);
+						int nWidth = dcClient.GetTextExtent(sText).cx;
 						nMinTextWidth = max(nWidth, nMinTextWidth);
 					}
 
@@ -4721,7 +4721,7 @@ void CGanttTreeListCtrl::CalculateMinMonthWidths()
 					{
 						CString sText = FormatColumnHeaderText(nDisplay, nMonth, 2013);
 
-						int nWidth = GraphicsMisc::GetTextWidth(&dcClient, sText);
+						int nWidth = dcClient.GetTextExtent(sText).cx;
 						nMinTextWidth = max(nWidth, nMinTextWidth);
 					}
 

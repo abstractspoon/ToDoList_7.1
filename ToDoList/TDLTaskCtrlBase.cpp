@@ -4764,14 +4764,14 @@ int CTDLTaskCtrlBase::RecalcColumnWidth(int nCol, CDC* pDC, BOOL bVisibleOnly) c
 			DWORD dwRefID = m_find.GetLargestReferenceID();
 
 			if (dwRefID)
-				nColWidth = GraphicsMisc::GetTextWidth(pDC, _T("%u (%u)"), m_dwNextUniqueTaskID - 1, dwRefID);
+				nColWidth = GraphicsMisc::GetFormattedTextWidth(pDC, _T("%u (%u)"), m_dwNextUniqueTaskID - 1, dwRefID);
 			else
-				nColWidth = GraphicsMisc::GetTextWidth(pDC, _T("%u"), m_dwNextUniqueTaskID - 1);
+				nColWidth = GraphicsMisc::GetFormattedTextWidth(pDC, _T("%u"), m_dwNextUniqueTaskID - 1);
 		}
 		break; 
 
 	case TDCC_PARENTID:
-		nColWidth = GraphicsMisc::GetTextWidth(pDC, _T("%u"), m_dwNextUniqueTaskID - 1);
+		nColWidth = GraphicsMisc::GetFormattedTextWidth(pDC, _T("%u"), m_dwNextUniqueTaskID - 1);
 		break; 
 
 	case TDCC_POSITION:
@@ -4908,11 +4908,11 @@ int CTDLTaskCtrlBase::RecalcColumnWidth(int nCol, CDC* pDC, BOOL bVisibleOnly) c
 					case TDCCA_BOOL:
 						if (attribDef.sColumnTitle.GetLength() == 1)
 						{
-							nColWidth = GraphicsMisc::GetTextWidth(pDC, attribDef.sColumnTitle);
+							nColWidth = pDC->GetTextExtent(attribDef.sColumnTitle).cx;
 						}
 						else 
 						{
-							nColWidth = GraphicsMisc::GetTextWidth(pDC, _T("+"));
+							nColWidth = pDC->GetTextExtent(_T("+")).cx;
 						}
 						break;
 
@@ -4920,7 +4920,7 @@ int CTDLTaskCtrlBase::RecalcColumnWidth(int nCol, CDC* pDC, BOOL bVisibleOnly) c
 						{
 							// numerals are always the same width so we don't need average width
 							CString sLongest = m_find.GetLongestCustomDoubleAttribute(attribDef.sUniqueID, bVisibleOnly);
-							nColWidth = GraphicsMisc::GetTextWidth(pDC, sLongest);
+							nColWidth = pDC->GetTextExtent(sLongest).cx;
 						}
 						break;
 
@@ -4928,7 +4928,7 @@ int CTDLTaskCtrlBase::RecalcColumnWidth(int nCol, CDC* pDC, BOOL bVisibleOnly) c
 						{
 							// numerals are always the same width so we don't need average width
 							CString sLongest = m_find.GetLongestCustomAttribute(attribDef.sUniqueID, bVisibleOnly);
-							nColWidth = GraphicsMisc::GetTextWidth(pDC, sLongest); // 
+							nColWidth = pDC->GetTextExtent(sLongest).cx; // 
 						}
 						break;
 
