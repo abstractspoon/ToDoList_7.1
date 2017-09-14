@@ -11174,7 +11174,7 @@ LRESULT CToDoCtrl::OnCustomUrl(WPARAM wParam, LPARAM lParam)
 	UNREFERENCED_PARAMETER(wParam);
 	ASSERT(wParam == (WPARAM)m_ctrlComments.GetDlgCtrlID());
 	
-	// FALSE says only handle "tdc://" links
+	// FALSE says only handle "tdl://" links
 	GotoFile((LPCTSTR)lParam, FALSE);
 	
 	return 0;
@@ -11228,7 +11228,7 @@ BOOL CToDoCtrl::GotoFile(const CString& sFile, BOOL bShellExecute)
 		CString sTasklistFolder = GetLastSaveFolder();
 
 		// try to run it but disable default error handling
-		if (CFileEdit::GotoFile(sFile, sTasklistFolder, FALSE) >= 32)
+		if (CFileEdit::GotoFile(*this, sFile, sTasklistFolder, FALSE) >= SE_ERR_SUCCESS)
 			return TRUE;
 	}
 
@@ -11417,7 +11417,7 @@ LRESULT CToDoCtrl::OnTDCFailedLink(WPARAM /*wParam*/, LPARAM lParam)
 	// Handle relative file path links
 	LPCTSTR szLink = (LPCTSTR)lParam;
 
-	if (::PathIsRelative(szLink))
+	if (!CMSOutlookHelper::IsOutlookUrl(szLink) && ::PathIsRelative(szLink))
 	{
 		CString sLink = FileMisc::GetFullPath(szLink, m_taskTree.GetTasklistFolder());
 		
