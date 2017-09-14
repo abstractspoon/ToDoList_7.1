@@ -11228,7 +11228,7 @@ BOOL CToDoCtrl::GotoFile(const CString& sFile, BOOL bShellExecute)
 		CString sTasklistFolder = GetLastSaveFolder();
 
 		// try to run it but disable default error handling
-		if (CFileEdit::GotoFile(*this, sFile, sTasklistFolder, FALSE) >= SE_ERR_SUCCESS)
+		if (CFileEdit::GotoFile(*this, sFile, sTasklistFolder, FALSE) > 32)
 			return TRUE;
 	}
 
