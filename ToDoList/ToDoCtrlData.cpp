@@ -4994,16 +4994,17 @@ BOOL CToDoCtrlData::TaskMatches(const TODOITEM* pTDI, const TODOSTRUCTURE* pTDS,
 			break;
 			
 		case TDCA_ANYTEXTATTRIBUTE:
+			// Much looser search (FALSE -> partial matches okay)
 			bMatch = (TaskMatches(pTDI->sTitle, sp, resTask) ||
 						TaskMatches(pTDI->sComments, sp, resTask) ||
-						TaskMatches(pTDI->aAllocTo, sp, resTask, TRUE) ||
-						TaskMatches(pTDI->sAllocBy, sp, resTask, TRUE, TRUE) ||
-						TaskMatches(pTDI->aCategories, sp, resTask, TRUE) ||
-						TaskMatches(pTDI->sStatus, sp, resTask, TRUE, TRUE) ||
-						TaskMatches(pTDI->sVersion, sp, resTask, TRUE, TRUE) ||
-						TaskMatches(pTDI->sExternalID, sp, resTask, TRUE, FALSE) ||
+						TaskMatches(pTDI->aAllocTo, sp, resTask, FALSE) ||
+						TaskMatches(pTDI->aCategories, sp, resTask, FALSE) ||
 						TaskMatches(pTDI->aFileLinks, sp, resTask, FALSE) ||
-						TaskMatches(pTDI->aTags, sp, resTask, TRUE) ||
+						TaskMatches(pTDI->aTags, sp, resTask, FALSE) ||
+						TaskMatches(pTDI->sAllocBy, sp, resTask, TRUE, FALSE) ||
+						TaskMatches(pTDI->sStatus, sp, resTask, TRUE, FALSE) ||
+						TaskMatches(pTDI->sVersion, sp, resTask, TRUE, FALSE) ||
+						TaskMatches(pTDI->sExternalID, sp, resTask, TRUE, FALSE) ||
 						TaskMatches(pTDI->sCreatedBy, sp, resTask, TRUE, FALSE));
 
 			if (!bMatch)
