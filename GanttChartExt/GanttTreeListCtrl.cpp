@@ -2901,7 +2901,7 @@ void CGanttTreeListCtrl::PostDrawListItem(CDC* pDC, int nItem, DWORD dwTaskID)
 
 				pDC->SetBkMode(TRANSPARENT);
 				pDC->SetTextColor(crBorder);
-				pDC->DrawText(pGI->sAllocTo, rItem, (DT_LEFT | GraphicsMisc::GetRTLDrawTextFlags(m_hwndList)));
+				pDC->DrawText(pGI->sAllocTo, rItem, (DT_LEFT | DT_NOPREFIX | GraphicsMisc::GetRTLDrawTextFlags(m_hwndList)));
 			}
 		}
 	}

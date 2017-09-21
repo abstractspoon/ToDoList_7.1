@@ -229,7 +229,7 @@ bool CHMXChart::DrawTitle(CDC & dc)
 	
 	COLORREF clrBkOld = dc.SetBkColor(m_clrBkGnd);
 	pFontOld = dc.SelectObject(&font);
-	dc.DrawText(m_strTitle, m_rectTitle, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+	dc.DrawText(m_strTitle, m_rectTitle, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
 
 	dc.SetBkColor(clrBkOld);
 	dc.SelectObject(pFontOld);
@@ -442,9 +442,9 @@ bool CHMXChart::DrawXScale(CDC & dc)
 			rText.right = rText.left + (int)(dX * m_nXLabelStep);
 
 			if (m_bXLabelsAreTicks)
-				dc.DrawText(m_strarrScaleXLabel.GetAt(f), rText, DT_LEFT | DT_TOP | DT_SINGLELINE);
+				dc.DrawText(m_strarrScaleXLabel.GetAt(f), rText, DT_LEFT | DT_TOP | DT_SINGLELINE | DT_NOPREFIX);
 			else
-				dc.DrawText(m_strarrScaleXLabel.GetAt(f), rText, DT_CENTER | DT_TOP | DT_SINGLELINE);
+				dc.DrawText(m_strarrScaleXLabel.GetAt(f), rText, DT_CENTER | DT_TOP | DT_SINGLELINE | DT_NOPREFIX);
 		}
 	
 		dc.SelectObject(pFontOld);
@@ -462,7 +462,7 @@ bool CHMXChart::DrawXScale(CDC & dc)
 
 		CFont* pFontOld = dc.SelectObject(&m_fontXScale);
 
-		dc.DrawText(m_strXText, m_rectXAxis, DT_CENTER | DT_BOTTOM | DT_SINGLELINE);
+		dc.DrawText(m_strXText, m_rectXAxis, DT_CENTER | DT_BOTTOM | DT_SINGLELINE | DT_NOPREFIX);
 		dc.SelectObject(pFontOld);
 	}
 
@@ -512,7 +512,7 @@ bool CHMXChart::DrawYScale(CDC & dc)
 			nTemp1 = m_rectYAxis.bottom + nFontSize/2 - (nY*(f)  ) * m_rectData.Height()/(m_nYMax-m_nYMin);
 			nTemp2 = m_rectYAxis.bottom + nFontSize/2 - (nY*(f+1)) * m_rectData.Height()/(m_nYMax-m_nYMin);
 			sBuffer.Format(_T("%g"), m_nYMin + nY*f);
-			dc.DrawText(sBuffer, CRect(m_rectYAxis.left,(int)nTemp2, m_rectYAxis.right - 4, (int)nTemp1), DT_RIGHT | DT_BOTTOM | DT_SINGLELINE);
+			dc.DrawText(sBuffer, CRect(m_rectYAxis.left,(int)nTemp2, m_rectYAxis.right - 4, (int)nTemp1), DT_RIGHT | DT_BOTTOM | DT_SINGLELINE | DT_NOPREFIX);
 		}
 
 		dc.SelectObject(pFontOld);
@@ -531,7 +531,7 @@ bool CHMXChart::DrawYScale(CDC & dc)
 
 		CFont* pFontOld = dc.SelectObject(&m_fontYScale);
 
-		dc.DrawText(m_strYText, m_rectYAxis, DT_BOTTOM | DT_LEFT | DT_SINGLELINE );
+		dc.DrawText(m_strYText, m_rectYAxis, DT_BOTTOM | DT_LEFT | DT_SINGLELINE | DT_NOPREFIX );
 		dc.SelectObject(pFontOld);
 	}
 
