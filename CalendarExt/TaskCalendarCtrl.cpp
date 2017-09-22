@@ -73,6 +73,7 @@ BEGIN_MESSAGE_MAP(CTaskCalendarCtrl, CCalendarCtrl)
 	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 	ON_WM_VSCROLL()
+	ON_WM_CAPTURECHANGED()
 	ON_WM_SETFOCUS()
 	ON_WM_KILLFOCUS()
 	ON_WM_MOUSEWHEEL()
@@ -1449,6 +1450,8 @@ BOOL CTaskCalendarCtrl::StartDragging(const CPoint& ptCursor)
 	if (!::DragDetect(GetSafeHwnd(), ptCursor))
 		return FALSE;
 	
+	SetCapture();
+
 	switch (nHit)
 	{
 	case TCCHT_BEGIN:
@@ -1472,8 +1475,6 @@ BOOL CTaskCalendarCtrl::StartDragging(const CPoint& ptCursor)
 	
 	m_tciPreDrag = *(GetTaskCalItem(dwTaskID));
 	m_ptDragOrigin = ptCursor;
-
-	SetCapture();
 
 	// keep parent informed
 	NotifyParentDragChange();
@@ -1632,7 +1633,8 @@ BOOL CTaskCalendarCtrl::UpdateDragging(const CPoint& ptCursor)
 		}
 
 		// Recalc dates if either start/end is not set
-		pTCI->RecalcDates(m_dwOptions);
+		if (!pTCI->IsStartDateSet() || !pTCI->IsEndDateSet())
+			pTCI->RecalcDates(m_dwOptions);
 			
 		Invalidate();
 		UpdateWindow();
@@ -1842,7 +1844,7 @@ BOOL CTaskCalendarCtrl::ValidateDragPoint(CPoint& ptDrag) const
 void CTaskCalendarCtrl::OnCaptureChanged(CWnd *pWnd) 
 {
 	// if someone else grabs the capture we cancel any drag
-	if (pWnd && (pWnd != this) && IsDragging())
+	if (IsDragging())
 		CancelDrag(FALSE);
 	
 	CCalendarCtrl::OnCaptureChanged(pWnd);

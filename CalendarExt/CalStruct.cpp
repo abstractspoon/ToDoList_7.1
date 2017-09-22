@@ -299,6 +299,8 @@ void TASKCALITEM::SetStartDate(const COleDateTime& date)
 	ASSERT(CDateHelper::IsDateSet(date));
 
 	dtStart = date;
+	CDateHelper::ClearDate(dtStartCalc);
+
 	ReformatName();
 }
 
@@ -307,6 +309,7 @@ void TASKCALITEM::SetEndDate(const COleDateTime& date)
 	ASSERT(CDateHelper::IsDateSet(date));
 
 	dtEnd = date;
+	CDateHelper::ClearDate(dtEndCalc);
 }
 
 COLORREF TASKCALITEM::GetTextColor(BOOL bSelected, BOOL bColorIsBkgnd) const
