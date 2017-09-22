@@ -154,13 +154,14 @@ protected:
 	BOOL SelectTask(DWORD dwTaskID, BOOL bNotify);
 	void RecalcTaskDates();
 
-	void NotifyParentDateChange(TCC_HITTEST nHit);
+	BOOL NotifyParentDateChange(TCC_HITTEST nHit);
 	void NotifyParentDragChange();
 
 	BOOL UpdateTask(const ITaskList15* pTasks, HTASKITEM hTask, IUI_UPDATETYPE nUpdate, const CSet<IUI_ATTRIBUTE>& attrib, BOOL bAndSiblings);
 	BOOL RemoveDeletedTasks(const ITaskList15* pTasks);
 	void BuildData(const ITaskList15* pTasks, HTASKITEM hTask, const CSet<IUI_ATTRIBUTE>& attrib, BOOL bAndSiblings);
 	void DeleteData();
+	void RecalcSpecialDates();
 
 	// helpers
 	static int CompareTCItems(const void* pV1, const void* pV2);
