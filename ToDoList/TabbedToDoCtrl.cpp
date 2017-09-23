@@ -4323,6 +4323,7 @@ BOOL CTabbedToDoCtrl::TasksHaveFocus() const
 
 int CTabbedToDoCtrl::FindTasks(const SEARCHPARAMS& params, CResultArray& aResults) const
 {
+	aResults.RemoveAll();
 	FTC_VIEW nView = GetTaskView();
 
 	switch (nView)
@@ -4360,8 +4361,8 @@ int CTabbedToDoCtrl::FindTasks(const SEARCHPARAMS& params, CResultArray& aResult
 	case FTCV_UIEXTENSION14:
 	case FTCV_UIEXTENSION15:
 	case FTCV_UIEXTENSION16:
-		break;
-
+		return CToDoCtrl::FindTasks(params, aResults);
+		
 	default:
 		ASSERT(0);
 	}
@@ -4422,7 +4423,7 @@ BOOL CTabbedToDoCtrl::SelectTask(CString sPart, TDC_SELECTTASK nSelect)
 	case FTCV_UIEXTENSION14:
 	case FTCV_UIEXTENSION15:
 	case FTCV_UIEXTENSION16:
-		break;
+		return CToDoCtrl::SelectTask(sPart, nSelect);
 
 	default:
 		ASSERT(0);
