@@ -12293,9 +12293,8 @@ void CToDoListWnd::ShowReminderDlg()
 
 	rem.dwTaskID = tdc.GetSelectedTaskID();
 	rem.pTDC = &tdc;
-	rem.bRelative = TRUE;
-	rem.dRelativeDaysLeadIn = 0;
-	rem.nRelativeFromWhen = TDCR_STARTDATE;
+	rem.bRelative = FALSE;
+	rem.dtAbsolute = COleDateTime::GetCurrentTime();
 	rem.bEnabled = TRUE;
 
 	m_reminders.SetReminder(rem, TRUE);
