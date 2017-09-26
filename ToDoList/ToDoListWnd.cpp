@@ -11127,13 +11127,15 @@ LRESULT CToDoListWnd::OnToDoCtrlDoLengthyOperation(WPARAM wParam, LPARAM lParam)
 
 BOOL CToDoListWnd::DoTaskLink(const CString& sPath, DWORD dwTaskID, BOOL bStartup)
 {
+	BOOL bHandled = FALSE, bSelected = FALSE;
+
 	// handle no file path => active tasklist
 	if (sPath.IsEmpty())
 	{
 		ASSERT(dwTaskID);
-		GetToDoCtrl().SelectTask(dwTaskID);
+		bSelected = GetToDoCtrl().SelectTask(dwTaskID);
 
-		return TRUE; // handled regardless of result
+		bHandled = TRUE; // handled regardless of result
 	}
 	else if (!PathIsRelative(sPath) && FileMisc::FileExists(sPath))
 	{
@@ -11146,15 +11148,17 @@ BOOL CToDoListWnd::DoTaskLink(const CString& sPath, DWORD dwTaskID, BOOL bStartu
 			
 			if (SelectToDoCtrl(nTDC, (nTDC != nSelTDC)))
 			{
+				bSelected = TRUE;
+
 				if (dwTaskID)
-					GetToDoCtrl().SelectTask(dwTaskID);
+					bSelected |= GetToDoCtrl().SelectTask(dwTaskID);
 			}
 			else
 			{
 				ASSERT(0);
 			}
 
-			return TRUE; // handled regardless of result
+			bHandled = TRUE; // handled regardless of result
 		}
 		else if (bStartup || !Prefs().GetMultiInstance())
 		{
@@ -11162,15 +11166,17 @@ BOOL CToDoListWnd::DoTaskLink(const CString& sPath, DWORD dwTaskID, BOOL bStartu
 			
 			if (nRet == TDCF_SUCCESS)
 			{
+				bSelected = TRUE;
+
 				if (dwTaskID)
-					GetToDoCtrl().SelectTask(dwTaskID);
+					bSelected |= GetToDoCtrl().SelectTask(dwTaskID);
 			}
 			else
 			{
 				HandleLoadTasklistError(nRet, sPath);
 			}
 
-			return TRUE; // handled regardless of result
+			bHandled = TRUE; // handled regardless of result
 		}
 	}
 	else
@@ -11178,8 +11184,10 @@ BOOL CToDoListWnd::DoTaskLink(const CString& sPath, DWORD dwTaskID, BOOL bStartu
 		ASSERT(0);
 	}
 
-	// not handled
-	return FALSE;
+	if (!bStartup && bSelected)
+		Show(FALSE);
+
+	return bHandled;
 }
 
 BOOL CToDoListWnd::ValidateTaskLinkFilePath(CString& sPath) const
