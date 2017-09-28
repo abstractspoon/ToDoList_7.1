@@ -42,10 +42,10 @@ protected:
 	CString MILESTONETAG;
 
 protected:
-	bool ImportTask(const CXmlItem* pXISrcTask, ITaskList9* pDestTaskFile, HTASKITEM htDestParent, BOOL bAndSiblings);
+	bool ImportTask(const CXmlItem* pXISrcTask, ITaskList15* pDestTaskFile, HTASKITEM htDestParent, BOOL bAndSiblings);
 	void BuildResourceMap(const CXmlItem* pXISrcPrj);
-	void FixupDependencies(const CXmlItem* pXISrcTask, ITaskList9* pDestTaskFile, BOOL bAndSiblings);
-	void FixupResourceAllocations(const CXmlItem* pXISrcPrj, ITaskList9* pDestTaskFile);
+	void FixupDependencies(const CXmlItem* pXISrcTask, ITaskList15* pDestTaskFile, BOOL bAndSiblings);
+	void FixupResourceAllocations(const CXmlItem* pXISrcPrj, ITaskList15* pDestTaskFile);
 	bool InitConsts(bool bSilent, const IPreferences* pPrefs, LPCTSTR szKey);
 	void InitWeekends(const CXmlItem* pXISrcPrj);
 

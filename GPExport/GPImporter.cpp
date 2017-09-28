@@ -64,9 +64,9 @@ IIMPORT_RESULT CGPImporter::Import(LPCTSTR szSrcFilePath, ITaskList* pDestTaskFi
 	if (!InitConsts(bSilent, pPrefs, szKey))
 		return IIR_CANCELLED;
 
-	ITaskList9* pITL9 = GetITLInterface<ITaskList9>(pDestTaskFile, IID_TASKLIST8);
+	ITaskList15* pITL15 = GetITLInterface<ITaskList15>(pDestTaskFile, IID_TASKLIST15);
 
-	if (!pITL9)
+	if (!pITL15)
 	{
 		ASSERT(0);
 		return IIR_BADINTERFACE;
@@ -99,19 +99,19 @@ IIMPORT_RESULT CGPImporter::Import(LPCTSTR szSrcFilePath, ITaskList* pDestTaskFi
 	if (!pXISrcTask) // must exist
 		return IIR_BADFORMAT;
 
-	if (ImportTask(pXISrcTask, pITL9, NULL, TRUE))
+	if (ImportTask(pXISrcTask, pITL15, NULL, TRUE))
 	{
 		// fix up resource allocations
-		FixupResourceAllocations(fileSrc.Root(), pITL9);
+		FixupResourceAllocations(fileSrc.Root(), pITL15);
 
 		// and dependencies
-		FixupDependencies(pXISrcTask, pITL9, TRUE);
+		FixupDependencies(pXISrcTask, pITL15, TRUE);
 	}
 
 	return IIR_SUCCESS; 
 }
 
-bool CGPImporter::ImportTask(const CXmlItem* pXISrcTask, ITaskList9* pDestTaskFile, HTASKITEM htDestParent, BOOL bAndSiblings)
+bool CGPImporter::ImportTask(const CXmlItem* pXISrcTask, ITaskList15* pDestTaskFile, HTASKITEM htDestParent, BOOL bAndSiblings)
 {
 	if (!pXISrcTask)
 		return true;
@@ -131,11 +131,11 @@ bool CGPImporter::ImportTask(const CXmlItem* pXISrcTask, ITaskList9* pDestTaskFi
 	pDestTaskFile->SetTaskPercentDone(hTask, (unsigned char)nPercentDone);
 
 	// dates
-	time_t tStart;
+	time64_t tStart;
 	
 	if (CDateHelper::DecodeDate(pXISrcTask->GetItemValue(_T("start")), tStart))
 	{
-		pDestTaskFile->SetTaskStartDate(hTask, tStart);
+		pDestTaskFile->SetTaskStartDate64(hTask, tStart);
 
 		// only add duration to leaf tasks else it'll double up
 		if (!pXISrcTask->HasItem(_T("task")))
@@ -147,24 +147,24 @@ bool CGPImporter::ImportTask(const CXmlItem* pXISrcTask, ITaskList9* pDestTaskFi
 				if (!MILESTONETAG.IsEmpty())
 					pDestTaskFile->AddTaskTag(hTask, MILESTONETAG);
 
-				pDestTaskFile->SetTaskDueDate(hTask, tStart);
+				pDestTaskFile->SetTaskDueDate64(hTask, tStart);
 			}
 			else if (nDuration > 0)
 			{
-				COleDateTime dtEnd(tStart);
+				COleDateTime dtEnd = CDateHelper::GetDate(tStart);
 				CDateHelper::OffsetDate(dtEnd, (nDuration - 1), DHU_WEEKDAYS); // gp dates are inclusive
 
-				time_t tEnd = 0;
-				VERIFY(CDateHelper::GetTimeT(dtEnd, tEnd));
+				time64_t tEnd = 0;
+				VERIFY(CDateHelper::GetTimeT64(dtEnd, tEnd));
 
 				if (nPercentDone == 100)
 				{
-					pDestTaskFile->SetTaskDoneDate(hTask, tEnd);
+					pDestTaskFile->SetTaskDoneDate64(hTask, tEnd);
 					pDestTaskFile->SetTaskTimeSpent(hTask, nDuration, TDCU_WEEKDAYS);
 				}
 				else
 				{
-					pDestTaskFile->SetTaskDueDate(hTask, tEnd); // gp dates are inclusive
+					pDestTaskFile->SetTaskDueDate64(hTask, tEnd); // gp dates are inclusive
 					pDestTaskFile->SetTaskTimeEstimate(hTask, nDuration, TDCU_WEEKDAYS);
 				}
 			}
@@ -229,7 +229,7 @@ DWORD CGPImporter::GetTDLTaskID(int nGPTaskID)
 	return ((DWORD)nGPTaskID + 1);
 }
 
-void CGPImporter::FixupResourceAllocations(const CXmlItem* pXISrcPrj, ITaskList9* pDestTaskFile)
+void CGPImporter::FixupResourceAllocations(const CXmlItem* pXISrcPrj, ITaskList15* pDestTaskFile)
 {
 	BuildResourceMap(pXISrcPrj);
 			
@@ -260,7 +260,7 @@ void CGPImporter::FixupResourceAllocations(const CXmlItem* pXISrcPrj, ITaskList9
 	}
 }
 
-void CGPImporter::FixupDependencies(const CXmlItem* pXISrcTask, ITaskList9* pDestTaskFile, BOOL bAndSiblings)
+void CGPImporter::FixupDependencies(const CXmlItem* pXISrcTask, ITaskList15* pDestTaskFile, BOOL bAndSiblings)
 {
 	if (!pXISrcTask)
 		return;
