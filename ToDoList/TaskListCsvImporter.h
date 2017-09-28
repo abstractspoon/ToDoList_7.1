@@ -46,7 +46,6 @@ protected:
 	CString GetTaskTitle(const CStringArray& sValues) const;
 
 	static CString GetLine(const CStringArray& aLines, int& nLine);
-	static BOOL String2Date(const CString& sDate, time64_t& t64, BOOL bAndTime);
 
 	void AddAttributeToTask(ITaskList14* pTasks, HTASKITEM hTask, TDC_ATTRIBUTE nAttrib, const CStringArray& aValues) const;
 	void AddCustomAttributesToTask(ITaskList14* pTasks, HTASKITEM hTask, const CStringArray& aValues) const;
