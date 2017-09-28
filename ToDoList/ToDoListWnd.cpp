@@ -8358,6 +8358,15 @@ BOOL CToDoListWnd::ImportTasks(BOOL bFromClipboard, const CString& sImportFrom,
 	case IIR_CANCELLED:
 		break;
 
+	case IIR_SOMEFAILED:
+		if (bFromClipboard)
+			nMessageID = (tasks.GetTaskCount() ? IDS_IMPORTFROMCB_SOMETASKSFAILED : IDS_IMPORTFROMCB_NOTASKS);
+		else
+			nMessageID = (tasks.GetTaskCount() ? IDS_IMPORTFILE_SOMETASKSFAILED : IDS_IMPORTFILE_NOTASKS);
+
+		nIcon = MB_ICONWARNING;
+		// fall thru for processing 
+
 	case IIR_SUCCESS:
 		if (tasks.GetTaskCount())
 		{
@@ -8434,15 +8443,6 @@ BOOL CToDoListWnd::ImportTasks(BOOL bFromClipboard, const CString& sImportFrom,
 		}
 		// else fall thru
 
-	case IIR_SOMEFAILED:
-		if (bFromClipboard)
-			nMessageID = (tasks.GetTaskCount() ? IDS_IMPORTFROMCB_SOMETASKSFAILED : IDS_IMPORTFROMCB_NOTASKS);
-		else
-			nMessageID = (tasks.GetTaskCount() ? IDS_IMPORTFILE_SOMETASKSFAILED : IDS_IMPORTFILE_NOTASKS);
-
-		nIcon = MB_ICONWARNING;
-		break;
-
 	case IIR_BADFILE:
 		if (!bFromClipboard)
 		{
@@ -8465,7 +8465,7 @@ BOOL CToDoListWnd::ImportTasks(BOOL bFromClipboard, const CString& sImportFrom,
 	if (nMessageID)
 	{
 		AfxMessageBox(CEnString(nMessageID, sImportFrom), (MB_OK | nIcon));
-		return FALSE;
+		return (nIcon != MB_ICONERROR); // don't fail on warnings
 	}
 
 	return TRUE;
