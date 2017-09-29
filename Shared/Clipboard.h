@@ -44,6 +44,7 @@ static UINT CBF_MSURL		= ::RegisterClipboardFormat(_T("msSourceUrl"));
 static UINT CBF_RTF			= ::RegisterClipboardFormat(CF_RTF);
 static UINT CBF_RETEXTOBJ	= ::RegisterClipboardFormat(CF_RETEXTOBJ);
 static UINT CBF_EMBEDDEDOBJ	= ::RegisterClipboardFormat(_T("Embedded Object"));
+static UINT CBF_ONENOTELINK	= ::RegisterClipboardFormat(_T("OneNote Link"));
 
 #ifdef _UNICODE
 #	define CFSTR_FILENAME2 _T("FileNameW")

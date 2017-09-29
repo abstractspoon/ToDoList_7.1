@@ -517,6 +517,7 @@ BOOL CRTFContentControl::GetClipboardHtmlForPasting(CString& sHtml, CString& sSo
 		!cb.HasFormat(CBF_EMBEDDEDOBJ) &&
 		!cb.HasFormat(CF_DIB) &&
 		!cb.HasFormat(CF_BITMAP) &&
+		!cb.HasFormat(CBF_ONENOTELINK) &&
 		cb.GetText(sHtml, CBF_HTML))
 	{
 #ifdef _UNICODE
@@ -594,6 +595,15 @@ BOOL CRTFContentControl::Paste(BOOL bSimple)
 
 				// else fall through
 				ASSERT(0);
+			}
+			else if (CClipboard::HasFormat(CBF_ONENOTELINK))
+			{
+				// If there is a OneNote link on the clipboard
+				// paste the raw link text instead
+				ASSERT(CClipboard::HasText());
+
+				m_rtf.PasteSimpleText(FALSE);
+				return TRUE;
 			}
 			else
 			{
