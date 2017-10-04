@@ -42,8 +42,10 @@ protected:
 	bool InitConsts(LPCTSTR szSrcFilePath, bool bSilent, IPreferences* pPrefs, LPCTSTR szKey);
 	int GetDepth(const CString& sLine);
 
-	void GetTaskAndParentIDs(const CStringArray& sValues, DWORD& dwTaskID, DWORD& dwParentID) const;
-	CString GetTaskTitle(const CStringArray& sValues) const;
+	void GetTaskAndParentIDs(const CStringArray& aValues, DWORD& dwTaskID, DWORD& dwParentID) const;
+	CString GetTaskTitle(const CStringArray& aValues) const;
+	CString GetValue(const CStringArray& aValues, int nCol) const;
+
 
 	static CString GetLine(const CStringArray& aLines, int& nLine);
 
