@@ -18,10 +18,16 @@
 #	define EM_GETEDITSTYLE			(WM_USER + 205)
 
 // Extended edit style masks 
-#	define	SES_USECTF				0x0010000
-#	define SES_CTFALLOWEMBED		0x0200000
-#	define SES_CTFALLOWSMARTTAG		0x0400000
-#	define SES_CTFALLOWPROOFING		0x0800000
+#	define SES_USECTF				0x00010000
+#	define SES_CTFALLOWEMBED		0x00200000
+#	define SES_CTFALLOWSMARTTAG		0x00400000
+#	define SES_CTFALLOWPROOFING		0x00800000
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+
+#ifndef IMF_AUTOFONT
+#	define IMF_AUTOFONT				0x00000002
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -82,8 +88,8 @@ public:
 	BOOL Undo();
 	BOOL Redo();
 
-	CString GetTextRange(const CHARRANGE& cr);
-	CString GetSelText();
+	CString GetTextRange(const CHARRANGE& cr) const;
+	CString GetSelText() const;
 	BOOL SetTextEx(const CString& sText, DWORD dwFlags = ST_KEEPUNDO | ST_SELECTION, UINT nCodePage = CP_ACP); 
 
 	void EnableSelectOnFocus(BOOL bEnable) { m_bEnableSelectOnFocus = bEnable; }
@@ -93,6 +99,10 @@ public:
 	BOOL PasteSpecial(CLIPFORMAT nFormat); // EM_PASTESPECIAL
 	BOOL PasteSimpleText();
 	BOOL CanPasteSimpleText() const;
+	BOOL CopySimpleText();
+	BOOL CanCopySelectedText() const;
+	BOOL CutSimpleText();
+	BOOL CanCutSelectedText() const;
 
 	void GetMargins(CRect& rMargins) const { rMargins = m_rMargins; }
 	void SetMargins(LPCRECT pMargins);
@@ -121,6 +131,7 @@ public:
 	CPoint GetCaretPos() const;
 
 	// Windows 8.1 and up only
+	BOOL EnableAutoFontChanging(BOOL bEnable = TRUE);
 	BOOL EnableInlineSpellChecking(BOOL bEnable = TRUE);
 	BOOL IsInlineSpellCheckingEnabled() const;
 	static BOOL SupportsInlineSpellChecking();
@@ -249,6 +260,11 @@ protected:
 	BOOL SameAsSelected(LPCTSTR lpszCompare, BOOL bCase, BOOL bWord);
 	BOOL IsFindDialog(HWND hwnd) const;
 	BOOL InsertSoftReturn();
+
+	BOOL EnableLanguageOptions(DWORD dwOption, BOOL bEnable);
+	BOOL EnableEditStyles(DWORD dwStyles, BOOL bEnable);
+
+	static BOOL EnableStateFlags(HWND hWnd, UINT nGetMsg, UINT nSetMsg, DWORD dwFlags, BOOL bEnable);
 
 	/////////////////////////////////////////////////////////////////////////////
 	// Stream callback functions

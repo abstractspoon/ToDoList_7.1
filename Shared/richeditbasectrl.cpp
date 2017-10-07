@@ -118,6 +118,7 @@ int CRichEditBaseCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	SetOLECallback(&m_callback);
 	EnableInlineSpellChecking(TRUE);
+	EnableAutoFontChanging(FALSE);
 		
 	return 0;
 }
@@ -187,8 +188,35 @@ BOOL CRichEditBaseCtrl::PasteSimpleText()
 	return TRUE;
 }
 
+BOOL CRichEditBaseCtrl::CopySimpleText()
+{
+	CString sSelText(GetSelText());
+
+	if (sSelText.IsEmpty())
+		return FALSE;
+	
+	// Replace 'CR' with 'CRLF"
+	if ((sSelText.Find('\r') != -1) && (sSelText.Find('\n') == -1))
+		sSelText.Replace(_T("\r"), _T("\r\n"));
+	
+	return CClipboard(*this).SetText(sSelText);
+}
+
+BOOL CRichEditBaseCtrl::CutSimpleText()
+{
+	// Allow copying even if we cannot edit
+	if (!CopySimpleText() || !CanEdit())
+		return FALSE;
+
+	Clear();
+	return TRUE;
+}
+
 BOOL CRichEditBaseCtrl::CanPasteSimpleText() const
 {
+	if (!CanEdit())
+		return FALSE;
+
 	CClipboard cb;
 
 #ifndef _UNICODE
@@ -196,6 +224,16 @@ BOOL CRichEditBaseCtrl::CanPasteSimpleText() const
 #else
 	return cb.HasFormat(CF_UNICODETEXT);
 #endif
+}
+
+BOOL CRichEditBaseCtrl::CanCopySelectedText() const
+{
+	return HasSelection();
+}
+
+BOOL CRichEditBaseCtrl::CanCutSelectedText() const
+{
+	return (CanEdit() && HasSelection());
 }
 
 BOOL CRichEditBaseCtrl::SetTextEx(const CString& sText, DWORD dwFlags, UINT nCodePage)
@@ -233,7 +271,7 @@ BOOL CRichEditBaseCtrl::SetTextEx(const CString& sText, DWORD dwFlags, UINT nCod
 	return bResult;
 }
 
-CString CRichEditBaseCtrl::GetSelText()
+CString CRichEditBaseCtrl::GetSelText() const
 {
 	CHARRANGE cr;
 	GetSel(cr);
@@ -241,7 +279,7 @@ CString CRichEditBaseCtrl::GetSelText()
 	return GetTextRange(cr);
 }
 
-CString CRichEditBaseCtrl::GetTextRange(const CHARRANGE& cr)
+CString CRichEditBaseCtrl::GetTextRange(const CHARRANGE& cr) const
 {
 	int nLength = int(cr.cpMax - cr.cpMin + 1);
 
@@ -258,7 +296,7 @@ CString CRichEditBaseCtrl::GetTextRange(const CHARRANGE& cr)
 		TEXTRANGEW tr;
 		tr.chrg = cr;
 		tr.lpstrText = lpszWChar;
-		SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+		::SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
 
 		// Convert the Unicode text to ANSI.
 		WideCharToMultiByte(CP_ACP, 0, lpszWChar, -1, szChar, nLength, NULL, NULL);
@@ -270,7 +308,7 @@ CString CRichEditBaseCtrl::GetTextRange(const CHARRANGE& cr)
 		TEXTRANGE tr;
 		tr.chrg = cr;
 		tr.lpstrText = szChar;
-		SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+		::SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
 	}
 #else
 	if (CWinClasses::IsClass(*this, WC_RICHEDIT50)) 
@@ -278,7 +316,7 @@ CString CRichEditBaseCtrl::GetTextRange(const CHARRANGE& cr)
 		TEXTRANGE tr;
 		tr.chrg = cr;
 		tr.lpstrText = szChar;
-		SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+		::SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
 	}
 	else // must handle ansi
 	{
@@ -288,7 +326,7 @@ CString CRichEditBaseCtrl::GetTextRange(const CHARRANGE& cr)
 		TEXTRANGEA tr;
 		tr.chrg = cr;
 		tr.lpstrText = lpszChar;
-		SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+		::SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
 
 		// Convert the Ansi text to Unicode.
 		MultiByteToWideChar(CP_ACP, 0, lpszChar, -1, szChar, nLength);
@@ -598,7 +636,9 @@ void CRichEditBaseCtrl::DoEditFind(UINT nIDTitle)
 void CRichEditBaseCtrl::DoEditReplace(UINT nIDTitle)
 {
 	ASSERT_VALID(this);
-	DoEditFindReplace(FALSE, nIDTitle);
+
+	if (CanEdit())
+		DoEditFindReplace(FALSE, nIDTitle);
 }
 
 void CRichEditBaseCtrl::AdjustDialogPosition(CDialog* pDlg)
@@ -1212,27 +1252,51 @@ BOOL CRichEditBaseCtrl::EnableInlineSpellChecking(BOOL bEnable)
 
 	ASSERT(GetSafeHwnd());
 
-	DWORD dwLangOpt = SendMessage(EM_GETLANGOPTIONS);
-	DWORD dwLangFlags = IMF_SPELLCHECKING;
+	EnableLanguageOptions(IMF_SPELLCHECKING, bEnable);
+	EnableEditStyles((SES_USECTF | SES_CTFALLOWEMBED | SES_CTFALLOWSMARTTAG | SES_CTFALLOWPROOFING), bEnable);
 
-	if (Misc::ModifyFlags(dwLangOpt, 
-						(bEnable ? 0 : dwLangFlags),  // remove
-						(bEnable ? dwLangFlags : 0))) // add
-	{
-		SendMessage(EM_SETLANGOPTIONS, 0, dwLangOpt);
-	}
-		
-	DWORD dwEditStyle = SendMessage(EM_GETEDITSTYLE);
-	DWORD dwEditFlags = (SES_USECTF | SES_CTFALLOWEMBED | SES_CTFALLOWSMARTTAG | SES_CTFALLOWPROOFING);
+	return TRUE;
+}
 
-	if (Misc::ModifyFlags(dwLangOpt, 
-						(bEnable ? 0 : dwEditFlags),  // remove
-						(bEnable ? dwEditFlags : 0))) // add
+BOOL CRichEditBaseCtrl::EnableAutoFontChanging(BOOL bEnable)
+{
+	return EnableLanguageOptions(IMF_AUTOFONT, bEnable);
+}
+
+BOOL CRichEditBaseCtrl::EnableLanguageOptions(DWORD dwOptions, BOOL bEnable)
+{
+	return EnableStateFlags(GetSafeHwnd(), 
+							EM_GETLANGOPTIONS, 
+							EM_SETLANGOPTIONS, 
+							dwOptions, 
+							bEnable);
+}
+
+BOOL CRichEditBaseCtrl::EnableEditStyles(DWORD dwStyles, BOOL bEnable)
+{
+	return EnableStateFlags(GetSafeHwnd(), 
+							EM_GETEDITSTYLE, 
+							EM_SETEDITSTYLE, 
+							dwStyles, 
+							bEnable);
+}
+
+BOOL CRichEditBaseCtrl::EnableStateFlags(HWND hWnd, UINT nGetMsg, UINT nSetMsg, DWORD dwFlags, BOOL bEnable)
+{
+	ASSERT(::IsWindow(hWnd));
+	ASSERT(dwFlags);
+
+	DWORD dwCurFlags = ::SendMessage(hWnd, nGetMsg, 0, 0), dwNewFlags(dwCurFlags);
+
+	if (Misc::ModifyFlags(dwNewFlags, 
+						(bEnable ? 0 : dwFlags),  // remove
+						(bEnable ? dwFlags : 0))) // add
 	{
-		SendMessage(EM_SETEDITSTYLE, 0, dwEditStyle);
+		::SendMessage(hWnd, nSetMsg, 0, dwNewFlags);
 	}
 
 	return TRUE;
+
 }
 
 BOOL CRichEditBaseCtrl::IsInlineSpellCheckingEnabled() const
