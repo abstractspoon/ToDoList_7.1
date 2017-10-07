@@ -226,7 +226,13 @@ void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID)
 	case ID_COMMENTS_COPY:
 		{
 			// copy text ourselves to prevent font attributes being copied as well
-			CClipboard(*this).SetText(GetSelText());
+			CString sSelText(GetSelText());
+
+			// Replace 'CR' with 'CRLF"
+			if ((sSelText.Find('\r') != -1) && (sSelText.Find('\n') == -1))
+				sSelText.Replace(_T("\r"), _T("\r\n"));
+
+			CClipboard(*this).SetText(sSelText);
 		}
 		break;
 		
