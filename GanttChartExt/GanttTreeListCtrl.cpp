@@ -3610,7 +3610,7 @@ int CGanttTreeListCtrl::BuildVisibleDependencyList(CGanttDependArray& aDepends) 
 			{
 				DWORD dwToTaskID = _ttoi(pGIFrom->aDepends[nDepend]);
 				
-				if (dwToTaskID == 0)
+				if (!m_data.HasItem(dwToTaskID))
 					continue;
 
 				int nTo = FindListItem(dwToTaskID, mapItems);

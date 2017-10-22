@@ -36,6 +36,9 @@ void CTDLTasklistImportCtrl::ShowAllColumns()
 	TDCCOLEDITFILTERVISIBILITY vis;
 	vis.SetAllColumnsVisible(TRUE);
 
+	// Remove non-attribute columns
+	vis.SetColumnVisible(TDCC_TRACKTIME, FALSE);
+
 	SetColumnEditFilterVisibility(vis);
 }
 
@@ -129,6 +132,7 @@ void CTDLTasklistImportDlg::OnSelectall()
 void CTDLTasklistImportDlg::OnSelectnone() 
 {
 	m_tdc.DeselectAll();
+	m_tdc.Invalidate();
 }
 
 LRESULT CTDLTasklistImportDlg::OnTDCNotifySelectionChange(WPARAM, LPARAM)
