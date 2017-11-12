@@ -140,6 +140,7 @@ public:
 
 	BOOL SetTaskID(HTASKITEM hTask, unsigned long nID, BOOL bVisible = TRUE);
 	BOOL SetTaskReferenceID(HTASKITEM hTask, unsigned long nRefID, BOOL bVisible = TRUE);
+	int GetTaskIDs(CDWordArray& aTaskIDs, BOOL bIncParents = TRUE) const;
 
 	BOOL SetTaskAttributes(HTASKITEM hTask, const TODOITEM* pTDI);
 	BOOL GetTaskAttributes(HTASKITEM hTask, TODOITEM* pTDI) const;
@@ -454,6 +455,7 @@ protected:
 	void AddTaskToMap(const CXmlItem* pXITask, BOOL bAndSiblings, BOOL bAndSubTasks) const;
 	void RemoveTaskFromMap(const CXmlItem* pXITask) const;
 	CXmlItem* TaskFromHandle(HTASKITEM hTask) const;
+	void AddTaskIDs(HTASKITEM hTask, BOOL bIncParents, CDWordArray& aTaskIDs) const;
 
 	void UpgradeArrays(HTASKITEM hTask = NULL);
 	void CleanUp(HTASKITEM hTask = NULL);

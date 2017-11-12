@@ -866,6 +866,7 @@ void CToDoListWnd::InitShortcutManager()
 	// setup defaults first
 	m_mgrShortcuts.AddShortcut(ID_CLOSE, VK_F4, HOTKEYF_CONTROL);
 	m_mgrShortcuts.AddShortcut(ID_DELETETASK, VK_DELETE, HOTKEYF_EXT);
+	m_mgrShortcuts.AddShortcut(ID_EDIT_CLOCK_TASK, 'T', HOTKEYF_CONTROL);
 	m_mgrShortcuts.AddShortcut(ID_EDIT_COPY, 'C', HOTKEYF_CONTROL);
 	m_mgrShortcuts.AddShortcut(ID_EDIT_CUT, 'X', HOTKEYF_CONTROL);
 	m_mgrShortcuts.AddShortcut(ID_EDIT_DECTASKPERCENTDONE, VK_SUBTRACT, HOTKEYF_CONTROL);
@@ -902,7 +903,7 @@ void CToDoListWnd::InitShortcutManager()
 	m_mgrShortcuts.AddShortcut(ID_SAVE_NORMAL, 'S', HOTKEYF_CONTROL);
 	m_mgrShortcuts.AddShortcut(ID_TOOLS_EXPORT, 'E', HOTKEYF_CONTROL);
 	m_mgrShortcuts.AddShortcut(ID_TOOLS_IMPORT, 'I', HOTKEYF_CONTROL);
-	m_mgrShortcuts.AddShortcut(ID_TOOLS_TRANSFORM, 'T', HOTKEYF_CONTROL);
+	m_mgrShortcuts.AddShortcut(ID_TOOLS_TRANSFORM, 'T',	HOTKEYF_CONTROL | HOTKEYF_SHIFT);
 	m_mgrShortcuts.AddShortcut(ID_VIEW_CYCLETASKVIEWS, VK_F10, HOTKEYF_SHIFT);
 	m_mgrShortcuts.AddShortcut(ID_VIEW_NEXT, VK_TAB, HOTKEYF_CONTROL);
 	m_mgrShortcuts.AddShortcut(ID_VIEW_NEXT_SEL, VK_RIGHT, HOTKEYF_ALT | HOTKEYF_EXT);
@@ -1557,20 +1558,22 @@ BOOL CToDoListWnd::AppOverridesToDoCtrlProcessing(UINT nCmdID, DWORD dwShortcut)
 
 BOOL CToDoListWnd::ProcessShortcut(MSG* pMsg)
 {
+	ASSERT(IsWindowEnabled());
+
 	DWORD dwShortcut = 0;
 	UINT nCmdID = m_mgrShortcuts.ProcessMessage(pMsg, &dwShortcut);
-	
+
 	// if it's a reserved shortcut let's notify the user to change it
 	if (HandleReservedShortcut(dwShortcut))
 		return TRUE;
-	
+
 	// Try active ToDoCtrl unless App overrides depending on context
 	if (!AppOverridesToDoCtrlProcessing(nCmdID, dwShortcut))
 	{
 		if (GetToDoCtrl().PreTranslateMessage(pMsg))
 			return TRUE;
 	}
-	
+
 	// Send the command to ourselves
 	if (SendShortcutCommand(nCmdID))
 		return TRUE;
@@ -1589,19 +1592,22 @@ BOOL CToDoListWnd::PreTranslateMessage(MSG* pMsg)
 		return TRUE;
 	}
 	
-	// Control accelerators
-	if (ProcessDialogCtrlShortcut(pMsg))
-		return TRUE;
+	if (IsWindowEnabled())
+	{
+		// Control accelerators
+		if (ProcessDialogCtrlShortcut(pMsg))
+			return TRUE;
 
-	if (IsDroppedComboBox(pMsg->hwnd))
-		return FALSE;
+		if (IsDroppedComboBox(pMsg->hwnd))
+			return FALSE;
 
-	// Keyboard shortcuts
-	if (ProcessShortcut(pMsg))
-		return TRUE;
+		// Keyboard shortcuts
+		if (ProcessShortcut(pMsg))
+			return TRUE;
 
-	if (HandleEscapeTabReturn(pMsg))
-		return TRUE;
+		if (HandleEscapeTabReturn(pMsg))
+			return TRUE;
+	}
 	
 	return CFrameWnd::PreTranslateMessage(pMsg);
 }
@@ -2488,7 +2494,7 @@ void CToDoListWnd::LoadSettings()
 	
 	m_bShowStatusBar = prefs.GetProfileInt(SETTINGS_KEY, _T("ShowStatusBar"), m_bShowStatusBar);
 	m_statusBar.ShowWindow(m_bShowStatusBar ? SW_SHOW : SW_HIDE);
-	
+
 	// toolbar
 	m_bShowToolbar = prefs.GetProfileInt(SETTINGS_KEY, _T("ToolbarOption"), TRUE);
 	m_toolbar.ShowWindow(m_bShowToolbar ? SW_SHOW : SW_HIDE);
@@ -3375,9 +3381,16 @@ void CToDoListWnd::StartTimeTrackingTask(int nTDC, DWORD dwTaskID, TIMETRACKSRC 
 		}
 	}
 
-	// Update Time track widget OR todoctrl depending on who notified
+	// Update Time track widget AND/OR todoctrl depending on who notified
 	int nSel = GetSelToDoCtrl();
 	
+	// Must update TDC before the time-tracker
+	if (nFrom != FROM_TASKLIST)
+	{
+		if ((nTDC == nSel) || SelectToDoCtrl(nTDC, TRUE))
+			GetToDoCtrl().BeginTimeTracking(dwTaskID);
+	}
+
 	if (nFrom != FROM_TRACKER)
 	{
 		ASSERT(nTDC == nSel);
@@ -3385,12 +3398,6 @@ void CToDoListWnd::StartTimeTrackingTask(int nTDC, DWORD dwTaskID, TIMETRACKSRC 
 		m_dlgTimeTracker.UpdateTracking(&GetToDoCtrl());
 	}
 	
-	if (nFrom != FROM_TASKLIST)
-	{
-		if ((nTDC == nSel) || SelectToDoCtrl(nTDC, TRUE))
-			GetToDoCtrl().BeginTimeTracking(dwTaskID);
-	}
-
 	// always refresh the notifier tasklist
 	m_mgrToDoCtrls.RefreshTimeTracking(nTDC);
 
@@ -3408,18 +3415,18 @@ void CToDoListWnd::StopTimeTrackingTask(int nTDC, TIMETRACKSRC nFrom)
 		ASSERT(nTDC != -1);
 		ASSERT((nFrom == FROM_TRACKER) || (nTDC == GetSelToDoCtrl()));
 
+		// Update Time track widget AND/OR todoctrl depending on who notified
 		CFilteredToDoCtrl& tdc = GetToDoCtrl(nTDC);
 		
-		// Update Time track widget
-		if (nFrom != FROM_TRACKER)
-		{
-			m_dlgTimeTracker.UpdateTracking(&tdc);
-		}
-
-		// Update todoctrl
+		// Must update TDC before the time-tracker
 		if (nFrom != FROM_TASKLIST)
 		{
 			tdc.EndTimeTracking(TRUE);
+		}
+
+		if (nFrom != FROM_TRACKER)
+		{
+			m_dlgTimeTracker.UpdateTracking(&tdc);
 		}
 
 		// update tab image

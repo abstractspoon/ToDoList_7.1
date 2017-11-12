@@ -3813,7 +3813,10 @@ TDC_SET CToDoCtrl::SetTaskDone(DWORD dwTaskID, const COleDateTime& date,
 	BOOL bDone = CDateHelper::IsDateSet(date);
 	BOOL bWasDone = m_data.IsTaskDone(dwTaskID);
 	BOOL bStateChange = ((bDone && !bWasDone) || (!bDone && bWasDone));
-	BOOL bDateChange = (date != m_data.GetTaskDate(dwTaskID, TDCD_DONE));
+	BOOL bDateChange = bStateChange;
+	
+	if (!bDateChange && bDone && bWasDone)
+		bDateChange = (date != m_data.GetTaskDate(dwTaskID, TDCD_DONE));
 	
 	if (bDateChange && (!bIsSubtask || bUpdateAllSubtaskDates || bStateChange))
 	{
@@ -8169,16 +8172,10 @@ BOOL CToDoCtrl::AddTasksToTree(const CTaskFile& tasks, HTREEITEM htiDest, HTREEI
 	TCH().SelectItem(NULL);
 	TSH().RemoveAll();
 
-	CDWordArray aTaskIDs;
-
 	while (hTask)
 	{
 		htiDestAfter = AddTaskToTreeItem(tasks, hTask, htiDest, htiDestAfter, nResetIDs);
 
-		// cache items for selection
-		if (bSelectAll)
-			aTaskIDs.Add(GetTaskID(htiDestAfter));
-		
 		// next task
 		hTask = tasks.GetNextTask(hTask);
 	}
@@ -8186,7 +8183,9 @@ BOOL CToDoCtrl::AddTasksToTree(const CTaskFile& tasks, HTREEITEM htiDest, HTREEI
 	m_taskTree.ExpandItem(htiDest, TRUE);
 	
 	// restore selection
-	if (bSelectAll && aTaskIDs.GetSize())
+	CDWordArray aTaskIDs;
+
+	if (bSelectAll && tasks.GetTaskIDs(aTaskIDs))
 	{
 		m_taskTree.SelectTasks(aTaskIDs);
 	}
