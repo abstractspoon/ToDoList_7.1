@@ -155,8 +155,14 @@ BOOL TDCSTARTUPATTRIB::GetTime(double& dValue, TDC_UNITS& nUnits, BOOL& bOffset)
 	{
 		bOffset = TRUE;
 	}
-	else if (CTimeHelper::DecodeOffset(szValue, dValue, nTHUnits, FALSE))
+	else if (CTimeHelper::DecodeOffset(szValue, dValue, nTHUnits, FALSE)) // Decode as plain number
 	{
+		bOffset = FALSE;
+	}
+	else if (Misc::IsEmpty(szValue))
+	{
+		dValue = 0;
+		nTHUnits = THU_HOURS;
 		bOffset = FALSE;
 	}
 	else
@@ -179,24 +185,24 @@ BOOL TDCSTARTUPATTRIB::GetDate(double& dValue, TDC_UNITS& nUnits, BOOL& bOffset)
 	if (IsOffset(szValue) && CDateHelper::DecodeOffset(szValue, dValue, nDHUnits, TRUE))
 	{
 		bOffset = TRUE;
-		nUnits = TDC::MapDHUnitsToUnits(nDHUnits);
+	}
+	else if (CDateHelper::DecodeOffset(szValue, dValue, nDHUnits, FALSE)) // Decode as plain number
+	{
+		bOffset = FALSE;
+	}
+	else if (Misc::IsEmpty(szValue))
+	{
+		dValue = 0;
+		nDHUnits = DHU_DAYS;
+		bOffset = FALSE;
 	}
 	else
 	{
-		nUnits = TDCU_DAYS;
-		bOffset = FALSE;
-		
-		if (Misc::IsEmpty(szValue))
-		{
-			dValue = 0;
-		}
-		else if (!CDateHelper::DecodeDate(szValue, dValue))
-		{
-			bOffset = -1; // error
-			return FALSE;
-		}
+		bOffset = -1; // error
+		return FALSE;
 	}
 
+	nUnits = TDC::MapDHUnitsToUnits(nDHUnits);
 	return TRUE;
 }
 
