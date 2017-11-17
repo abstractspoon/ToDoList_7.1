@@ -7235,7 +7235,7 @@ LRESULT CToDoCtrl::OnTreeDragDrop(WPARAM /*wParam*/, LPARAM lParam)
 	return nRes;
 }
 
-void CToDoCtrl::RemoveNonSelectedTasks(CTaskFile& tasks, HTASKITEM hTask) const
+void CToDoCtrl::RemoveNonSelectedTasks(CTaskFile& tasks, HTASKITEM hTask)
 {
 	if (hTask)
 	{
@@ -7260,6 +7260,30 @@ void CToDoCtrl::RemoveNonSelectedTasks(CTaskFile& tasks, HTASKITEM hTask) const
 
 		hTask = hTaskNext;
 	}
+}
+
+int CToDoCtrl::GetSelectedTaskIDs(const CTaskFile& tasks, CDWordArray& aTaskIDs)
+{
+	return GetSelectedTaskIDs(tasks, tasks.GetFirstTask(), aTaskIDs);
+}
+
+int CToDoCtrl::GetSelectedTaskIDs(const CTaskFile& tasks, HTASKITEM hTask, CDWordArray& aTaskIDs)
+{
+	if (hTask)
+	{
+		LPCTSTR szSelected = tasks.GetTaskMetaData(hTask, _T("selected"));
+
+		if (szSelected && (szSelected[0] == '1'))
+			aTaskIDs.Add(tasks.GetTaskID(hTask));
+
+		// siblings
+		GetSelectedTaskIDs(tasks, tasks.GetNextTask(hTask), aTaskIDs);
+
+		// children
+		GetSelectedTaskIDs(tasks, tasks.GetFirstTask(hTask), aTaskIDs);
+	}
+
+	return aTaskIDs.GetSize();
 }
 
 void CToDoCtrl::PrepareTasksForPaste(CTaskFile& tasks, TDC_RESETIDS nResetID, BOOL bResetCreation) const
@@ -8185,7 +8209,7 @@ BOOL CToDoCtrl::AddTasksToTree(const CTaskFile& tasks, HTREEITEM htiDest, HTREEI
 	// restore selection
 	CDWordArray aTaskIDs;
 
-	if (bSelectAll && tasks.GetTaskIDs(aTaskIDs))
+	if (bSelectAll && GetSelectedTaskIDs(tasks, aTaskIDs))
 	{
 		m_taskTree.SelectTasks(aTaskIDs);
 	}
