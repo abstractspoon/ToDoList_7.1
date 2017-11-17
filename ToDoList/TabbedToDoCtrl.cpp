@@ -4312,7 +4312,7 @@ BOOL CTabbedToDoCtrl::TasksHaveFocus() const
 	case FTCV_UIEXTENSION14:
 	case FTCV_UIEXTENSION15:
 	case FTCV_UIEXTENSION16:
-		return ExtensionCanDoAppCommand(nView, IUI_SETFOCUS);
+		return (ExtensionCanDoAppCommand(nView, IUI_SETFOCUS) == FALSE);
 
 	default:
 		ASSERT(0);

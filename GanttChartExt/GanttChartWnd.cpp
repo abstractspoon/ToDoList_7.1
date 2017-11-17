@@ -588,7 +588,7 @@ bool CGanttChartWnd::CanDoAppCommand(IUI_APPCOMMAND nCmd, DWORD dwExtra) const
 		return WantSortUpdate((IUI_ATTRIBUTE)dwExtra);
 
 	case IUI_SETFOCUS:
-		return (m_ctrlGantt.HasFocus() != FALSE);
+		return (CDialogHelper::IsChildOrSame(this, GetFocus()) == FALSE);
 		
 	case IUI_GETNEXTTASK:
 	case IUI_GETNEXTTOPLEVELTASK:
