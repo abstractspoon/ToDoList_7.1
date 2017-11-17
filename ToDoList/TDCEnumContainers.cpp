@@ -45,12 +45,19 @@ BOOL CTDCAttributeMap::CanAddAttribute(TDC_ATTRIBUTE nAttrib)
 	if ((nAttrib >= TDCA_FIRSTATTRIBUTE) && (nAttrib < TDCA_ATTRIBUTECOUNT))
 		return TRUE;
 
-	if (nAttrib == TDCA_PARENTID)
-		return TRUE;
-	
-	if (CTDCCustomAttributeHelper::IsCustomAttribute(nAttrib))
+	// Later/pseudo attributes falling outside the range
+	switch (nAttrib)
+	{
+	case TDCA_PARENTID:
+	case TDCA_SUBTASKDONE:
 		return TRUE;
 
+	default:
+		if (CTDCCustomAttributeHelper::IsCustomAttribute(nAttrib))
+			return TRUE;
+		break;
+	}
+	
 	ASSERT(0);
 	return FALSE;
 }
