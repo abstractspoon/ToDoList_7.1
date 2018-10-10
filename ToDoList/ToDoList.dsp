@@ -84,8 +84,8 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 Msimg32.lib msimg32.lib Winmm.lib /nologo /subsystem:windows /pdb:"ToDoList.pdb" /map /machine:I386 /pdbtype:con /MAPINFO:LINES /MAPINFO:EXPORTS
 # SUBTRACT BASE LINK32 /pdb:none /debug
-# ADD LINK32 /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /machine:I386 /nodefaultlib:"libc" /pdbtype:con /MAPINFO:LINES /MAPINFO:EXPORTS
-# SUBTRACT LINK32 /pdb:none /map /debug
+# ADD LINK32 /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /map /machine:I386 /nodefaultlib:"libc" /pdbtype:con /MAPINFO:LINES /MAPINFO:EXPORTS
+# SUBTRACT LINK32 /pdb:none /debug
 
 !ENDIF 
 
